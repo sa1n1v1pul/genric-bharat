@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/widgets/service_Explore.dart';
+
 import '../home/controller/homecontroller.dart';
+import 'service_explore.dart';
 
 class AllServices extends StatelessWidget {
   final HomeController homeController = Get.find<HomeController>();

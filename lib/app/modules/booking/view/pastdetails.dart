@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/core/theme/theme.dart';
+
+import '../../../core/theme/theme.dart';
 
 class PastDetails extends StatelessWidget {
   const PastDetails({super.key});
@@ -139,7 +140,8 @@ class PastDetails extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(title,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(subtitle, style: TextStyle(color: Colors.grey[600])),
                 if (!isLast) const SizedBox(height: 16),
               ],

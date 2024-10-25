@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/location/controller/location_controller.dart';
+
 import '../../routes/app_routes.dart';
+import '../controller/location_controller.dart';
 
 class LocationView extends StatelessWidget {
   const LocationView({Key? key}) : super(key: key);
@@ -51,7 +52,6 @@ class LocationView extends StatelessWidget {
                             ),
                             child: TextButton(
                               onPressed: () async {
-
                                 await locationController
                                     .handleLocationRequest();
                                 Get.toNamed(Routes.HOME);

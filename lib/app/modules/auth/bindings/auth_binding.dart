@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/auth/controllers/auth_controller.dart';
 
 import '../../data/services/auth_services.dart';
+import '../controllers/auth_controller.dart';
 
 class AuthBinding extends Bindings {
   @override

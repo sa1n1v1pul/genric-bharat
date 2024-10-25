@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/core/theme/theme.dart';
+
+import '../../core/theme/theme.dart';
 
 class WorkerDash extends StatefulWidget {
   const WorkerDash({super.key});

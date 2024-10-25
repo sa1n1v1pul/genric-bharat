@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/home/controller/homecontroller.dart';
+
+import '../controller/homecontroller.dart';
 
 class HomeBindings extends Bindings {
   @override

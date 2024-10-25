@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/auth/controllers/auth_controller.dart';
+
+import '../auth/controllers/auth_controller.dart';
 import '../auth/views/loginview.dart';
 import '../widgets/mainlayout.dart';
 
@@ -30,7 +31,8 @@ class _StartupViewState extends State<StartupView> {
 
   Future<void> _preloadImages() async {
     await Future.wait([
-      ...backgroundImages.map((image) => precacheImage(AssetImage(image), context)),
+      ...backgroundImages
+          .map((image) => precacheImage(AssetImage(image), context)),
       precacheImage(const AssetImage("assets/images/app_logo.png"), context),
     ]);
   }
@@ -76,7 +78,8 @@ class AnimatedBackgroundImage extends StatefulWidget {
   const AnimatedBackgroundImage({super.key, required this.images});
 
   @override
-  _AnimatedBackgroundImageState createState() => _AnimatedBackgroundImageState();
+  _AnimatedBackgroundImageState createState() =>
+      _AnimatedBackgroundImageState();
 }
 
 class _AnimatedBackgroundImageState extends State<AnimatedBackgroundImage> {

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:handyman/app/modules/booking/view/cancelled.dart';
-import 'package:handyman/app/modules/booking/view/details.dart';
-import 'package:handyman/app/modules/booking/view/pastdetails.dart';
+
 import '../../../core/theme/theme.dart';
+import 'cancelled.dart';
+import 'details.dart';
+import 'pastdetails.dart';
 
 class BookingView extends StatefulWidget {
   const BookingView({super.key});

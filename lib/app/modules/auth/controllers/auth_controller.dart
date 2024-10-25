@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/api_endpoints/api_provider.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../api_endpoints/api_provider.dart';
 import 'login_controller.dart';
 
 class AuthController extends GetxController {
@@ -72,7 +73,8 @@ class AuthController extends GetxController {
         // Save user data to SharedPreferences
         await prefs.setString('user_name', userData.value['fullname'] ?? '');
         await prefs.setString('user_email', userData.value['email'] ?? '');
-        await prefs.setString('user_mobile', userData.value['mobile_number'] ?? '');
+        await prefs.setString(
+            'user_mobile', userData.value['mobile_number'] ?? '');
       }
     } catch (e) {
       print('Error fetching user data: $e');

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/profile/controller/profile_controller.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../controller/profile_controller.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({Key? key}) : super(key: key);
@@ -116,191 +118,201 @@ class _EditProfileState extends State<EditProfile> {
         return _profileController.isLoading.value
             ? const Center(child: CircularProgressIndicator())
             : Padding(
-          padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Full Name",
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: nameController,
-                  cursorColor: isDarkMode ? Colors.white : Colors.black,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    enabledBorder: _buildOutlineInputBorder(
-                        isDarkMode ? Colors.white : Colors.black),
-                    focusedBorder:
-                    _buildOutlineInputBorder(const Color(0xffE15564)),
-                    hintText: "Enter Name",
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          'Mr.',
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        Checkbox(
-                          value: _isMrChecked,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _isMrChecked = value ?? false;
-                              if (_isMrChecked) {
-                                _isMrsChecked = false;
-                              }
-                            });
-                          },
-                          checkColor: isDarkMode ? Colors.black : Colors.white,
-                          activeColor: isDarkMode ? Colors.white : Colors.black,
-                          tristate: false,
-                          shape: const CircleBorder(),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          'Mrs.',
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        Checkbox(
-                          value: _isMrsChecked,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _isMrsChecked = value ?? false;
-                              if (_isMrsChecked) {
-                                _isMrChecked = false;
-                              }
-                            });
-                          },
-                          checkColor: isDarkMode ? Colors.black : Colors.white,
-                          activeColor: isDarkMode ? Colors.white : Colors.black,
-                          tristate: false,
-                          shape: const CircleBorder(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  "Email Address",
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: emailController,
-                  cursorColor: isDarkMode ? Colors.white : Colors.black,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    enabledBorder: _buildOutlineInputBorder(
-                        isDarkMode ? Colors.white : Colors.black),
-                    focusedBorder:
-                    _buildOutlineInputBorder(const Color(0xffE15564)),
-                    hintText: "Enter Email",
-                    hintStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  "Phone Number",
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  cursorColor: isDarkMode ? Colors.white : Colors.black,
-                  controller: phoneController,
-                  focusNode: phoneFocusNode,
-                  decoration: InputDecoration(
-                    border: _buildOutlineInputBorder(
-                        isDarkMode ? Colors.white : Colors.black),
-                    focusedBorder:
-                    _buildOutlineInputBorder(const Color(0xffE15564)),
-                    prefix: Container(
-                      width: 40,
-                      alignment: Alignment.center,
-                      child: Text(
-                        '+91',
+                padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Full Name",
                         style: TextStyle(
-                          fontSize: 14,
                           color: isDarkMode ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    errorStyle: const TextStyle(height: 0),
-                  ),
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 14,
-                  ),
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    LengthLimitingTextInputFormatter(10),
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),
-                  ],
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _updateProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDarkMode ? Colors.white : Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        controller: nameController,
+                        cursorColor: isDarkMode ? Colors.white : Colors.black,
+                        decoration: InputDecoration(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          enabledBorder: _buildOutlineInputBorder(
+                              isDarkMode ? Colors.white : Colors.black),
+                          focusedBorder:
+                              _buildOutlineInputBorder(const Color(0xffE15564)),
+                          hintText: "Enter Name",
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 10),
-                    ),
-                    child: Text(
-                      "Update Now",
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.black : Colors.white,
+                      const SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Mr.',
+                                style: TextStyle(
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
+                                ),
+                              ),
+                              Checkbox(
+                                value: _isMrChecked,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _isMrChecked = value ?? false;
+                                    if (_isMrChecked) {
+                                      _isMrsChecked = false;
+                                    }
+                                  });
+                                },
+                                checkColor:
+                                    isDarkMode ? Colors.black : Colors.white,
+                                activeColor:
+                                    isDarkMode ? Colors.white : Colors.black,
+                                tristate: false,
+                                shape: const CircleBorder(),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Mrs.',
+                                style: TextStyle(
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
+                                ),
+                              ),
+                              Checkbox(
+                                value: _isMrsChecked,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _isMrsChecked = value ?? false;
+                                    if (_isMrsChecked) {
+                                      _isMrChecked = false;
+                                    }
+                                  });
+                                },
+                                checkColor:
+                                    isDarkMode ? Colors.black : Colors.white,
+                                activeColor:
+                                    isDarkMode ? Colors.white : Colors.black,
+                                tristate: false,
+                                shape: const CircleBorder(),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 30),
+                      Text(
+                        "Email Address",
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        controller: emailController,
+                        cursorColor: isDarkMode ? Colors.white : Colors.black,
+                        decoration: InputDecoration(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 20),
+                          enabledBorder: _buildOutlineInputBorder(
+                              isDarkMode ? Colors.white : Colors.black),
+                          focusedBorder:
+                              _buildOutlineInputBorder(const Color(0xffE15564)),
+                          hintText: "Enter Email",
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Text(
+                        "Phone Number",
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        cursorColor: isDarkMode ? Colors.white : Colors.black,
+                        controller: phoneController,
+                        focusNode: phoneFocusNode,
+                        decoration: InputDecoration(
+                          border: _buildOutlineInputBorder(
+                              isDarkMode ? Colors.white : Colors.black),
+                          focusedBorder:
+                              _buildOutlineInputBorder(const Color(0xffE15564)),
+                          prefix: Container(
+                            width: 40,
+                            alignment: Alignment.center,
+                            child: Text(
+                              '+91',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                          errorStyle: const TextStyle(height: 0),
+                        ),
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                          fontSize: 14,
+                        ),
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(10),
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _updateProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                isDarkMode ? Colors.white : Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 10),
+                          ),
+                          child: Text(
+                            "Update Now",
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.black : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        );
+              );
       }),
     );
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/Message/view/chatingarea.dart';
 
 import '../../../core/theme/theme.dart';
+import 'chatingarea.dart';
 
 class MessageView extends StatefulWidget {
   const MessageView({super.key});

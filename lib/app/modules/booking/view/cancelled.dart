@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/core/theme/theme.dart';
+
+import '../../../core/theme/theme.dart';
 
 class CancelledDetails extends StatelessWidget {
   const CancelledDetails({super.key});

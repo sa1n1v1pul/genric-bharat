@@ -5,20 +5,19 @@ import 'dart:ui';
 import 'package:carousel_indicator/carousel_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:genric_bharat/app/core/theme/theme.dart';
+import 'package:genric_bharat/main.dart';
 import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:handyman/app/core/theme/theme.dart';
-import 'package:handyman/app/modules/location/controller/location_controller.dart';
-import 'package:handyman/app/modules/widgets/appliances.dart';
-import 'package:handyman/app/modules/widgets/bestoffers.dart';
-import 'package:handyman/app/modules/widgets/cleaning.dart';
-import 'package:handyman/app/modules/widgets/latlng.dart';
-import 'package:handyman/app/modules/widgets/service_explore.dart';
-import 'package:handyman/app/modules/widgets/services.dart';
 
-import 'package:handyman/main.dart';
-
+import '../../location/controller/location_controller.dart';
+import '../../widgets/appliances.dart';
+import '../../widgets/bestoffers.dart';
+import '../../widgets/cleaning.dart';
+import '../../widgets/latlng.dart';
+import '../../widgets/service_explore.dart';
+import '../../widgets/services.dart';
 import '../controller/homecontroller.dart';
 import 'mapview.dart';
 
@@ -43,11 +42,13 @@ class _HomePageState extends State<HomePage> {
     homeController = Get.put(HomeController());
     locationController = Get.put(LocationController());
   }
+
   @override
   void dispose() {
     _currentIndexNotifier.dispose();
     super.dispose();
   }
+
   void getBackResult(latss, lngss) async {
     locationController.updateSelectedLocation(LatLng(latss, lngss));
   }
@@ -58,168 +59,196 @@ class _HomePageState extends State<HomePage> {
       id: 'themeBuilder',
       builder: (controller) {
         return Obx(() => Scaffold(
-          key: _scaffoldKey,
-          backgroundColor: CustomTheme.backgroundColor,
-          body: Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  actions: [
-                    Obx(() => IconButton(
-                      icon: Icon(
-                        CustomTheme.themeMode == ThemeMode.light
-                            ? Icons.dark_mode
-                            : Icons.light_mode,
-                      ),
-                      onPressed: () {
-                        CustomTheme.toggleTheme();
-                      },
-                    )),
-                    IconButton(
-                      icon: const Icon(Icons.settings, color: Colors.white),
-                      onPressed: () {
-                        if (_isDrawerOnRight) {
-                          _scaffoldKey.currentState?.openEndDrawer();
-                        } else {
-                          _scaffoldKey.currentState?.openDrawer();
-                        }
-                      },
-                    ),
-                  ],
-                  surfaceTintColor: Colors.transparent,
-                  flexibleSpace: Container(
-                    decoration: BoxDecoration(
-                      gradient: CustomTheme.appBarGradient,
-                    ),
-                  ),
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: CustomTheme.loginGradientEnd,
-                  automaticallyImplyLeading: false,
-                  floating: true,
-                  pinned: true,
-                  title: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () async {await locationController.updateLocationFromHomepage();
-                          locationController.isLoading.value = true;
-                          await locationController.handleLocationRequest();
-                          locationController.isLoading.value = false;
-                        },
-                        icon: const Icon(
-                          Icons.location_on_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            // Only navigate to map if location is available
-                            if (locationController.currentPosition.value != null &&
-                                !locationController.isLocationSkipped.value) {
-                              BackLatLng back = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LocationPage(
-                                    locationController.recentlyUpdatedViaButton.value
-                                        ? locationController.currentPosition.value!.latitude
-                                        : locationController.selectedLocation.value?.latitude ?? locationController.currentPosition.value!.latitude,
-                                    locationController.recentlyUpdatedViaButton.value
-                                        ? locationController.currentPosition.value!.longitude
-                                        : locationController.selectedLocation.value?.longitude ?? locationController.currentPosition.value!.longitude,
-                                  ),
-                                ),
-                              );
-                              getBackResult(back.lat, back.lng);
-                              locationController.recentlyUpdatedViaButton.value = false; // Reset the flag after use
+              key: _scaffoldKey,
+              backgroundColor: CustomTheme.backgroundColor,
+              body: Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      actions: [
+                        Obx(() => IconButton(
+                              icon: Icon(
+                                CustomTheme.themeMode == ThemeMode.light
+                                    ? Icons.dark_mode
+                                    : Icons.light_mode,
+                              ),
+                              onPressed: () {
+                                CustomTheme.toggleTheme();
+                              },
+                            )),
+                        IconButton(
+                          icon: const Icon(Icons.settings, color: Colors.white),
+                          onPressed: () {
+                            if (_isDrawerOnRight) {
+                              _scaffoldKey.currentState?.openEndDrawer();
                             } else {
-                              // Handle the case when location is not available
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Location not available. Please try again.')),
-                              );
+                              _scaffoldKey.currentState?.openDrawer();
                             }
                           },
-                          child: Obx(() {
-                            if (locationController.isLoading.value) {
-                              return const Text('Loading...',
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.white));
-                            } else if (locationController
-                                .isPermissionDenied.value) {
-                              return const Text('Permissions denied',
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.white));
-                            } else if (locationController
-                                .isLocationSkipped.value &&
-                                !locationController
-                                    .currentAddress.value.isNotEmpty) {
-                              return const Text('Location Skipped',
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.white));
-                            } else if (locationController
-                                .cityName.value.isNotEmpty) {
-                              return Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Current Location',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white)),
-                                  Text(
-                                    locationController.cityName.value,
-                                    style: const TextStyle(
-                                        fontSize: 16, color: Colors.white),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              );
-                            } else {
-                              return const Text('Location Unavailable',
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.white));
-                            }
-                          }),
+                        ),
+                      ],
+                      surfaceTintColor: Colors.transparent,
+                      flexibleSpace: Container(
+                        decoration: BoxDecoration(
+                          gradient: CustomTheme.appBarGradient,
                         ),
                       ),
-                    ],
-                  ),
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(56),
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 15, right: 15, bottom: 8),
-                      child: SizedBox(
-                        height: 48,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: CustomTheme.loginGradientEnd,
+                      automaticallyImplyLeading: false,
+                      floating: true,
+                      pinned: true,
+                      title: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () async {
+                              await locationController
+                                  .updateLocationFromHomepage();
+                              locationController.isLoading.value = true;
+                              await locationController.handleLocationRequest();
+                              locationController.isLoading.value = false;
+                            },
+                            icon: const Icon(
+                              Icons.location_on_outlined,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: BackdropFilter(
-                              filter:
-                              ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: 'Search Product Name',
-                                  suffixIcon: const Icon(Icons.search),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide.none,
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                // Only navigate to map if location is available
+                                if (locationController.currentPosition.value !=
+                                        null &&
+                                    !locationController
+                                        .isLocationSkipped.value) {
+                                  BackLatLng back = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LocationPage(
+                                        locationController.recentlyUpdatedViaButton
+                                                .value
+                                            ? locationController
+                                                .currentPosition.value!.latitude
+                                            : locationController
+                                                    .selectedLocation
+                                                    .value
+                                                    ?.latitude ??
+                                                locationController
+                                                    .currentPosition
+                                                    .value!
+                                                    .latitude,
+                                        locationController
+                                                .recentlyUpdatedViaButton.value
+                                            ? locationController.currentPosition
+                                                .value!.longitude
+                                            : locationController
+                                                    .selectedLocation
+                                                    .value
+                                                    ?.longitude ??
+                                                locationController
+                                                    .currentPosition
+                                                    .value!
+                                                    .longitude,
+                                      ),
+                                    ),
+                                  );
+                                  getBackResult(back.lat, back.lng);
+                                  locationController
+                                          .recentlyUpdatedViaButton.value =
+                                      false; // Reset the flag after use
+                                } else {
+                                  // Handle the case when location is not available
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Location not available. Please try again.')),
+                                  );
+                                }
+                              },
+                              child: Obx(() {
+                                if (locationController.isLoading.value) {
+                                  return const Text('Loading...',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white));
+                                } else if (locationController
+                                    .isPermissionDenied.value) {
+                                  return const Text('Permissions denied',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white));
+                                } else if (locationController
+                                        .isLocationSkipped.value &&
+                                    !locationController
+                                        .currentAddress.value.isNotEmpty) {
+                                  return const Text('Location Skipped',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white));
+                                } else if (locationController
+                                    .cityName.value.isNotEmpty) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('Current Location',
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white)),
+                                      Text(
+                                        locationController.cityName.value,
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.white),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  return const Text('Location Unavailable',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white));
+                                }
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(56),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 15, right: 15, bottom: 8),
+                          child: SizedBox(
+                            height: 48,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
                                   ),
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.3),
-                                  contentPadding:
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 16),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                  child: TextField(
+                                    decoration: InputDecoration(
+                                      hintText: 'Search Product Name',
+                                      suffixIcon: const Icon(Icons.search),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white.withOpacity(0.3),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -227,35 +256,33 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                  ),
+                    SliverToBoxAdapter(
+                      child: _buildCarouselSection(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildServicesSection(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildCleaningSection(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildBestOffersSection(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildCarouselAdds(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildAppliancesSection(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildCleaningPestControlSection(),
+                    ),
+                  ],
                 ),
-                SliverToBoxAdapter(
-                  child: _buildCarouselSection(),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildServicesSection(),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildCleaningSection(),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildBestOffersSection(),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildCarouselAdds(),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildAppliancesSection(),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildCleaningPestControlSection(),
-                ),
-              ],
-            ),
-          ),
-          endDrawer: _isDrawerOnRight ? _buildDrawer() : null,
-          drawer: !_isDrawerOnRight ? _buildDrawer() : null,
-        ));
+              ),
+              endDrawer: _isDrawerOnRight ? _buildDrawer() : null,
+              drawer: !_isDrawerOnRight ? _buildDrawer() : null,
+            ));
       },
     );
   }
@@ -274,13 +301,13 @@ class _HomePageState extends State<HomePage> {
                   : Colors.black.withOpacity(0.05),
               borderRadius: BorderRadius.only(
                 topRight:
-                _isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
+                    _isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
                 bottomRight:
-                _isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
+                    _isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
                 topLeft:
-                !_isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
+                    !_isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
                 bottomLeft:
-                !_isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
+                    !_isDrawerOnRight ? const Radius.circular(15) : Radius.zero,
               ),
             ),
             child: Column(
@@ -331,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                   runSpacing: 8,
                   children: List.generate(
                     9, // First 9 colors for light mode
-                        (index) => GestureDetector(
+                    (index) => GestureDetector(
                       onTap: () =>
                           Get.find<ThemeController>().changeTheme(index),
                       child: Container(
@@ -342,7 +369,7 @@ class _HomePageState extends State<HomePage> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: CustomTheme.loginGradientStart ==
-                                CustomTheme.themeColors[index]
+                                    CustomTheme.themeColors[index]
                                 ? Colors.white
                                 : Colors.transparent,
                             width: 2,
@@ -372,7 +399,7 @@ class _HomePageState extends State<HomePage> {
                   runSpacing: 8,
                   children: List.generate(
                     3, // Last 3 colors for dark mode
-                        (index) => GestureDetector(
+                    (index) => GestureDetector(
                       onTap: () =>
                           Get.find<ThemeController>().changeTheme(index + 9),
                       child: Container(
@@ -383,7 +410,7 @@ class _HomePageState extends State<HomePage> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: CustomTheme.loginGradientStart ==
-                                CustomTheme.themeColors[index + 9]
+                                    CustomTheme.themeColors[index + 9]
                                 ? Colors.white
                                 : Colors.transparent,
                             width: 2,
@@ -464,18 +491,19 @@ class _HomePageState extends State<HomePage> {
                 autoPlay: true,
                 enlargeCenterPage: true,
                 onPageChanged: (index, reason) {
-                  setState(() {
-
-                  });
+                  setState(() {});
                 },
               ),
               items: homeController.sliders.map((slider) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     double maxWidth = constraints.maxWidth;
-                    double gradientWidth = maxWidth * 0.4; // 40% of screen width
-                    double fontSize = maxWidth * 0.04; // 4% of screen width for title
-                    double descFontSize = maxWidth * 0.04; // 3% of screen width for description
+                    double gradientWidth =
+                        maxWidth * 0.4; // 40% of screen width
+                    double fontSize =
+                        maxWidth * 0.04; // 4% of screen width for title
+                    double descFontSize =
+                        maxWidth * 0.04; // 3% of screen width for description
 
                     return ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -528,7 +556,9 @@ class _HomePageState extends State<HomePage> {
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    Divider(color: Colors.white, thickness: maxWidth * 0.002),
+                                    Divider(
+                                        color: Colors.white,
+                                        thickness: maxWidth * 0.002),
                                     Expanded(
                                       child: Text(
                                         slider['description'] as String,
@@ -556,6 +586,7 @@ class _HomePageState extends State<HomePage> {
       );
     });
   }
+
   Widget _buildCarouselAdds() {
     final List<String> imgList = [
       'assets/images/Painting2.jpg',
@@ -732,9 +763,9 @@ class _HomePageState extends State<HomePage> {
     return InkWell(
       onTap: () {
         Get.to(() => ServiceExplore(
-          categoryId: category['id'].toString(),
-          categoryTitle: category['title'] ?? 'Unknown Service',
-        ));
+              categoryId: category['id'].toString(),
+              categoryTitle: category['title'] ?? 'Unknown Service',
+            ));
       },
       child: Container(
         margin: const EdgeInsets.only(right: 10),
@@ -746,7 +777,7 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
                 border:
-                Border.all(color: const Color.fromARGB(255, 223, 223, 223)),
+                    Border.all(color: const Color.fromARGB(255, 223, 223, 223)),
                 borderRadius: const BorderRadius.all(Radius.elliptical(15, 15)),
               ),
               child: ClipRRect(
@@ -774,7 +805,7 @@ class _HomePageState extends State<HomePage> {
                 category['title'] as String? ?? 'Unknown Service',
                 textAlign: TextAlign.center,
                 style:
-                const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -795,13 +826,17 @@ class _HomePageState extends State<HomePage> {
             'Cleaning & Pest Control',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          subtitle:  Text('Removes hard stains & more', style: TextStyle(fontSize: 12,)),
+          subtitle: Text('Removes hard stains & more',
+              style: TextStyle(
+                fontSize: 12,
+              )),
           trailing: TextButton(
             child: Text(
               'View all',
-              style: TextStyle(fontSize: 12,
+              style: TextStyle(
+                fontSize: 12,
                 color:
-                isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
               ),
             ),
             onPressed: () {
@@ -846,7 +881,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 8),
           Text(title,
               style:
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -863,13 +898,17 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           subtitle: const Text(
-              'Hygienic & single-use products | low - contact services', style: TextStyle(fontSize: 12,)),
+              'Hygienic & single-use products | low - contact services',
+              style: TextStyle(
+                fontSize: 12,
+              )),
           trailing: TextButton(
             child: Text(
               'View all',
-              style: TextStyle(fontSize: 12,
+              style: TextStyle(
+                fontSize: 12,
                 color:
-                isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
               ),
             ),
             onPressed: () {
@@ -975,13 +1014,17 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           subtitle:
-          const Text('Servicing Repair, Installation & Uninstallation...', style: TextStyle(fontSize: 12,)),
+              const Text('Servicing Repair, Installation & Uninstallation...',
+                  style: TextStyle(
+                    fontSize: 12,
+                  )),
           trailing: TextButton(
             child: Text(
               'View all',
-              style: TextStyle(fontSize: 12,
+              style: TextStyle(
+                fontSize: 12,
                 color:
-                isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
               ),
             ),
             onPressed: () {
@@ -1050,13 +1093,17 @@ class _HomePageState extends State<HomePage> {
             'Cleaning & Pest Control',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          subtitle: const Text('Removes hard stains & more',style: TextStyle(fontSize: 12,)),
+          subtitle: const Text('Removes hard stains & more',
+              style: TextStyle(
+                fontSize: 12,
+              )),
           trailing: TextButton(
             child: Text(
               'View all',
-              style: TextStyle(fontSize: 12,
+              style: TextStyle(
+                fontSize: 12,
                 color:
-                isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
               ),
             ),
             onPressed: () {

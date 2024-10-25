@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/home/controller/homecontroller.dart';
+
+import '../../home/controller/homecontroller.dart';
 
 class BookingBindings extends Bindings {
   @override

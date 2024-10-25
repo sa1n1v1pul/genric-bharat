@@ -3,14 +3,16 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:handyman/app/modules/widgets/bottombar.dart';
-import 'package:handyman/app/modules/booking/view/bookingview.dart';
-import 'package:handyman/app/modules/offers/views/offers.dart';
-import 'package:handyman/app/modules/home/views/homepage.dart';
-import 'package:handyman/app/modules/Message/view/messageview.dart';
-import 'package:handyman/app/modules/profile/views/profile_view.dart';
+
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:genric_bharat/app/modules/profile/views/profile_view.dart';
+
+import '../Message/view/messageview.dart';
+import '../booking/view/bookingview.dart';
+import '../home/views/homepage.dart';
+import '../offers/views/offers.dart';
+import 'bottombar.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);

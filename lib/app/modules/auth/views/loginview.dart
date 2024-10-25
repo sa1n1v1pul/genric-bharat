@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/auth/controllers/login_controller.dart';
+
+import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
   @override

@@ -13,14 +13,15 @@ import 'package:get/get.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:handyman/app/modules/api_endpoints/api_provider.dart';
-import 'package:handyman/app/modules/location/controller/location_controller.dart';
-import 'package:handyman/app/modules/widgets/latlng.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/constantfile.dart';
 import '../../../core/theme/theme.dart';
+import '../../api_endpoints/api_provider.dart';
+import '../../location/controller/location_controller.dart';
 import '../../widgets/custom_appbar.dart';
+import '../../widgets/latlng.dart';
 
 class LocationPage extends StatelessWidget {
   final double lat;
@@ -85,7 +86,8 @@ class SetLocationState extends State<SetLocatio> {
       if (response.statusCode == 200) {
         print('Location updated successfully in the database');
       } else {
-        print('Failed to update location in the database. Status code: ${response.statusCode}');
+        print(
+            'Failed to update location in the database. Status code: ${response.statusCode}');
         print('Response body: ${response.data}');
       }
     } catch (e) {
@@ -109,7 +111,6 @@ class SetLocationState extends State<SetLocatio> {
     setState(() {
       button = false;
     });
-
   }
 
   @override
@@ -123,7 +124,7 @@ class SetLocationState extends State<SetLocatio> {
     if (permission == LocationPermission.whileInUse ||
         permission == LocationPermission.always) {
       bool isLocationServiceEnabled =
-      await Geolocator.isLocationServiceEnabled();
+          await Geolocator.isLocationServiceEnabled();
       if (isLocationServiceEnabled) {
         setState(() {
           isLoading = true;
@@ -207,7 +208,6 @@ class SetLocationState extends State<SetLocatio> {
     });
   }
 
-
   void getPlaces(context) async {
     setState(() {
       button = false;
@@ -239,7 +239,7 @@ class SetLocationState extends State<SetLocatio> {
       apiHeaders: await const GoogleApiHeaders().getHeaders(),
     );
     PlacesDetailsResponse detail =
-    await _places.getDetailsByPlaceId(p.placeId!);
+        await _places.getDetailsByPlaceId(p.placeId!);
     final lat = detail.result.geometry!.location.lat;
     final lng = detail.result.geometry!.location.lng;
     _getCameraMoveLocation(LatLng(lat, lng));
@@ -366,7 +366,7 @@ class SetLocationState extends State<SetLocatio> {
           Container(
             color: CustomTheme.backgroundColor,
             padding:
-            const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: Row(
               children: <Widget>[
                 Image.asset(
@@ -389,44 +389,47 @@ class SetLocationState extends State<SetLocatio> {
           ),
           (button)
               ? ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                backgroundColor: CustomTheme.loginGradientStart,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 50, vertical: 20),
-                textStyle: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w400)),
-            onPressed: () async {
-              await updateLocationInDatabase(lat, lng);
-              Navigator.pop(context, BackLatLng(lat, lng));
-            },
-            child: const Text(
-              'Continue',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400),
-            ),
-          )
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      backgroundColor: CustomTheme.loginGradientStart,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 20),
+                      textStyle: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w400)),
+                  onPressed: () async {
+                    await updateLocationInDatabase(lat, lng);
+                    Navigator.pop(context, BackLatLng(lat, lng));
+                  },
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w400),
+                  ),
+                )
               : ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                backgroundColor: Colors.grey,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 50, vertical: 20),
-                textStyle: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.w400)),
-            onPressed: () async { await updateLocationInDatabase(lat, lng);
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      backgroundColor: Colors.grey,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 20),
+                      textStyle: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w400)),
+                  onPressed: () async {
+                    await updateLocationInDatabase(lat, lng);
 
-            // Then navigate back with the new location
-            Navigator.pop(context, BackLatLng(lat, lng));},
-            child: const Text(
-              'Continue',
-              style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.w400),
-            ),
-          )
+                    // Then navigate back with the new location
+                    Navigator.pop(context, BackLatLng(lat, lng));
+                  },
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.w400),
+                  ),
+                )
         ],
       ),
     );

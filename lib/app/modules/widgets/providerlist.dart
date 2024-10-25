@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/widgets/workerdash.dart';
+
 import '../home/controller/homecontroller.dart';
+import 'workerdash.dart';
 
 class ProviderListScreen extends StatefulWidget {
   final String serviceId;

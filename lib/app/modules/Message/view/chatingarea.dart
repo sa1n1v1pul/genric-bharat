@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/core/theme/theme.dart';
-import 'package:handyman/app/modules/Message/controller/messagecontroller.dart';
+
+import '../../../core/theme/theme.dart';
+import '../controller/messagecontroller.dart';
 
 class ChatScreen extends StatelessWidget {
   final String name;

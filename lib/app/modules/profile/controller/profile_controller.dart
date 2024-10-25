@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/api_endpoints/api_provider.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../api_endpoints/api_provider.dart';
 
 class ProfileController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();

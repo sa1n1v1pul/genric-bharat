@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:handyman/app/core/theme/theme.dart';
+
+import 'app/core/theme/theme.dart';
 import 'app/modules/api_endpoints/api_provider.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/auth/controllers/login_controller.dart';
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
       theme: CustomTheme.lightTheme,
       darkTheme: CustomTheme.darkTheme,
       themeMode: CustomTheme.themeMode,
-      home:  StartupView(),
+      home: StartupView(),
       getPages: AppPages.routes,
     );
   }

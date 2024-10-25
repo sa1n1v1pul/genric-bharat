@@ -4,8 +4,10 @@ import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:handyman/app/modules/api_endpoints/api_provider.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../api_endpoints/api_provider.dart';
 
 class LocationController extends GetxController {
   final ApiProvider apiProvider = Get.find<ApiProvider>();
@@ -60,7 +62,8 @@ class LocationController extends GetxController {
     saveLastKnownLocation();
 
     // Print the updated location to the debug console
-    print("LocationController Updated: Latitude - $latitude, Longitude - $longitude");
+    print(
+        "LocationController Updated: Latitude - $latitude, Longitude - $longitude");
   }
 
   Future<void> loadLastKnownLocation() async {
@@ -185,13 +188,16 @@ class LocationController extends GetxController {
       stateName.value = '';
     }
   }
+
   Future<void> updateLocationFromHomepage() async {
     bool locationUpdated = await handleLocationRequest();
     if (locationUpdated) {
       await updateLocationInDatabase();
-      Get.snackbar('Location Updated', 'Your location has been successfully updated.');
+      Get.snackbar(
+          'Location Updated', 'Your location has been successfully updated.');
     }
   }
+
   Future<bool> handleLocationRequest() async {
     try {
       isLoading.value = true;
@@ -286,7 +292,8 @@ class LocationController extends GetxController {
           desiredAccuracy: LocationAccuracy.high);
       currentPosition.value = position;
 
-      print("Current Location: Latitude - ${position.latitude}, Longitude - ${position.longitude}");
+      print(
+          "Current Location: Latitude - ${position.latitude}, Longitude - ${position.longitude}");
 
       await getAddressFromLatLng(position);
       await updateLocationInDatabase();
@@ -294,7 +301,6 @@ class LocationController extends GetxController {
       print('Error getting location: $e');
     }
   }
-
 
   void setLocationSkipped() {
     isLocationSkipped.value = true;

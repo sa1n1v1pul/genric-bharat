@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-import 'package:handyman/app/modules/offers/controller/offerscontroller.dart';
+
+import '../controller/offerscontroller.dart';
 
 class OffersBinding extends Bindings {
   @override

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:genric_bharat/app/core/theme/theme.dart';
+import 'package:genric_bharat/app/modules/api_endpoints/api_provider.dart';
+import 'package:genric_bharat/app/modules/widgets/providerlist.dart';
 import 'package:get/get.dart';
-import 'package:handyman/app/core/theme/theme.dart';
-import 'package:handyman/app/modules/api_endpoints/api_provider.dart';
-import 'package:handyman/app/modules/widgets/providerlist.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home/controller/homecontroller.dart';
 
@@ -35,7 +36,8 @@ class _ServiceExploreState extends State<ServiceExplore> {
     setState(() {
       _selectedSubcategory = subcategoryId;
     });
-    homeController.fetchServices(widget.categoryId, subcategoryId: subcategoryId);
+    homeController.fetchServices(widget.categoryId,
+        subcategoryId: subcategoryId);
   }
 
   @override
@@ -43,10 +45,14 @@ class _ServiceExploreState extends State<ServiceExplore> {
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[550] : const Color.fromARGB(255, 244, 243, 248),
+      backgroundColor: isDarkMode
+          ? Colors.grey[550]
+          : const Color.fromARGB(255, 244, 243, 248),
       appBar: AppBar(
         iconTheme: IconThemeData(
-          color: isDarkMode ? const Color.fromARGB(255, 244, 243, 248) : Colors.black,
+          color: isDarkMode
+              ? const Color.fromARGB(255, 244, 243, 248)
+              : Colors.black,
         ),
         centerTitle: true,
         scrolledUnderElevation: 0,
@@ -63,7 +69,8 @@ class _ServiceExploreState extends State<ServiceExplore> {
                 color: isDarkMode ? Colors.grey[800] : Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: (isDarkMode ? Colors.black : Colors.white).withOpacity(0.3),
+                    color: (isDarkMode ? Colors.black : Colors.white)
+                        .withOpacity(0.3),
                     spreadRadius: 5,
                     blurRadius: 3,
                     offset: const Offset(0, 1),
@@ -142,9 +149,10 @@ class _ServiceExploreState extends State<ServiceExplore> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildSubcategoryChip({'id': 'All', 'title': 'All', 'photo': ''}),
+                    _buildSubcategoryChip(
+                        {'id': 'All', 'title': 'All', 'photo': ''}),
                     ...homeController.subcategories.map(
-                          (subcategory) => _buildSubcategoryChip(subcategory),
+                      (subcategory) => _buildSubcategoryChip(subcategory),
                     ),
                   ],
                 ),
@@ -161,11 +169,14 @@ class _ServiceExploreState extends State<ServiceExplore> {
               if (homeController.isServicesLoading.value) {
                 return const Center(child: CircularProgressIndicator());
               }
-              List<Map<String, dynamic>> filteredServices = homeController.services;
+              List<Map<String, dynamic>> filteredServices =
+                  homeController.services;
               if (_selectedSubcategory != 'All') {
-                filteredServices = homeController.services.where((service) =>
-                service['sub_category']['id'].toString() == _selectedSubcategory
-                ).toList();
+                filteredServices = homeController.services
+                    .where((service) =>
+                        service['sub_category']['id'].toString() ==
+                        _selectedSubcategory)
+                    .toList();
               }
               return Column(
                 children: filteredServices.map((service) {
@@ -175,10 +186,13 @@ class _ServiceExploreState extends State<ServiceExplore> {
                       SharedPreferences.getInstance().then((prefs) {
                         int? userId = prefs.getInt('user_id');
                         if (userId != null) {
-                          Get.find<ApiProvider>().getUserProfile(userId).then((response) {
+                          Get.find<ApiProvider>()
+                              .getUserProfile(userId)
+                              .then((response) {
                             if (response.statusCode == 200) {
                               String userId = response.data['id'].toString();
-                              Get.to(() => ProviderListScreen(serviceId: serviceId, userId: userId));
+                              Get.to(() => ProviderListScreen(
+                                  serviceId: serviceId, userId: userId));
                             } else {
                               print('Error fetching user profile');
                             }
@@ -187,7 +201,6 @@ class _ServiceExploreState extends State<ServiceExplore> {
                           });
                         } else {
                           print('User ID not found');
-
                         }
                       });
                     },
@@ -223,28 +236,28 @@ class _ServiceExploreState extends State<ServiceExplore> {
                   : Colors.grey[200],
               child: isAllCategory
                   ? Icon(
-                Icons.check_circle,
-                color: isSelected
-                    ? Colors.white
-                    : CustomTheme.loginGradientStart,
-              )
-                  : ClipOval(
-                child: Image.network(
-                  subcategory['photo'], // Use the photo URL directly
-                  fit: BoxFit.cover,
-                  width: 70,
-                  height: 70,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Error loading image: $error');
-                    return Icon(
-                      Icons.error,
+                      Icons.check_circle,
                       color: isSelected
                           ? Colors.white
                           : CustomTheme.loginGradientStart,
-                    );
-                  },
-                ),
-              ),
+                    )
+                  : ClipOval(
+                      child: Image.network(
+                        subcategory['photo'], // Use the photo URL directly
+                        fit: BoxFit.cover,
+                        width: 70,
+                        height: 70,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Error loading image: $error');
+                          return Icon(
+                            Icons.error,
+                            color: isSelected
+                                ? Colors.white
+                                : CustomTheme.loginGradientStart,
+                          );
+                        },
+                      ),
+                    ),
             ),
             const SizedBox(height: 4),
             Text(subcategory['title'], style: const TextStyle(fontSize: 12)),
@@ -289,13 +302,13 @@ class _ServiceExploreState extends State<ServiceExplore> {
                 gradient: LinearGradient(
                   colors: Theme.of(context).brightness == Brightness.light
                       ? [
-                    Colors.white.withOpacity(0.9),
-                    Colors.white.withOpacity(0.0),
-                  ]
+                          Colors.white.withOpacity(0.9),
+                          Colors.white.withOpacity(0.0),
+                        ]
                       : [
-                    Colors.black.withOpacity(0.9),
-                    Colors.black.withOpacity(0.01),
-                  ],
+                          Colors.black.withOpacity(0.9),
+                          Colors.black.withOpacity(0.01),
+                        ],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -312,14 +325,18 @@ class _ServiceExploreState extends State<ServiceExplore> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
                     widget.categoryTitle,
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
                 const Text(
