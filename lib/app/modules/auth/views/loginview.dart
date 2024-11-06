@@ -8,31 +8,25 @@ class LoginView extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/splash_bg.jpg'),
-            fit: BoxFit.fill,
+            image: AssetImage('assets/images/login.jpg'),
+            fit: BoxFit.cover,
           ),
         ),
         child: Stack(
           children: [
             Positioned(
-              top: MediaQuery.of(context).size.height * 0.27,
-              left: MediaQuery.of(context).size.width * 0.1,
-              right: MediaQuery.of(context).size.width * 0.1,
-              child: Image.asset(
-                'assets/images/app_logo.png',
-                height: 240,
-                width: 230,
-              ),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).size.height * 0.52,
+              top: MediaQuery.of(context).size.height * 0.45,
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               bottom: 0,
               child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 child: Padding(
                   padding: EdgeInsets.only(
                     bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -55,7 +49,10 @@ class LoginView extends GetView<LoginController> {
           child: Text(
             'Login',
             style: TextStyle(
-                fontSize: 19, color: Colors.white, fontFamily: 'WorkSansBold'),
+                fontSize: 19,
+                color: Colors.black,
+                fontFamily: 'WorkSansBold',
+                fontWeight: FontWeight.w600),
           ),
         ),
         const SizedBox(height: 12),
@@ -66,18 +63,18 @@ class LoginView extends GetView<LoginController> {
             ? Center(
                 child: Text(
                   'OTP sent to your mobile number: ${controller.displayedOtp.value}',
-                  style: TextStyle(
-                      color: Colors.yellow, fontFamily: 'WorkSansBold'),
+                  style: const TextStyle(
+                      color: Colors.black, fontFamily: 'WorkSansBold'),
                 ),
               )
-            : SizedBox.shrink()),
+            : const SizedBox.shrink()),
         const SizedBox(height: 15),
         Center(
           child: SizedBox(
             height: 35,
-            width: 120,
+            width: 110,
             child: Obx(() => controller.isLoading.value
-                ? CircularProgressIndicator(color: Colors.white)
+                ? const CircularProgressIndicator(color: Colors.blue)
                 : DecoratedBox(
                     decoration: BoxDecoration(
                       color: const Color(0xffE15564),
@@ -110,46 +107,50 @@ class LoginView extends GetView<LoginController> {
   }
 
   Widget _buildPhoneInput() {
-    return SizedBox(
-      height: 34,
-      child: TextField(
-        controller: controller.phoneController,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(50)),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(50)),
-            borderSide: BorderSide(
-              color: Color(0xffE15564),
+    return Center(
+      // Wrapped in Center widget
+      child: SizedBox(
+        height: 34,
+        width: 250, // Added specific width constraint
+        child: TextField(
+          controller: controller.phoneController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(50)),
             ),
-          ),
-          prefix: Container(
-            width: 40,
-            alignment: Alignment.center,
-            child: const Text(
-              '+91',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(50)),
+              borderSide: BorderSide(
+                color: Color(0xffE15564),
               ),
             ),
+            prefix: Container(
+              width: 40,
+              alignment: Alignment.center,
+              child: const Text(
+                '+91',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 10,
+            ),
+            errorStyle: const TextStyle(height: 0),
           ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 10,
-          ),
-          errorStyle: const TextStyle(height: 0),
+          cursorColor: const Color(0xffE15564),
+          style: const TextStyle(color: Colors.black, fontSize: 14),
+          keyboardType: TextInputType.phone,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(10),
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),
+          ],
         ),
-        cursorColor: const Color(0xffE15564),
-        style: const TextStyle(color: Colors.black, fontSize: 14),
-        keyboardType: TextInputType.phone,
-        inputFormatters: [
-          LengthLimitingTextInputFormatter(10),
-          FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),
-        ],
       ),
     );
   }

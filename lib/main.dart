@@ -37,11 +37,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Needy',
+      title: 'Genric Bharat',
       theme: CustomTheme.lightTheme,
       darkTheme: CustomTheme.darkTheme,
       themeMode: CustomTheme.themeMode,
-      home: StartupView(),
+      home: const StartupView(),
       getPages: AppPages.routes,
     );
   }

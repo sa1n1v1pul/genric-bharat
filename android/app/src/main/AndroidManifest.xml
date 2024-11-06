@@ -31,7 +31,7 @@
 
             <meta-data
               android:name="io.flutter.embedding.android.SplashScreenDrawable"
-              android:resource="@drawable/splash_bg"  
+              android:resource="@drawable/genric"  
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

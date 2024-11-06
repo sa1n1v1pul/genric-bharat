@@ -3,11 +3,13 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class CustomTheme {
-  static final Rx<Color> _loginGradientStart = Colors.black.obs;
+  static final Rx<Color> _loginGradientStart = Colors.blue.shade300.obs;
+  static final Rx<Color> _backgroundColor = const Color(0xffeff8ff).obs;
   static const Color loginGradientEnd = Color.fromARGB(255, 229, 224, 226);
-  static const Color backgroundColor = Color.fromARGB(11, 115, 92, 219);
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
+
+  static Color get backgroundColor => _backgroundColor.value;
 
   static final List<Color> themeColors = [
     const Color.fromARGB(255, 236, 72, 127),
@@ -17,7 +19,7 @@ class CustomTheme {
     Colors.teal,
     Colors.green,
     const Color.fromARGB(255, 117, 91, 248),
-    Colors.blue,
+    Colors.blue.shade300,
     Colors.purple,
     const Color.fromARGB(255, 105, 90, 3),
     Colors.brown,
@@ -82,22 +84,32 @@ class CustomTheme {
       _loginGradientStart.value = themeColors[colorIndex];
       Get.changeTheme(lightTheme);
       GetStorage().write('themeColorIndex', colorIndex);
-      Get.forceAppUpdate(); // Force rebuild of the entire app
+      Get.forceAppUpdate();
     });
   }
 
   static void loadSavedTheme() {
     final savedColorIndex = GetStorage().read('themeColorIndex');
-    final isDarkMode =
-        GetStorage().read('isDarkMode') ?? true; // Default to true
+    final isDarkMode = GetStorage().read('isDarkMode') ?? false;
     _themeMode.value = isDarkMode ? ThemeMode.dark : ThemeMode.light;
     Get.changeThemeMode(_themeMode.value);
+
+    // Set background color based on current theme mode
+    if (_themeMode.value == ThemeMode.dark) {
+      _backgroundColor.value = Colors.blueGrey;
+    } else {
+      _backgroundColor.value = const Color(0xffeff8ff);
+    }
+
     if (savedColorIndex != null) {
       changeTheme(savedColorIndex);
+    } else {
+      // Set default color to Color.fromARGB(255, 117, 91, 248)
+      changeTheme(6); // Index 6 in themeColors list contains the desired color
     }
   }
 
-  static final Rx<ThemeMode> _themeMode = ThemeMode.dark.obs;
+  static final Rx<ThemeMode> _themeMode = ThemeMode.light.obs;
   static ThemeMode get themeMode => _themeMode.value;
 
   static ThemeData get darkTheme {
@@ -109,7 +121,7 @@ class CustomTheme {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       colorScheme: ColorScheme.dark(
-        surface: Colors.grey[850]!,
+        surface: backgroundColor,
         primary: loginGradientStart,
         secondary: loginGradientEnd,
       ),
@@ -141,6 +153,14 @@ class CustomTheme {
   static void toggleTheme() {
     _themeMode.value =
         _themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+
+    // Update background color based on theme
+    if (_themeMode.value == ThemeMode.dark) {
+      _backgroundColor.value = Colors.blueGrey;
+    } else {
+      _backgroundColor.value = const Color(0xffeff8ff);
+    }
+
     GetStorage().write('isDarkMode', _themeMode.value == ThemeMode.dark);
     Get.changeThemeMode(_themeMode.value);
   }

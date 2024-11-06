@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const String baseUrl = 'https://demo.babadeepsinghinfotech.com/api/';
+  static const String baseUrl = 'https://dat.babadeepsinghinfotech.com/api/';
   static const String requestOtp = '${baseUrl}request-otp';
   static const String verifyOtp = '${baseUrl}verify-otp';
   static const String getOtp = '${baseUrl}get-otp';

@@ -15,9 +15,9 @@ class StartupView extends StatefulWidget {
 class _StartupViewState extends State<StartupView> {
   final AuthController _authController = Get.put(AuthController());
   final List<String> backgroundImages = [
-    "assets/images/splash_bg.jpg",
-    'assets/images/beauty_bg.jpg',
-    'assets/images/Painting_bg.jpg',
+    "assets/images/genric4.jpg",
+    'assets/images/genric3.jpg',
+    'assets/images/genric2.jpg',
   ];
 
   @override
@@ -33,7 +33,6 @@ class _StartupViewState extends State<StartupView> {
     await Future.wait([
       ...backgroundImages
           .map((image) => precacheImage(AssetImage(image), context)),
-      precacheImage(const AssetImage("assets/images/app_logo.png"), context),
     ]);
   }
 
@@ -52,22 +51,8 @@ class _StartupViewState extends State<StartupView> {
 
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: Stack(
-        children: [
-          AnimatedBackgroundImage(images: backgroundImages),
-          Center(
-            child: Image.asset(
-              "assets/images/app_logo.png",
-              width: media.width * 0.55,
-              height: media.width * 0.55,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ],
-      ),
+      body: AnimatedBackgroundImage(images: backgroundImages),
     );
   }
 }

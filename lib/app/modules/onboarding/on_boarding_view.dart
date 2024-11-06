@@ -17,38 +17,38 @@ class _OnBoardingViewState extends State<OnBoardingView> {
 
   List pageArr = [
     {
-      "title": "Maintenance & Repair",
-      "subtitle": "On-demand home maintenance services\nat your doorstep",
+      "title": "Medicine & Health Essentials",
+      "subtitle": "Your essential healthcare needs\ndelivered to your doorstep",
       "images": [
-        "assets/images/Maintenance1.jpg",
-        "assets/images/Maintenance2.jpg",
-        "assets/images/Maintenance3.jpg",
+        "assets/images/medicine8.jpg",
+        "assets/images/medicine11.jpg",
+        "assets/images/medicine10.jpg",
       ],
       "layout": "2-1",
-      "background": "assets/images/splash_bg.jpg",
+      "background": "assets/images/bg4.jpg",
     },
     {
-      "title": "Beauty & Grooming",
-      "subtitle": "Safe and hygienic salon at home service\nfor men and women",
+      "title": "Wellness & Personal Care",
+      "subtitle":
+          "Safe and hygienic personal care\nfor your health and wellness",
       "images": [
-        "assets/images/Grooming1.jpg",
-        "assets/images/Grooming2.jpg",
-        "assets/images/Grooming4.jpg",
+        "assets/images/medicine3.jpg",
+        "assets/images/medicine4.jpg",
+        "assets/images/medicine5.jpg",
       ],
       "layout": "2-1-right",
-      "background": "assets/images/beauty_bg.jpg",
+      "background": "assets/images/bg3.jpg",
     },
     {
-      "title": "Painting & Renovation",
-      "subtitle":
-          "Customizable budget friendly packages\nwith flexible payment option",
+      "title": "Ayurvedic & OTC Medicines",
+      "subtitle": "Affordable medicines with easy\nprescription fulfillment",
       "images": [
-        "assets/images/Painting1.jpg",
-        "assets/images/Painting2.jpg",
-        "assets/images/Painting3.jpg",
+        "assets/images/medicine6.jpg",
+        "assets/images/medicine7.jpg",
+        "assets/images/medicine9.jpg",
       ],
       "layout": "1-2",
-      "background": "assets/images/Painting_bg.jpg",
+      "background": "assets/images/bg5.jpg",
     },
   ];
 
@@ -240,7 +240,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
           Text(
             pageArr[selectPage]["title"].toString(),
             style: TextStyle(
-              color: TColor.white,
+              color: Colors.black,
               fontSize: 33,
               fontFamily: 'WorkSansBold',
               fontWeight: FontWeight.w500,
@@ -250,8 +250,8 @@ class _OnBoardingViewState extends State<OnBoardingView> {
             pageArr[selectPage]["subtitle"].toString(),
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: TColor.white,
-              fontSize: 15,
+              color: Colors.black54,
+              fontSize: 18,
               fontFamily: 'WorkSansBold',
             ),
           ),
@@ -359,7 +359,6 @@ class _OnBoardingViewState extends State<OnBoardingView> {
               ),
             ),
           ),
-          // Content
           SafeArea(
             child: Column(
               children: [
@@ -384,8 +383,10 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                   ),
                 ),
                 Expanded(
-                  flex: 2,
+                  flex: 3, // Changed from 2 to 3 to give more space
                   child: Column(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceEvenly, // Changed to spaceEvenly
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
@@ -397,14 +398,12 @@ class _OnBoardingViewState extends State<OnBoardingView> {
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 15),
-                        child: buildNavigationSection(context),
-                      ),
+                      buildNavigationSection(context),
+                      const SizedBox(
+                          height: 20), // Added fixed spacing at bottom
                     ],
                   ),
                 ),
-                const Spacer(flex: 2),
               ],
             ),
           ),

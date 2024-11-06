@@ -1,7 +1,7 @@
 // ignore_for_file: use_super_parameters, unnecessary_const
 
+import 'dart:math';
 import 'dart:ui';
-
 import 'package:carousel_indicator/carousel_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,6 @@ import 'package:genric_bharat/main.dart';
 import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../location/controller/location_controller.dart';
 import '../../widgets/appliances.dart';
 import '../../widgets/bestoffers.dart';
@@ -260,13 +259,16 @@ class _HomePageState extends State<HomePage> {
                       child: _buildCarouselSection(),
                     ),
                     SliverToBoxAdapter(
-                      child: _buildServicesSection(),
+                      child: _buildCategoriesSection(),
                     ),
                     SliverToBoxAdapter(
-                      child: _buildCleaningSection(),
+                      child: _buildVitaminsSection(),
                     ),
                     SliverToBoxAdapter(
                       child: _buildBestOffersSection(),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildPersonalSection(),
                     ),
                     SliverToBoxAdapter(
                       child: _buildCarouselAdds(),
@@ -490,6 +492,8 @@ class _HomePageState extends State<HomePage> {
                 height: 170.0,
                 autoPlay: true,
                 enlargeCenterPage: true,
+                viewportFraction: 0.9, // Added for better image display
+                aspectRatio: 16 / 9, // Added to maintain aspect ratio
                 onPageChanged: (index, reason) {
                   setState(() {});
                 },
@@ -498,83 +502,120 @@ class _HomePageState extends State<HomePage> {
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     double maxWidth = constraints.maxWidth;
-                    double gradientWidth =
-                        maxWidth * 0.4; // 40% of screen width
-                    double fontSize =
-                        maxWidth * 0.04; // 4% of screen width for title
-                    double descFontSize =
-                        maxWidth * 0.04; // 3% of screen width for description
+                    double maxHeight = constraints.maxHeight;
+                    double gradientWidth = maxWidth * 0.4;
+                    double fontSize = maxWidth * 0.04;
+                    double descFontSize = maxWidth * 0.04;
 
-                    return ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      child: Stack(
-                        children: [
-                          Image.network(
-                            slider['photo'] as String,
-                            fit: BoxFit.fitWidth,
-                            width: maxWidth,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'assets/images/Painting2.jpg',
-                                fit: BoxFit.fitWidth,
-                                width: maxWidth,
-                              );
-                            },
+                    return Container(
+                      width: maxWidth,
+                      height: maxHeight,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 5,
                           ),
-                          Positioned(
-                            top: 0,
-                            bottom: 0,
-                            left: 0,
-                            child: Container(
-                              width: gradientWidth,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.black.withOpacity(0.95),
-                                    Colors.black.withOpacity(0.01),
-                                  ],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
+                        child: Stack(
+                          fit: StackFit
+                              .expand, // Added to ensure stack fills container
+                          children: [
+                            Image.network(
+                              slider['photo'] as String,
+                              fit: BoxFit.cover, // Changed to cover
+                              width: maxWidth,
+                              height: maxHeight,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'assets/images/Painting2.jpg',
+                                  fit: BoxFit.cover,
+                                  width: maxWidth,
+                                  height: maxHeight,
+                                );
+                              },
+                            ),
+                            Positioned(
+                              top: 0,
+                              bottom: 0,
+                              left: 0,
+                              child: Container(
+                                width: gradientWidth,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black.withOpacity(0.95),
+                                      Colors.black.withOpacity(0.01),
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    bottomLeft: Radius.circular(10),
+                                  ),
                                 ),
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(10),
-                                  bottomLeft: Radius.circular(10),
-                                ),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(maxWidth * 0.04),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      slider['title'] as String,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: fontSize,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Divider(
-                                        color: Colors.white,
-                                        thickness: maxWidth * 0.002),
-                                    Expanded(
-                                      child: Text(
-                                        slider['description'] as String,
+                                child: Padding(
+                                  padding: EdgeInsets.all(maxWidth * 0.04),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .center, // Added for better text alignment
+                                    children: [
+                                      Text(
+                                        slider['title'] as String,
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: descFontSize,
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        overflow: TextOverflow.fade,
+                                        maxLines: 2, // Reduced for better fit
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                  ],
+                                      // Divider(
+                                      //   color: Colors.white,
+                                      //   thickness: maxWidth * 0.002,
+                                      // ),
+                                      Expanded(
+                                        child: Text(
+                                          slider['description'] as String,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: descFontSize,
+                                          ),
+                                          overflow: TextOverflow.fade,
+                                          maxLines:
+                                              3, // Added to control text length
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -585,6 +626,576 @@ class _HomePageState extends State<HomePage> {
         ],
       );
     });
+  }
+
+  Widget _buildCategoriesSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final HomeController homeController = Get.find<HomeController>();
+
+    return Obx(() {
+      if (homeController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (homeController.categories.isEmpty) {
+        return const Center(child: Text('No services available'));
+      }
+
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.black45 : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color.fromARGB(255, 223, 223, 223),
+          ),
+        ),
+        child: Column(
+          children: [
+            ListTile(
+              title: Text(
+                'Categories',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(
+                  left: 16, right: 16, top: 5, bottom: 16),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.blueGrey : Color(0xffe8f3ed),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 278,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount:
+                            (homeController.categories.length / 2).ceil(),
+                        itemBuilder: (context, index) {
+                          return _buildCategoriesColumn(
+                              homeController.categories, index);
+                        },
+                      ),
+                    ),
+
+                    // Row for 'View all' button and iOS-style icon button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Get.to(() => AllServices());
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                'View all Categories',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: isDarkMode
+                                      ? Colors.white
+                                      : CustomTheme.loginGradientStart,
+                                ),
+                              ),
+                              SizedBox(width: 5),
+                              Icon(
+                                CupertinoIcons.right_chevron,
+                                size: 16,
+                                color: isDarkMode
+                                    ? Colors.white
+                                    : CustomTheme.loginGradientStart,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildCategoriesColumn(List<dynamic> categories, int columnIndex) {
+    return Container(
+      width: 125,
+      child: Column(
+        children: [
+          _buildCategoriesItem(categories, columnIndex * 2),
+          const SizedBox(height: 10),
+          if (columnIndex * 2 + 1 < categories.length)
+            _buildCategoriesItem(categories, columnIndex * 2 + 1),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoriesItem(List<dynamic> categories, int index) {
+    if (index >= categories.length) return const SizedBox(height: 120);
+
+    var category = categories[index];
+    return InkWell(
+      onTap: () {
+        Get.to(() => ServiceExplore(
+              categoryId: category['id'].toString(),
+              categoryTitle: category['title'] ?? 'Unknown Service',
+            ));
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 10),
+        height: 134,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black45
+                      : Color.fromARGB(255, 190, 187, 187),
+                ),
+                borderRadius: const BorderRadius.all(Radius.elliptical(15, 15)),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  category['image'] as String? ?? 'assets/images/temp1.png',
+                  width: 100,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/images/temp1.png',
+                      width: 120,
+                      height: 60,
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 48,
+              width: 110,
+              child: Text(
+                category['title'] as String? ?? 'Unknown Service',
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVitaminsSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final HomeController homeController = Get.find<HomeController>();
+
+    return Obx(() {
+      if (homeController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (homeController.categories.isEmpty) {
+        return const Center(child: Text('No services available'));
+      }
+
+      return Container(
+          margin: const EdgeInsets.symmetric(vertical: 20),
+          decoration: BoxDecoration(
+            color: isDarkMode ? Colors.black45 : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color.fromARGB(255, 223, 223, 223),
+            ),
+          ),
+          child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Vitamins & Supplements',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.black45 : Color(0xfffce8e7),
+                        // Color(0xffeff8ff),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 0.68,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
+                            itemCount: min(homeController.categories.length, 6),
+                            itemBuilder: (context, index) {
+                              return _buildVitaminsItem(
+                                  homeController.categories, index);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          InkWell(
+                            onTap: () {
+                              Get.to(() => AllServices());
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Get.to(() => AllServices());
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'View all Vitamins & Supplements products',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: isDarkMode
+                                              ? Colors.white
+                                              : CustomTheme.loginGradientStart,
+                                        ),
+                                      ),
+                                      SizedBox(width: 5),
+                                      Icon(
+                                        CupertinoIcons.right_chevron,
+                                        size: 16,
+                                        color: isDarkMode
+                                            ? Colors.white
+                                            : CustomTheme.loginGradientStart,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ])));
+    });
+  }
+
+  Widget _buildVitaminsItem(List<dynamic> categories, int index) {
+    var category = categories[index];
+    return InkWell(
+      onTap: () {
+        Get.to(() => ServiceExplore(
+              categoryId: category['id'].toString(),
+              categoryTitle: category['title'] ?? 'Unknown Service',
+            ));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.blueGrey
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title and Discount
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    category['title'] as String? ?? 'Unknown Service',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Up to 50% off',
+                    style: TextStyle(
+                      fontSize: 12,
+                      // color: Colors.green[700],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.amber
+                          : Colors.green[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Image
+            Expanded(
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                child: Image.network(
+                  category['image'] as String? ?? 'assets/images/temp1.png',
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/images/temp1.png',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBestOffersSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    return Column(
+      children: [
+        ListTile(
+          title: const Text(
+            'Best Offers',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text(
+              'Hygienic & single-use products | low - contact services',
+              style: TextStyle(
+                fontSize: 12,
+              )),
+          trailing: TextButton(
+            child: Text(
+              'View all',
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+              ),
+            ),
+            onPressed: () {
+              Get.to(() => const BestOffers());
+            },
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildOfferItem('assets/images/Grooming1.jpg', 'Salon At Home'),
+              _buildOfferItem(
+                  'assets/images/Grooming2.jpg', 'Massage Therapy For Men'),
+              _buildOfferItem('assets/images/Maintenance3.jpg',
+                  'Bathroom & Kitchen Cleaning'),
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOfferItem(String imagePath, String title) {
+    return Container(
+      margin: const EdgeInsets.only(left: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Stack(
+          children: [
+            Image.asset(
+              imagePath,
+              height: 190,
+              width: 150,
+              fit: BoxFit.cover,
+            ),
+            Positioned(
+              top: 10,
+              bottom: 0,
+              left: 0,
+              child: Container(
+                width: 120, // Adjust the width as needed
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.7),
+                      Colors.black.withOpacity(0.01),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    bottomLeft: Radius.circular(15),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 15,
+              left: 8,
+              right: 8, // Added to limit the text within the container
+              child: Container(
+                height: 40, // Fixed height to align the text vertically
+                child: Align(
+                  alignment: Alignment.topLeft, // Align text to the top left
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonalSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    final List<Map<String, String>> items = [
+      {'image': 'assets/images/oil.jpg', 'title': 'Oil'},
+      {'image': 'assets/images/shampoo.jpg', 'title': 'Shampoo'},
+      {'image': 'assets/images/maxfresh.jpg', 'title': 'Cleaner'},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.black45 : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color.fromARGB(255, 223, 223, 223),
+        ),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            title: const Text(
+              'Personal Care',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            subtitle: const Text(
+              'Removes hard stains & more',
+              style: TextStyle(
+                fontSize: 12,
+              ),
+            ),
+            trailing: TextButton(
+              child: Text(
+                'View all',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDarkMode
+                      ? Colors.white
+                      : CustomTheme.loginGradientStart,
+                ),
+              ),
+              onPressed: () {
+                Get.to(() => const AllCleaning());
+              },
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            margin:
+                const EdgeInsets.only(left: 16, right: 16, top: 5, bottom: 16),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.blueGrey : const Color(0xfffff7ec),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            height: 180,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: index != items.length - 1 ? 10 : 0,
+                  ),
+                  child: _buildPersonalItem(
+                    items[index]['image']!,
+                    items[index]['title']!,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalItem(String imagePath, String title) {
+    return SizedBox(
+      width: 160,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              imagePath,
+              height: 120,
+              width: 160,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCarouselAdds() {
@@ -684,325 +1295,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildServicesSection() {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    final HomeController homeController = Get.find<HomeController>();
-
-    return Obx(() {
-      if (homeController.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (homeController.categories.isEmpty) {
-        return const Center(child: Text('No services available'));
-      }
-
-      return Column(
-        children: [
-          ListTile(
-            title: const Text(
-              'Services',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            trailing: TextButton(
-              child: Text(
-                'View all',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDarkMode
-                      ? Colors.white
-                      : CustomTheme.loginGradientStart,
-                ),
-              ),
-              onPressed: () {
-                Get.to(() => AllServices());
-              },
-            ),
-          ),
-          SizedBox(
-            height: 278, // Increased height to accommodate two lines of text
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: (homeController.categories.length / 2).ceil(),
-              itemBuilder: (context, index) {
-                return _buildServiceColumn(homeController.categories, index);
-              },
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Divider(
-            color: Color.fromARGB(255, 241, 241, 241),
-            thickness: 5,
-          ),
-          const SizedBox(height: 5),
-        ],
-      );
-    });
-  }
-
-  Widget _buildServiceColumn(List<dynamic> categories, int columnIndex) {
-    return Container(
-      width: 130, // Fixed width for each column
-      child: Column(
-        children: [
-          _buildServiceItem(categories, columnIndex * 2),
-          const SizedBox(height: 10),
-          if (columnIndex * 2 + 1 < categories.length)
-            _buildServiceItem(categories, columnIndex * 2 + 1),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildServiceItem(List<dynamic> categories, int index) {
-    if (index >= categories.length)
-      return const SizedBox(height: 120); // Placeholder to maintain alignment
-
-    var category = categories[index];
-    return InkWell(
-      onTap: () {
-        Get.to(() => ServiceExplore(
-              categoryId: category['id'].toString(),
-              categoryTitle: category['title'] ?? 'Unknown Service',
-            ));
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 10),
-        height: 134,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                border:
-                    Border.all(color: const Color.fromARGB(255, 223, 223, 223)),
-                borderRadius: const BorderRadius.all(Radius.elliptical(15, 15)),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  category['image'] as String? ?? 'assets/images/temp1.png',
-                  width: 120,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      'assets/images/temp1.png',
-                      width: 120,
-                      height: 60,
-                    );
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 48,
-              width: 110,
-              child: Text(
-                category['title'] as String? ?? 'Unknown Service',
-                textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCleaningSection() {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    return Column(
-      children: [
-        ListTile(
-          title: const Text(
-            'Cleaning & Pest Control',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text('Removes hard stains & more',
-              style: TextStyle(
-                fontSize: 12,
-              )),
-          trailing: TextButton(
-            child: Text(
-              'View all',
-              style: TextStyle(
-                fontSize: 12,
-                color:
-                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
-              ),
-            ),
-            onPressed: () {
-              Get.to(() => const AllCleaning());
-            },
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildCleaningItem(
-                  'assets/images/temp3.png', 'Bathroom and Kitchen'),
-              _buildCleaningItem(
-                  'assets/images/temp3.png', 'Full Home Cleaning'),
-              _buildCleaningItem(
-                  'assets/images/temp3.png', 'Sofa & Carpet Cleaning'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        const Divider(
-          color: Color.fromARGB(255, 241, 241, 241),
-          thickness: 5,
-        ),
-        const SizedBox(height: 5),
-      ],
-    );
-  }
-
-  Widget _buildCleaningItem(String imagePath, String title) {
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(left: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(imagePath, height: 120, fit: BoxFit.cover),
-          ),
-          const SizedBox(height: 8),
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBestOffersSection() {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    return Column(
-      children: [
-        ListTile(
-          title: const Text(
-            'Best Offers',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          subtitle: const Text(
-              'Hygienic & single-use products | low - contact services',
-              style: TextStyle(
-                fontSize: 12,
-              )),
-          trailing: TextButton(
-            child: Text(
-              'View all',
-              style: TextStyle(
-                fontSize: 12,
-                color:
-                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
-              ),
-            ),
-            onPressed: () {
-              Get.to(() => const BestOffers());
-            },
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildOfferItem('assets/images/Grooming1.jpg', 'Salon At Home'),
-              _buildOfferItem(
-                  'assets/images/Grooming2.jpg', 'Massage Therapy For Men'),
-              _buildOfferItem('assets/images/Maintenance3.jpg',
-                  'Bathroom & Kitchen Cleaning'),
-            ],
-          ),
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        const Divider(
-          color: Color.fromARGB(255, 241, 241, 241),
-          thickness: 5,
-        ),
-        const SizedBox(
-          height: 5,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOfferItem(String imagePath, String title) {
-    return Container(
-      margin: const EdgeInsets.only(left: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: Stack(
-          children: [
-            Image.asset(
-              imagePath,
-              height: 190,
-              width: 150,
-              fit: BoxFit.cover,
-            ),
-            Positioned(
-              top: 10,
-              bottom: 0,
-              left: 0,
-              child: Container(
-                width: 120, // Adjust the width as needed
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withOpacity(0.7),
-                      Colors.black.withOpacity(0.01),
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 15,
-              left: 8,
-              right: 8, // Added to limit the text within the container
-              child: Container(
-                height: 40, // Fixed height to align the text vertically
-                child: Align(
-                  alignment: Alignment.topLeft, // Align text to the top left
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAppliancesSection() {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -1010,7 +1302,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         ListTile(
           title: const Text(
-            'Appliances',
+            'Popular Items',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           subtitle:
@@ -1035,27 +1327,27 @@ class _HomePageState extends State<HomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildApplianceItem('assets/images/temp4.png', 'Geyser'),
-            _buildApplianceItem('assets/images/temp5.png', 'Water Purifier'),
+            _buildApplianceItem('assets/images/oil.jpg', 'Oil'),
+            _buildApplianceItem('assets/images/dandruf.jpg', 'Shampoo'),
           ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildApplianceItem('assets/images/temp6.png', 'Washing Machine'),
-            _buildApplianceItem('assets/images/temp7.png', 'Microwave'),
+            _buildApplianceItem('assets/images/shampoo.jpg', 'Lotion'),
+            _buildApplianceItem('assets/images/maxfresh.jpg', 'Cleaner'),
           ],
         ),
         const SizedBox(
           height: 10,
         ),
-        const Divider(
-          color: Color.fromARGB(255, 241, 241, 241),
-          thickness: 5,
-        ),
-        const SizedBox(
-          height: 5,
-        ),
+        // const Divider(
+        //   color: Color.fromARGB(255, 241, 241, 241),
+        //   thickness: 5,
+        // ),
+        // const SizedBox(
+        //   height: 5,
+        // ),
       ],
     );
   }
@@ -1090,7 +1382,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         ListTile(
           title: const Text(
-            'Cleaning & Pest Control',
+            'Beauty & Health',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           subtitle: const Text('Removes hard stains & more',
