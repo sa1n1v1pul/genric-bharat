@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api_endpoints/api_endpoints.dart';
 import '../home/controller/homecontroller.dart';
+import 'medicinedetailsheet.dart';
 
 class ServiceExplore extends StatefulWidget {
   final String categoryId;
@@ -168,8 +169,7 @@ class _ServiceExploreState extends State<ServiceExplore> {
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      backgroundColor:
-      isDarkMode ? Colors.grey[550] : const Color.fromARGB(255, 244, 243, 248),
+      backgroundColor: CustomTheme.backgroundColor,
       appBar: AppBar(
         iconTheme: IconThemeData(
           color: isDarkMode
@@ -223,7 +223,39 @@ class _ServiceExploreState extends State<ServiceExplore> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ... (keep existing search bar and filter button)
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search for services',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 2.0, right: 4.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: CustomTheme.loginGradientStart,
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    ),
+                    height: 50,
+                    width: 50,
+                    child: const Icon(Icons.filter, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: Text(
@@ -283,23 +315,20 @@ class _ServiceExploreState extends State<ServiceExplore> {
               return Column(
                 children: filteredServices.map((service) {
                   return InkWell(
-                    onTap: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      final userId = prefs.getInt('user_id');
-                      if (userId != null) {
-                        try {
-                          final response =
-                          await Get.find<ApiProvider>().getUserProfile(userId);
-                          if (response.statusCode == 200) {
-                            final profileUserId = response.data['id'].toString();
-                            Get.to(() => ProviderListScreen(
-                                serviceId: service['id'].toString(),
-                                userId: profileUserId));
-                          }
-                        } catch (e) {
-                          print('Error navigating to provider list: $e');
-                        }
-                      }
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => DraggableScrollableSheet(
+                          initialChildSize: 0.8,
+                          minChildSize: 0.6,
+                          maxChildSize: 0.8,
+                          builder: (context, scrollController) => MedicineDetailsSheet(
+                            service: service,
+                          ),
+                        ),
+                      );
                     },
                     child: _buildServiceCard(service),
                   );
@@ -322,8 +351,8 @@ class _ServiceExploreState extends State<ServiceExplore> {
     return GestureDetector(
       onTap: () => _onSubcategorySelected(subcategory['id'].toString()),
       child: Container(
-        width: 90, // Fixed width for uniform spacing
-        margin: const EdgeInsets.symmetric(horizontal: 4), // Reduced horizontal margin
+        width: 90,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -358,12 +387,12 @@ class _ServiceExploreState extends State<ServiceExplore> {
             ),
             const SizedBox(height: 4),
             SizedBox(
-              height: 50, // Fixed height for two lines of text
+              height: 50,
               child: Text(
                 subcategory['name'] ?? '',
                 style: const TextStyle(
                   fontSize: 12,
-                  height: 1.2, // Reduced line height for better spacing
+                  height: 1.2,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 3,
