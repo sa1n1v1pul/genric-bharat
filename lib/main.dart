@@ -12,15 +12,15 @@ import 'app/modules/onboarding/startup_view.dart';
 import 'app/modules/routes/app_pages.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   LocationBinding().dependencies();
-  print("LocationBinding initialized");
-  WidgetsFlutterBinding.ensureInitialized();
-  print("Main method started");
+
   SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
   CustomTheme.loadSavedTheme();
   Get.put(ThemeController());
   Get.lazyPut(() => ApiProvider());

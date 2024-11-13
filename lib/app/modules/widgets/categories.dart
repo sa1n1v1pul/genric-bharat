@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../api_endpoints/api_endpoints.dart';
 import '../home/controller/homecontroller.dart';
 import 'service_explore.dart';
 
-class AllServices extends StatelessWidget {
+class AllCategories extends StatelessWidget {
   final HomeController homeController = Get.find<HomeController>();
 
-  AllServices({Key? key}) : super(key: key);
+  AllCategories({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +60,7 @@ class AllServices extends StatelessWidget {
         ),
         toolbarHeight: 80,
         title: const Text(
-          'Services',
+          'Categories',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
@@ -71,7 +72,7 @@ class AllServices extends StatelessWidget {
         }
 
         if (homeController.categories.isEmpty) {
-          return const Center(child: Text('No services available'));
+          return const Center(child: Text('No Categories available'));
         }
 
         return GridView.builder(
@@ -89,13 +90,15 @@ class AllServices extends StatelessWidget {
               onTap: () {
                 homeController.fetchSubcategories(category['id'].toString());
                 Get.to(() => ServiceExplore(
-                      categoryId: category['id'].toString(),
-                      categoryTitle: category['title'] ?? 'Unknown Service',
-                    ));
+                  categoryId: category['id'].toString(),
+                  categoryTitle: category['name'] ?? 'Unknown Category',
+                ));
               },
-              child: _buildServiceItem(
-                category['image'] ?? 'assets/images/temp1.png',
-                category['title'] ?? 'Unknown Service',
+              child: _buildCategoriesItem(
+                category['photo'] != null
+                    ? '${ApiEndpoints.imageBaseUrl}${category['photo']}'
+                    : '',
+                category['name'] ?? 'Unknown Category',
               ),
             );
           },
@@ -104,7 +107,7 @@ class AllServices extends StatelessWidget {
     );
   }
 
-  Widget _buildServiceItem(String imagePath, String label) {
+  Widget _buildCategoriesItem(String imagePath, String label) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -118,15 +121,24 @@ class AllServices extends StatelessWidget {
               border: Border.all(color: Colors.grey),
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: NetworkImage(imagePath),
-                fit: BoxFit.cover,
-                onError: (error, stackTrace) =>
-                    const AssetImage('assets/images/temp1.png'),
-              ),
             ),
             width: 120,
             height: 100,
+            child: imagePath.isNotEmpty
+                ? Image.network(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/images/temp1.png',
+                  fit: BoxFit.cover,
+                );
+              },
+            )
+                : Image.asset(
+              'assets/images/temp1.png',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const SizedBox(height: 8),

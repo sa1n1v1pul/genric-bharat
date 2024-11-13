@@ -38,7 +38,7 @@ class CustomTheme {
   static LinearGradient get appBarGradient => LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [loginGradientStart, loginGradientStart, Colors.white],
+        colors: [loginGradientStart, Colors.white],
       );
 
   static ThemeData get lightTheme {
@@ -105,7 +105,7 @@ class CustomTheme {
       changeTheme(savedColorIndex);
     } else {
       // Set default color to Color.fromARGB(255, 117, 91, 248)
-      changeTheme(6); // Index 6 in themeColors list contains the desired color
+      changeTheme(7);
     }
   }
 

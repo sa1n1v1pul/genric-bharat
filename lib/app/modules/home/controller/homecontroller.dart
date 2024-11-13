@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
-
 import '../../api_endpoints/api_endpoints.dart';
 
 class HomeController extends GetxController {
@@ -9,8 +8,7 @@ class HomeController extends GetxController {
   final RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> subcategories =
       <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> sliders =
-      <Map<String, dynamic>>[].obs; // Add this line
+  final RxList<Map<String, dynamic>> sliders = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = true.obs;
   final RxBool isSubcategoriesLoading = true.obs;
   final RxBool isSlidersLoading = true.obs;
@@ -26,15 +24,16 @@ class HomeController extends GetxController {
     fetchSliders();
   }
 
-  //fetch categories
   Future<void> fetchCategories() async {
     try {
       isLoading.value = true;
       final response = await _dio.get(ApiEndpoints.categories);
-      if (response.statusCode == 200) {
-        if (response.data is List) {
-          categories.value = List<Map<String, dynamic>>.from(response.data);
-          print("Fetching categories successfully: ${response.data}");
+
+      if (response.statusCode == 200 && response.data['status'] == true) {
+        if (response.data['data'] is List) {
+          categories.value =
+              List<Map<String, dynamic>>.from(response.data['data']);
+          print("Fetching categories successfully: ${response.data['data']}");
         } else {
           print('Unexpected response structure: ${response.data}');
         }
@@ -46,7 +45,6 @@ class HomeController extends GetxController {
     }
   }
 
-  //fetch subcategories
   Future<void> fetchSubcategories(String categoryId) async {
     try {
       isSubcategoriesLoading.value = true;
@@ -66,19 +64,15 @@ class HomeController extends GetxController {
       );
 
       print('Response status code: ${response.statusCode}');
-      print('Response data type: ${response.data.runtimeType}');
-      // print('Response data: ${response.data}');
-
       if (response.statusCode == 200) {
-        if (response.data is Map<String, dynamic> &&
-            response.data['data'] is List) {
+        if (response.data is Map && response.data['data'] is List) {
           subcategories.value =
               List<Map<String, dynamic>>.from(response.data['data']);
           print(
-              "Fetching subcategories successfully: ${response.data['data']}");
+              'Successfully fetched ${subcategories.value.length} subcategories');
         } else {
           print(
-              'Unexpected response structure. Data is not in the expected format.');
+              'Unexpected response structure. Expected a List but got ${response.data.runtimeType}');
           subcategories.value = [];
         }
       } else {
@@ -97,17 +91,18 @@ class HomeController extends GetxController {
     }
   }
 
-  //fetch sliders data
   Future<void> fetchSliders() async {
     try {
       isSlidersLoading.value = true;
       final response = await _dio.get(ApiEndpoints.sliders);
       if (response.statusCode == 200) {
-        if (response.data is List) {
-          sliders.value = List<Map<String, dynamic>>.from(response.data);
-          print("Fetching sliders successfully: ${response.data}");
+        final responseData = response.data;
+        if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+          final List<dynamic> slidersList = responseData['data'];
+          sliders.value = List<Map<String, dynamic>>.from(slidersList);
+          print("Fetched sliders successfully: ${sliders.length}");
         } else {
-          print('Unexpected response structure: ${response.data}');
+          print('Unexpected response structure: $responseData');
         }
       }
     } catch (e) {
@@ -117,13 +112,12 @@ class HomeController extends GetxController {
     }
   }
 
-  //fetch services
-  Future<void> fetchServices(String categoryId, {String? subcategoryId}) async {
+  Future<void> fetchItems(String categoryId, {String? subcategoryId}) async {
     try {
       isServicesLoading.value = true;
       String url = '${ApiEndpoints.services}?category_id=$categoryId';
       if (subcategoryId != null && subcategoryId != 'All') {
-        url += '&sub_category_id=$subcategoryId';
+        url += '&subcategory_id=$subcategoryId';
       }
 
       final response = await _dio.get(url);
@@ -142,11 +136,11 @@ class HomeController extends GetxController {
     }
   }
 
-
   Future<void> fetchProviders(String serviceId, String userId) async {
     try {
       isProvidersLoading.value = true;
-      final url = '${ApiEndpoints.providersList}?service_id=$serviceId&id=$userId';
+      final url =
+          '${ApiEndpoints.providersList}?service_id=$serviceId&id=$userId';
       final response = await _dio.get(url);
       if (response.statusCode == 200 && response.data is List) {
         providers.value = List<Map<String, dynamic>>.from(response.data);
@@ -164,3 +158,40 @@ class HomeController extends GetxController {
   }
 }
 
+class SliderModel {
+  final int id;
+  final String photo;
+  final String? title;
+  final String? link;
+  final String? logo;
+  final String? details;
+  final String? createdAt;
+  final String? updatedAt;
+  final String? homePage;
+
+  SliderModel({
+    required this.id,
+    required this.photo,
+    this.title,
+    this.link,
+    this.logo,
+    this.details,
+    this.createdAt,
+    this.updatedAt,
+    this.homePage,
+  });
+
+  factory SliderModel.fromJson(Map<String, dynamic> json) {
+    return SliderModel(
+      id: json['id'] ?? 0,
+      photo: json['photo'] ?? '',
+      title: json['title'],
+      link: json['link'],
+      logo: json['logo'],
+      details: json['details'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+      homePage: json['home_page'],
+    );
+  }
+}
