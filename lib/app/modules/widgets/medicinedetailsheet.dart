@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:genric_bharat/app/core/theme/theme.dart';
 import 'package:get/get.dart';
 import '../api_endpoints/api_endpoints.dart';
+import 'package:genric_bharat/app/core/theme/theme.dart';
 
-class MedicineDetailsSheet extends StatelessWidget {
+class MedicineDetailsSheet extends StatefulWidget {
   final Map<String, dynamic> service;
 
   const MedicineDetailsSheet({
@@ -11,6 +11,11 @@ class MedicineDetailsSheet extends StatelessWidget {
     required this.service,
   }) : super(key: key);
 
+  @override
+  State<MedicineDetailsSheet> createState() => _MedicineDetailsSheetState();
+}
+
+class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
   String _getFullImageUrl(String photoPath) {
     if (photoPath.isEmpty) return '';
     return '${ApiEndpoints.imageBaseUrl}$photoPath';
@@ -32,18 +37,113 @@ class MedicineDetailsSheet extends StatelessWidget {
     return 0;
   }
 
+  // Track the currently expanded item
+  int? expandedIndex;
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String content,
+    Color? iconColor,
+    Color? backgroundColor,
+    Border? border,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: border ?? Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: iconColor ?? Colors.blue,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (content.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      content,
+                      style: TextStyle(
+                        color: Get.isDarkMode ? Colors.white70 : Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccordionSection(String title, String? content, IconData icon, int index) {
+    if (content == null || content.isEmpty) return const SizedBox.shrink();
+
+    return ExpansionTile(
+      key: Key(index.toString()),
+      initiallyExpanded: expandedIndex == index,
+      onExpansionChanged: (isExpanded) {
+        setState(() {
+          expandedIndex = isExpanded ? index : null;
+        });
+      },
+      leading: Icon(icon, color: Get.isDarkMode ? Colors.white70 : Colors.black54),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Get.isDarkMode ? Colors.white : Colors.black87,
+        ),
+      ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              content,
+              style: TextStyle(
+                color: Get.isDarkMode ? Colors.white70 : Colors.black54,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
-    final String title = service['name'] ?? 'Untitled';
-    final String photoPath = service['photo'] ?? '';
+    final String title = widget.service['name'] ?? 'Untitled';
+    final String photoPath = widget.service['photo'] ?? '';
     final String imagePath = _getFullImageUrl(photoPath);
 
-    // Use the new parsing methods for numeric values
-    final double previousPrice = _parseDouble(service['previous_price']);
-    final double discountPrice = _parseDouble(service['discount_price']);
-    final int stock = _parseInt(service['stock']);
-    final int discountPercentage = _parseInt(service['discount_percentage']);
+    final double previousPrice = _parseDouble(widget.service['previous_price']);
+    final double discountPrice = _parseDouble(widget.service['discount_price']);
+    final int stock = _parseInt(widget.service['stock']);
+    final int discountPercentage = _parseInt(widget.service['discount_percentage']);
 
     return Container(
       decoration: BoxDecoration(
@@ -53,7 +153,6 @@ class MedicineDetailsSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag Handle
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
             height: 4,
@@ -63,12 +162,9 @@ class MedicineDetailsSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Content
-          Flexible(
+          Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
-              shrinkWrap: true,
               children: [
                 // Header with close button
                 Padding(
@@ -95,229 +191,227 @@ class MedicineDetailsSheet extends StatelessWidget {
                   ),
                 ),
 
-                // Medicine Image
-                Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Center(
-                      child: Image.network(
-                        imagePath,
-                        height: 200,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.error),
-                          );
-                        },
+                // Medicine Image Section
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
                       ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[100],
+                          child: const Center(
+                            child: Icon(
+                              Icons.error_outline,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
                     ),
-                    if (discountPercentage > 0)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green[600],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '$discountPercentage% OFF',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (stock <= 10)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Only ${stock} left',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
 
-                // Medicine Title and Stock Info
+                // Medicine Name Section
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ),
+
+                // Price Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
                     children: [
                       Text(
-                        title,
+                        'MRP ',
                         style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : Colors.black,
+                          fontSize: 16,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.inventory_2,
-                            size: 16,
-                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      Text(
+                        '₹${previousPrice.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          decoration: TextDecoration.lineThrough,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[600],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '$discountPercentage% OFF',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'In Stock: $stock units',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
 
-                // Price Details
+                // Discounted Price
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '₹${discountPrice.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '₹${(discountPrice / 100).toStringAsFixed(2)}/ML',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Stock and Composition Cards
+                _buildInfoCard(
+                  icon: Icons.inventory_2_outlined,
+                  title: 'Stock Available',
+                  content: '$stock units',
+                  iconColor: Colors.green,
+                  backgroundColor: Colors.green.withOpacity(0.1),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                ),
+                _buildInfoCard(
+                  icon: Icons.science_outlined,
+                  title: 'Composition',
+                  content: widget.service['composition'] ?? '',
+                ),
+
+                // Storage Temperature Card
+                _buildInfoCard(
+                  icon: Icons.thermostat_outlined,
+                  title: 'Storage',
+                  content: 'Store Below 30°C',
+                  iconColor: Colors.orange,
+                  backgroundColor: Colors.orange.withOpacity(0.1),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Accordion Sections
+                _buildAccordionSection(
+                  'Introduction',
+                  widget.service['how_it_work'],
+                  Icons.info_outline,
+                  0,
+                ),
+                _buildAccordionSection(
+                  'Medicine Activity',
+                  widget.service['medicine_activity'],
+                  Icons.local_hospital,
+                  1,
+                ),
+                _buildAccordionSection(
+                  'Uses',
+                  widget.service['direction_for_use'],
+                  Icons.check_circle_outline,
+                  2,
+                ),
+                _buildAccordionSection(
+                  'Direction for Use',
+                  widget.service['direction_for_use'],
+                  Icons.assignment_outlined,
+                  3,
+                ),
+                _buildAccordionSection(
+                  'Side Effects',
+                  widget.service['side_effect'],
+                  Icons.warning_amber_outlined,
+                  4,
+                ),
+
+                // Add Button
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          // Discounted Price
-                          Text(
-                            '₹${discountPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Original Price
-                          if (previousPrice > 0)
-                            Text(
-                              '₹${previousPrice.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                decoration: TextDecoration.lineThrough,
-                                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                              ),
-                            ),
-                        ],
+                  child: ElevatedButton(
+                    onPressed: stock > 0
+                        ? () {
+                      // Add to cart functionality
+                    }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: stock > 0
+                          ? CustomTheme.loginGradientStart
+                          : Colors.grey,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(height: 16),
-                      // Add to Cart Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: stock > 0
-                              ? () {
-                            // Add to cart functionality
-                          }
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: stock > 0
-                                ? CustomTheme.loginGradientStart
-                                : Colors.grey,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            stock > 0 ? 'Add to Cart' : 'Out of Stock',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                    ),
+                    child: const Text(
+                      'Add',
+                      style: TextStyle(
+                        fontSize: 16,color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
+                    ),
                   ),
                 ),
-
-                // Additional Details
-                if (service['category_id'] != null)
-                  _buildDetailSection(
-                    'Category',
-                    'Category ID: ${service['category_id']}',
-                    Icons.category,
-                  ),
-                if (service['subcategory_id'] != null)
-                  _buildDetailSection(
-                    'Subcategory',
-                    'Subcategory ID: ${service['subcategory_id']}',
-                    Icons.subdirectory_arrow_right,
-                  ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDetailSection(String title, String content, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Get.isDarkMode ? Colors.grey[800] : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: Get.isDarkMode ? Colors.white70 : Colors.black54,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Get.isDarkMode ? Colors.white70 : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    content,
-                    style: TextStyle(
-                      color: Get.isDarkMode ? Colors.white54 : Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -34,7 +34,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.BdsInfotech.Needy"
+    namespace "com.BdsInfotech.GenricBharat"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
@@ -52,7 +52,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.BdsInfotech.Needy"
+        applicationId "com.BdsInfotech.GenricBharat"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()

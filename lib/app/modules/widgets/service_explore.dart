@@ -369,11 +369,12 @@ class _ServiceExploreState extends State<ServiceExplore> {
                     : CustomTheme.loginGradientStart,
               )
                   : ClipOval(
-                child: Image.network(
+                child:
+                Image.network(
                   fullImageUrl,
                   fit: BoxFit.cover,
-                  width: 70,
-                  height: 70,
+                  width : 70,
+                  height : 70,
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(
                       Icons.error,
