@@ -6,6 +6,7 @@ class ApiEndpoints {
   static const String verifyOtp = '${baseUrl}verify-otp';
   static const String getOtp = '${baseUrl}get-otp';
   static const String categories = '${apibaseUrl}categori';
+  static const String categories_item = '${apibaseUrl}category-item';
   static const String profile = '${baseUrl}users';
   static const String subcategories = '${apibaseUrl}subcategories';
   static const String sliders = '${apibaseUrl}sliders';

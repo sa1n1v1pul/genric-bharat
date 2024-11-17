@@ -20,6 +20,7 @@ import '../../widgets/cartscreen.dart';
 import '../../widgets/cleaning.dart';
 import '../../widgets/diabetescare.dart';
 import '../../widgets/latlng.dart';
+import '../../widgets/medicinedetailsheet.dart';
 import '../../widgets/prescriptionview.dart';
 import '../../widgets/service_explore.dart';
 import '../../widgets/categories.dart';
@@ -39,7 +40,12 @@ class _HomePageState extends State<HomePage> {
   late LocationController locationController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOnRight = true;
-
+  String getCompleteImageUrl(String photoPath) {
+    if (photoPath.startsWith('http')) {
+      return photoPath;
+    }
+    return '${ApiEndpoints.imageBaseUrl}$photoPath';
+  }
   String? cityName = 'Loading...';
   @override
   void initState() {
@@ -1134,82 +1140,94 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPersonalSection() {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final HomeController controller = Get.find<HomeController>();
 
-    final List<Map<String, String>> items = [
-      {'image': 'assets/images/oil.jpg', 'title': 'Oil'},
-      {'image': 'assets/images/shampoo.jpg', 'title': 'Shampoo'},
-      {'image': 'assets/images/maxfresh.jpg', 'title': 'Cleaner'},
-    ];
+    return Obx(() {
+      final items = controller.getItemsForCategory("Beauty & Personal Care");
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.black45 : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color.fromARGB(255, 223, 223, 223),
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.black45 : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color.fromARGB(255, 223, 223, 223),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text(
-              'Personal Care',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text(
-              'Removes hard stains & more',
-              style: TextStyle(
-                fontSize: 12,
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text(
+                'Beauty & Personal Care',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-            trailing: TextButton(
-              child: Text(
-                'View all',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDarkMode
-                      ? Colors.white
-                      : CustomTheme.loginGradientStart,
+              subtitle: const Text(
+                'Personal care products',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: TextButton(
+                child: Text(
+                  'View all',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                  ),
                 ),
+                onPressed: () {
+                  // Handle view all
+                },
               ),
-              onPressed: () {
-                Get.to(() => const AllCleaning());
-              },
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin:
-                const EdgeInsets.only(left: 16, right: 16, top: 5, bottom: 16),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.blueGrey : const Color(0xfffff7ec),
-              borderRadius: BorderRadius.circular(10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(left: 16, right: 16, top: 5, bottom: 16),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.blueGrey : const Color(0xfffff7ec),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              height: 210,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index != items.length - 1 ? 10 : 0,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => DraggableScrollableSheet(
+                            initialChildSize: 0.8,
+                            minChildSize: 0.6,
+                            maxChildSize: 0.8,
+                            builder: (context, scrollController) => MedicineDetailsSheet(
+                              service: item,
+                            ),
+                          ),
+                        );
+                      },
+                      child: _buildPersonalItem(
+                        item['photo'],
+                        item['name'],
+                        item['discount_price'].toString(),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            height: 180,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    right: index != items.length - 1 ? 10 : 0,
-                  ),
-                  child: _buildPersonalItem(
-                    items[index]['image']!,
-                    items[index]['title']!,
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 10),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
-  Widget _buildPersonalItem(String imagePath, String title) {
+  Widget _buildPersonalItem(String photoPath, String title, String price) {
     return SizedBox(
       width: 160,
       child: Column(
@@ -1217,17 +1235,35 @@ class _HomePageState extends State<HomePage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              imagePath,
+            child: Image.network(
+              getCompleteImageUrl(photoPath),
               height: 120,
               width: 160,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 120,
+                  width: 160,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.error),
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),
           Text(
             title,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '₹$price',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.green,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -1808,151 +1844,148 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHealthcareDevicesSection() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.black45 : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color.fromARGB(255, 223, 223, 223),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Healthcare Devices',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 260,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                _buildDeviceCard(
-                  title: 'BP Monitors',
-                  discount: 'Up to 20% off',
-                  image: 'assets/images/medicine3.jpg',
-                ),
-                _buildDeviceCard(
-                  title: 'Nebulizers and Vaporizers',
-                  discount: 'Up to 25% off',
-                  image: 'assets/images/medicine2.jpeg',
-                ),
-                _buildDeviceCard(
-                  title: 'Supports and Braces',
-                  discount: 'Up to 25% off',
-                  image: 'assets/images/medicine9.jpg',
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: InkWell(
-              onTap: () {
-                // Handle view all devices
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'View all Healthcare Devices products',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.blue,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: isDarkMode ? Colors.white70 : Colors.blue,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    final HomeController controller = Get.find<HomeController>();
 
-  Widget _buildDeviceCard({
-    required String title,
-    required String discount,
-    required String image,
-  }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      margin: EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black38 : Color(0xFFF7F1FF),
-          borderRadius: BorderRadius.circular(20)
-      ),
-      child: Container(
-        width: 150,
-        margin: EdgeInsets.only(right: 16, top: 10),
+    return Obx(() {
+      final devices = controller.getItemsForCategory("MEDICAL DEVICES");
+
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.blueGrey : Colors.white,
+          color: isDarkMode ? Colors.black45 : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
+          border: Border.all(
+            color: const Color.fromARGB(255, 223, 223, 223),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: isDarkMode ? Colors.white : Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Medical Devices',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 260,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: devices.length,
+                itemBuilder: (context, index) {
+                  final device = devices[index];
+                  return GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => DraggableScrollableSheet(
+                          initialChildSize: 0.8,
+                          minChildSize: 0.6,
+                          maxChildSize: 0.8,
+                          builder: (context, scrollController) => MedicineDetailsSheet(
+                            service: device,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildDeviceCard(
+                      title: device['name'],
+                      discount: device['previous_price'] != 0
+                          ? 'Save ₹${device['previous_price'] - device['discount_price']}'
+                          : '',
+                      price: '₹${device['discount_price']}',
+                      imageUrl: device['photo'],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildDeviceCard({
+    required String title,
+    required String discount,
+    required String price,
+    required String imageUrl,
+  }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.black38 : const Color(0xFFF7F1FF),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (discount.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     discount,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.green,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
-              ),
-            ),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-                child: Image.asset(
-                  image,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                const SizedBox(height: 4),
+                Text(
+                  price,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+              child: Image.network(
+                getCompleteImageUrl(imageUrl),
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error),
+                  );
+                },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

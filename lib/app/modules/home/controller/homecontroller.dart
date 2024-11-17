@@ -16,12 +16,53 @@ class HomeController extends GetxController {
   final RxBool isServicesLoading = true.obs;
   final RxList<Map<String, dynamic>> providers = <Map<String, dynamic>>[].obs;
   final RxBool isProvidersLoading = true.obs;
-
+  final RxList<Map<String, dynamic>> categoryItems = <Map<String, dynamic>>[].obs;
+  final RxBool isCategoryItemsLoading = true.obs;
   @override
   void onInit() {
     super.onInit();
+    fetchCategoryItems();
     fetchCategories();
     fetchSliders();
+  }
+  Future<void> fetchCategoryItems() async {
+    try {
+      isCategoryItemsLoading.value = true;
+      final response = await _dio.get(ApiEndpoints.categories_item);
+
+      if (response.statusCode == 200 && response.data['status'] == true) {
+        if (response.data['data'] is List) {
+          categoryItems.value = List<Map<String, dynamic>>.from(response.data['data']);
+
+          // Debug print for category names
+          print("Available Categories:");
+          for (var category in categoryItems) {
+            print("- ${category['category_name']}");
+          }
+
+        } else {
+          print('Unexpected response structure: ${response.data}');
+        }
+      }
+    } catch (e) {
+      print('Error fetching category items: $e');
+    } finally {
+      isCategoryItemsLoading.value = false;
+    }
+  }
+
+  // Get items for a specific category
+  List<Map<String, dynamic>> getItemsForCategory(String categoryName) {
+    try {
+      final category = categoryItems.firstWhere(
+            (element) => element['category_name'] == categoryName,
+        orElse: () => {'items': []},
+      );
+      return List<Map<String, dynamic>>.from(category['items'] ?? []);
+    } catch (e) {
+      print('Error getting items for category $categoryName: $e');
+      return [];
+    }
   }
 
   Future<void> fetchCategories() async {
