@@ -13,8 +13,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final ProductSearchController searchController =
-      Get.put(ProductSearchController());
+  final ProductSearchController searchController = Get.put(ProductSearchController());
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchTextController = TextEditingController();
 
@@ -44,10 +43,13 @@ class _SearchScreenState extends State<SearchScreen> {
     return '₹${price.toString()}';
   }
 
-  void _performSearch(String value, {bool isComposition = false}) {
+  void _performSearch(String value) {
     if (value.length >= 2) {
-      searchController.searchItems(value,
-          isNewSearch: true, isComposition: isComposition);
+      searchController.searchItems(
+        value,
+        isNewSearch: true,
+        isComposition: searchController.isCompositionSearch.value,
+      );
     } else if (value.isEmpty) {
       searchController.resetSearch();
     }
@@ -56,14 +58,19 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CustomTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Search Products',
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Search Products',
+          style: TextStyle(color: Colors.black45),
+        ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: CustomTheme.appBarGradient,
           ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.black45,
         ),
       ),
       body: Column(
@@ -84,39 +91,36 @@ class _SearchScreenState extends State<SearchScreen> {
                     filled: true,
                     fillColor: Colors.white,
                   ),
-                  onChanged: (value) => _performSearch(value),
+                  onChanged: _performSearch,
                 ),
                 const SizedBox(height: 8),
-                // Search type toggle buttons
                 Row(
                   children: [
                     Obx(() => ChoiceChip(
-                          label: const Text('Name Search'),
-                          selected: !searchController.isCompositionSearch.value,
-                          onSelected: (selected) {
-                            if (selected) {
-                              searchController.isCompositionSearch.value =
-                                  false;
-                              if (_searchTextController.text.length >= 2) {
-                                _performSearch(_searchTextController.text);
-                              }
-                            }
-                          },
-                        )),
+                      label: const Text('Name Search'),
+                      selected: !searchController.isCompositionSearch.value,
+                      onSelected: (selected) {
+                        if (selected) {
+                          searchController.isCompositionSearch.value = false;
+                          if (_searchTextController.text.length >= 2) {
+                            _performSearch(_searchTextController.text);
+                          }
+                        }
+                      },
+                    )),
                     const SizedBox(width: 8),
                     Obx(() => ChoiceChip(
-                          label: const Text('Composition Search'),
-                          selected: searchController.isCompositionSearch.value,
-                          onSelected: (selected) {
-                            if (selected) {
-                              searchController.isCompositionSearch.value = true;
-                              if (_searchTextController.text.length >= 2) {
-                                _performSearch(_searchTextController.text,
-                                    isComposition: true);
-                              }
-                            }
-                          },
-                        )),
+                      label: const Text('Composition Search'),
+                      selected: searchController.isCompositionSearch.value,
+                      onSelected: (selected) {
+                        if (selected) {
+                          searchController.isCompositionSearch.value = true;
+                          if (_searchTextController.text.length >= 2) {
+                            _performSearch(_searchTextController.text);
+                          }
+                        }
+                      },
+                    )),
                   ],
                 ),
               ],
@@ -142,7 +146,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
               return Column(
                 children: [
-                  // Search stats
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
@@ -166,7 +169,6 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Results list
                   Expanded(
                     child: ListView.builder(
                       controller: _scrollController,
@@ -184,8 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         }
 
                         final item = searchController.searchResults[index];
-                        final discount =
-                            item['discount_percentage']?.toString() ?? '0';
+                        final discount = item['discount_percentage']?.toString() ?? '0';
 
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -202,8 +203,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                   maxChildSize: 0.8,
                                   builder: (context, scrollController) =>
                                       MedicineDetailsSheet(
-                                    service: item,
-                                  ),
+                                        service: item,
+                                      ),
                                 ),
                               );
                             },
@@ -212,22 +213,16 @@ class _SearchScreenState extends State<SearchScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Product Image with Discount Badge
                                   Stack(
                                     children: [
                                       Container(
                                         width: 80,
                                         height: 80,
                                         decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(8),
                                           image: DecorationImage(
                                             image: NetworkImage(
-                                              item['photo']
-                                                          ?.toString()
-                                                          ?.startsWith(
-                                                              'http') ==
-                                                      true
+                                              item['photo']?.toString()?.startsWith('http') == true
                                                   ? item['photo']
                                                   : '${ApiEndpoints.imageBaseUrl}${item['photo']}',
                                             ),
@@ -244,8 +239,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
                                               color: Colors.red,
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
+                                              borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
                                               '$discount% OFF',
@@ -260,11 +254,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ],
                                   ),
                                   const SizedBox(width: 12),
-                                  // Product Details
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           item['name'] ?? 'No name',
@@ -294,8 +286,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         Row(
                                           children: [
                                             Text(
-                                              getFormattedPrice(
-                                                  item['discount_price']),
+                                              getFormattedPrice(item['discount_price']),
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 16,
@@ -304,11 +295,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                             const SizedBox(width: 8),
                                             if (item['previous_price'] != null)
                                               Text(
-                                                getFormattedPrice(
-                                                    item['previous_price']),
+                                                getFormattedPrice(item['previous_price']),
                                                 style: const TextStyle(
-                                                  decoration: TextDecoration
-                                                      .lineThrough,
+                                                  decoration: TextDecoration.lineThrough,
                                                   color: Colors.grey,
                                                   fontSize: 14,
                                                 ),
@@ -317,8 +306,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         ),
                                         if (item['sort_details'] != null)
                                           Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 4),
+                                            padding: const EdgeInsets.only(top: 4),
                                             child: Text(
                                               item['sort_details'],
                                               style: const TextStyle(
@@ -327,12 +315,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                               ),
                                             ),
                                           ),
-                                        if (searchController
-                                                .isCompositionSearch.value &&
+                                        if (searchController.isCompositionSearch.value &&
                                             item['composition'] != null)
                                           Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 4),
+                                            padding: const EdgeInsets.only(top: 4),
                                             child: Text(
                                               'Composition: ${item['composition']}',
                                               style: const TextStyle(

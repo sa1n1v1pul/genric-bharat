@@ -275,7 +275,9 @@ class _HomePageState extends State<HomePage> {
                                     child: TextField(
                                       decoration: InputDecoration(
                                         hintText: 'Search medicines, categories...',
+                                        hintStyle: TextStyle(color: Colors.black54),
                                         prefixIcon: const Icon(Icons.search),
+                                        prefixIconColor: Colors.black54,
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(8),
                                         ),
@@ -287,6 +289,7 @@ class _HomePageState extends State<HomePage> {
                                       },
                                       readOnly: true,
                                     ),
+
                                   ),
                                 ),
                               ),
@@ -1747,7 +1750,7 @@ class _HomePageState extends State<HomePage> {
                     child: ElevatedButton(
                       onPressed: () {
                         // Add to cart and navigate
-                        cartController.addToCart(product);
+                        // cartController.addToCart(product);
                         Get.to(() => const CartScreen());
                       },
                       style: ElevatedButton.styleFrom(

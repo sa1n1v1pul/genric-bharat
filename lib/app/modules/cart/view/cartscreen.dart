@@ -308,6 +308,7 @@ class CartScreen extends GetView<CartController> {
                 // Handle checkout
               },
               style: ElevatedButton.styleFrom(
+                backgroundColor: CustomTheme.loginGradientStart,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -318,9 +319,11 @@ class CartScreen extends GetView<CartController> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: Colors.white, // White text color
                 ),
               ),
             ),
+
           ),
         ],
       ),

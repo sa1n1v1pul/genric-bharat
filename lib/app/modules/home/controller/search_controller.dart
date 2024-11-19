@@ -11,7 +11,6 @@ class ProductSearchController extends GetxController {
   final RxString searchQuery = ''.obs;
   final RxBool isCompositionSearch = false.obs;
 
-  // Pagination variables
   final RxInt currentPage = 1.obs;
   final RxInt lastPage = 1.obs;
   final RxInt perPage = 10.obs;
@@ -30,7 +29,6 @@ class ProductSearchController extends GetxController {
     currentPage.value = 1;
     lastPage.value = 1;
     total.value = 0;
-    isCompositionSearch.value = false;
   }
 
   Future<void> searchItems(String query, {bool isNewSearch = true, bool? isComposition}) async {
@@ -45,6 +43,7 @@ class ProductSearchController extends GetxController {
 
         if (isNewSearch) {
           resetSearch();
+          // Only update isCompositionSearch if explicitly provided
           if (isComposition != null) {
             isCompositionSearch.value = isComposition;
           }
@@ -57,12 +56,12 @@ class ProductSearchController extends GetxController {
         isLoading.value = true;
         searchQuery.value = query;
 
-        // Prepare query parameters based on search type
         Map<String, dynamic> queryParams = {
           'per_page': perPage.value,
           'page': currentPage.value,
         };
 
+        // Use the current isCompositionSearch value for determining search type
         if (isCompositionSearch.value) {
           queryParams['composition_search'] = query;
         } else {
@@ -85,7 +84,6 @@ class ProductSearchController extends GetxController {
               responseData['status'] == 'success' &&
               responseData['data'] is Map) {
 
-            // Update pagination info
             if (responseData['data']['pagination'] != null) {
               final pagination = responseData['data']['pagination'];
               currentPage.value = pagination['current_page'] ?? 1;
@@ -94,7 +92,6 @@ class ProductSearchController extends GetxController {
               total.value = pagination['total'] ?? 0;
             }
 
-            // Handle search results
             if (responseData['data']['items'] is List) {
               if (isNewSearch) {
                 searchResults.clear();
@@ -102,7 +99,6 @@ class ProductSearchController extends GetxController {
 
               final newItems = List<Map<String, dynamic>>.from(responseData['data']['items']);
 
-              // Add new items while avoiding duplicates
               for (var newItem in newItems) {
                 if (!searchResults.any((existingItem) => existingItem['id'] == newItem['id'])) {
                   searchResults.add(newItem);

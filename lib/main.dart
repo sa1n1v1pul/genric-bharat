@@ -8,6 +8,7 @@ import 'app/modules/api_endpoints/api_provider.dart';
 import 'app/modules/auth/controllers/auth_controller.dart';
 import 'app/modules/auth/controllers/login_controller.dart';
 import 'app/modules/cart/controller/cartcontroller.dart';
+import 'app/modules/cart/controller/cartservice.dart';
 import 'app/modules/location/binding/location_binding.dart';
 import 'app/modules/onboarding/startup_view.dart';
 import 'app/modules/routes/app_pages.dart';
@@ -28,6 +29,7 @@ void main() async {
   Get.put(AuthController());
   Get.put(LoginController());
   Get.put(CartController());
+  Get.put(CartApiService());
   runApp(const MyApp());
 }
 

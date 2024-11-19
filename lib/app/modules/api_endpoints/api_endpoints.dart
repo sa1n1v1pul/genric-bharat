@@ -1,8 +1,10 @@
 class ApiEndpoints {
   static const String baseUrl = 'https://dat.babadeepsinghinfotech.com/api/';
-  static const String imageBaseUrl =
-      'https://hayshay.gullygood.com/assets/images/';
+  static const String imageBaseUrl = 'https://hayshay.gullygood.com/assets/images/';
   static const String apibaseUrl = 'https://hayshay.gullygood.com/api/';
+  static const String addToCart = '${apibaseUrl}add-cart';
+  static const String getCart = '${apibaseUrl}cart';
+  static const String clearCart = '${apibaseUrl}clear-cart';
   static const String requestOtp = '${apibaseUrl}request-otp';
   static const String verifyOtp = '${apibaseUrl}verify-otp';
   static const String getOtp = '${apibaseUrl}get-otp';

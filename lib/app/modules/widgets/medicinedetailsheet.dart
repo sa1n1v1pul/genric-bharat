@@ -23,7 +23,7 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
     if (photoPath.isEmpty) return '';
     return '${ApiEndpoints.imageBaseUrl}$photoPath';
   }
-
+  final cartController = Get.find<CartController>();
   double _parseDouble(dynamic value) {
     if (value == null) return 0.0;
     if (value is int) return value.toDouble();
@@ -392,12 +392,10 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
                 // Add Button
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: // In MedicineDetailsSheet
-                  ElevatedButton(
-                    onPressed: stock > 0
-                        ? () {
-                      final cartController = Get.find<CartController>();
-                      cartController.addToCart(widget.service);
+                  child: Obx(() => ElevatedButton(
+                    onPressed: stock > 0 && !cartController.isLoading.value
+                        ? () async {
+                      await cartController.addToCart(widget.service);
                       Get.to(() => const CartScreen());
                     }
                         : null,
@@ -410,7 +408,9 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text(
+                    child: cartController.isLoading.value
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
                       'Add to Cart',
                       style: TextStyle(
                         fontSize: 16,
@@ -418,7 +418,7 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
+                  )),
                 ),
               ],
             ),
