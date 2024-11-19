@@ -28,18 +28,28 @@ class CustomTheme {
 
   static Color get loginGradientStart => _loginGradientStart.value;
 
+  // Helper method to create background color with opacity
+  static Color _createBackgroundColor(Color baseColor) {
+    return Color.fromRGBO(
+      baseColor.red,
+      baseColor.green,
+      baseColor.blue,
+      0.1, // 10% opacity
+    );
+  }
+
   static LinearGradient get primaryGradient => LinearGradient(
-        colors: <Color>[loginGradientStart, loginGradientEnd],
-        stops: const <double>[0.0, 1.0],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      );
+    colors: <Color>[loginGradientStart, loginGradientEnd],
+    stops: const <double>[0.0, 1.0],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 
   static LinearGradient get appBarGradient => LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [loginGradientStart, Colors.white],
-      );
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [loginGradientStart, Colors.white],
+  );
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -81,7 +91,12 @@ class CustomTheme {
 
   static void changeTheme(int colorIndex) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Update login gradient color
       _loginGradientStart.value = themeColors[colorIndex];
+
+      // Update background color based on the new theme color with 0.1 opacity
+      _backgroundColor.value = _createBackgroundColor(themeColors[colorIndex]);
+
       Get.changeTheme(lightTheme);
       GetStorage().write('themeColorIndex', colorIndex);
       Get.forceAppUpdate();
@@ -94,14 +109,8 @@ class CustomTheme {
     _themeMode.value = isDarkMode ? ThemeMode.dark : ThemeMode.light;
     Get.changeThemeMode(_themeMode.value);
 
-    // Set background color based on current theme mode
-    if (_themeMode.value == ThemeMode.dark) {
-      _backgroundColor.value = Colors.blueGrey;
-    } else {
-      _backgroundColor.value = const Color(0xffeff8ff);
-    }
-
     if (savedColorIndex != null) {
+      // This will update both loginGradientStart and backgroundColor
       changeTheme(savedColorIndex);
     } else {
       // Set default color to Color.fromARGB(255, 117, 91, 248)
@@ -152,13 +161,13 @@ class CustomTheme {
 
   static void toggleTheme() {
     _themeMode.value =
-        _themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode.value == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
 
-    // Update background color based on theme
+    // Update background color based on the current login gradient color
     if (_themeMode.value == ThemeMode.dark) {
       _backgroundColor.value = Colors.blueGrey;
     } else {
-      _backgroundColor.value = const Color(0xffeff8ff);
+      _backgroundColor.value = _createBackgroundColor(_loginGradientStart.value);
     }
 
     GetStorage().write('isDarkMode', _themeMode.value == ThemeMode.dark);

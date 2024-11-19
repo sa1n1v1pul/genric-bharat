@@ -15,7 +15,7 @@ class WalletScreen extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black87 : CustomTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
         elevation: 0,
@@ -42,7 +42,8 @@ class WalletScreen extends StatelessWidget {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.blue.shade900 : Colors.blue[100],
+                  color:
+                  isDarkMode ?  CustomTheme.loginGradientStart.withOpacity(0.7) :  CustomTheme.loginGradientStart.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(16),
@@ -118,7 +119,8 @@ class WalletScreen extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.only(left: 16, right: 16),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.black45 : Colors.white,
+                  color:
+                  isDarkMode ? Colors.black45 : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                       color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!
@@ -152,7 +154,7 @@ class WalletScreen extends StatelessWidget {
                             height: 40,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.blue),
+                              border: Border.all(color: CustomTheme.loginGradientStart),
                             ),
                             child: TextButton(
                               onPressed: controller.shareReferralCode,
@@ -168,14 +170,14 @@ class WalletScreen extends StatelessWidget {
                                   Text(
                                     'Share code',
                                     style: TextStyle(
-                                      color: isDarkMode ? Colors.white70 : Colors.blue,
+                                      color: isDarkMode ? Colors.white70 : CustomTheme.loginGradientStart,
                                       fontSize: 16,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Icon(
                                     Icons.arrow_forward,
-                                    color: isDarkMode ? Colors.white70 : Colors.blue,
+                                    color: isDarkMode ? Colors.white70 : CustomTheme.loginGradientStart,
                                     size: 20,
                                   ),
                                 ],
@@ -243,7 +245,7 @@ class WalletScreen extends StatelessWidget {
                 child: Text(
                   'Terms & Conditions',
                   style: TextStyle(
-                    color: isDarkMode ? Colors.white70 : Colors.blue,
+                    color: isDarkMode ? Colors.white70 : CustomTheme.loginGradientStart,
                     decoration: TextDecoration.underline,
                   ),
                 ),

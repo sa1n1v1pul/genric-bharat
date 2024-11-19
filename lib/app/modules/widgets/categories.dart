@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/theme/theme.dart';
 import '../api_endpoints/api_endpoints.dart';
 import '../home/controller/homecontroller.dart';
 import 'service_explore.dart';
@@ -14,9 +15,7 @@ class AllCategories extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isDarkMode = Get.isDarkMode;
     return Scaffold(
-      backgroundColor: isDarkMode
-          ? Colors.grey[550]
-          : const Color.fromARGB(255, 244, 243, 248),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         iconTheme: IconThemeData(
           color: isDarkMode

@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import '../Message/binding/messagebindings.dart';
 import '../auth/bindings/auth_binding.dart';
 import '../auth/views/loginview.dart';
-import '../booking/binding/bookingbindings.dart';
+
+import '../cart/binding/Addtocart.dart';
 import '../home/binding/homebindings.dart';
 import '../location/binding/location_binding.dart';
 import '../location/views/locationservices.dart';
@@ -35,7 +36,7 @@ class AppPages {
       binding: BindingsBuilder(() {
         LocationBinding().dependencies();
         HomeBindings().dependencies();
-        BookingBindings().dependencies();
+        CartBindings().dependencies();
         OffersBinding().dependencies();
         Messagebindings().dependencies();
         ProfileBindings().dependencies();

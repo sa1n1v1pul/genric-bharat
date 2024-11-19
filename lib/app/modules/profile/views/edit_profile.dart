@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/theme/theme.dart';
 import '../controller/profile_controller.dart';
 
 class EditProfile extends StatefulWidget {
@@ -62,9 +63,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isDarkMode
-          ? Colors.grey[550]
-          : const Color.fromARGB(255, 244, 243, 248),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         iconTheme: IconThemeData(
           color: isDarkMode
@@ -106,7 +105,7 @@ class _EditProfileState extends State<EditProfile> {
             );
           },
         ),
-        toolbarHeight: 80,
+        toolbarHeight: 60,
         title: const Text(
           'Edit Profile',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -178,7 +177,7 @@ class _EditProfileState extends State<EditProfile> {
                                 checkColor:
                                     isDarkMode ? Colors.black : Colors.white,
                                 activeColor:
-                                    isDarkMode ? Colors.white : Colors.black,
+                                isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
                                 tristate: false,
                                 shape: const CircleBorder(),
                               ),
@@ -207,7 +206,7 @@ class _EditProfileState extends State<EditProfile> {
                                 checkColor:
                                     isDarkMode ? Colors.black : Colors.white,
                                 activeColor:
-                                    isDarkMode ? Colors.white : Colors.black,
+                                    isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
                                 tristate: false,
                                 shape: const CircleBorder(),
                               ),
@@ -294,7 +293,7 @@ class _EditProfileState extends State<EditProfile> {
                           onPressed: _updateProfile,
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                isDarkMode ? Colors.white : Colors.black,
+                                isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:pin_code_fields/pin_code_fields.dart'; // Add this import
 
 import '../controllers/login_controller.dart';
 
@@ -57,16 +58,16 @@ class LoginView extends GetView<LoginController> {
         ),
         const SizedBox(height: 12),
         Obx(() =>
-            controller.isOtpSent.value ? _buildOtpInput() : _buildPhoneInput()),
+        controller.isOtpSent.value ? _buildOtpInput() : _buildPhoneInput()),
         const SizedBox(height: 8),
         Obx(() => controller.isOtpSent.value
             ? Center(
-                child: Text(
-                  'OTP sent to your mobile number: ${controller.displayedOtp.value}',
-                  style: const TextStyle(
-                      color: Colors.black, fontFamily: 'WorkSansBold'),
-                ),
-              )
+          child: Text(
+            'OTP sent to your mobile number: ${controller.displayedOtp.value}',
+            style: const TextStyle(
+                color: Colors.black, fontFamily: 'WorkSansBold'),
+          ),
+        )
             : const SizedBox.shrink()),
         const SizedBox(height: 15),
         Center(
@@ -76,30 +77,30 @@ class LoginView extends GetView<LoginController> {
             child: Obx(() => controller.isLoading.value
                 ? const CircularProgressIndicator(color: Colors.blue)
                 : DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: const Color(0xffE15564),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: TextButton(
-                      onPressed: controller.isOtpSent.value
-                          ? controller.verifyOtp
-                          : controller.requestOtp,
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        minimumSize: const Size.fromHeight(35),
-                        padding: EdgeInsets.zero,
-                      ),
-                      child: Text(
-                        controller.isOtpSent.value ? 'Submit' : 'Send OTP',
-                        style: const TextStyle(
-                            color: Colors.white, fontFamily: 'WorkSansBold'),
-                      ),
-                    ),
-                  )),
+              decoration: BoxDecoration(
+                color: const Color(0xffE15564),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: TextButton(
+                onPressed: controller.isOtpSent.value
+                    ? controller.verifyOtp
+                    : controller.requestOtp,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  minimumSize: const Size.fromHeight(35),
+                  padding: EdgeInsets.zero,
+                ),
+                child: Text(
+                  controller.isOtpSent.value ? 'Submit' : 'Send OTP',
+                  style: const TextStyle(
+                      color: Colors.white, fontFamily: 'WorkSansBold'),
+                ),
+              ),
+            )),
           ),
         )
       ],
@@ -108,10 +109,9 @@ class LoginView extends GetView<LoginController> {
 
   Widget _buildPhoneInput() {
     return Center(
-      // Wrapped in Center widget
       child: SizedBox(
         height: 34,
-        width: 250, // Added specific width constraint
+        width: 250,
         child: TextField(
           controller: controller.phoneController,
           decoration: InputDecoration(
@@ -156,92 +156,38 @@ class LoginView extends GetView<LoginController> {
   }
 
   Widget _buildOtpInput() {
-    return CustomOtpInput(
-      length: 6,
-      onChanged: (value) => controller.otpController.text = value,
-    );
-  }
-}
-
-class CustomOtpInput extends StatefulWidget {
-  final int length;
-  final Function(String) onChanged;
-
-  const CustomOtpInput({required this.length, required this.onChanged});
-
-  @override
-  _CustomOtpInputState createState() => _CustomOtpInputState();
-}
-
-class _CustomOtpInputState extends State<CustomOtpInput> {
-  List<TextEditingController> controllers = [];
-  List<FocusNode> focusNodes = [];
-
-  @override
-  void initState() {
-    super.initState();
-    for (int i = 0; i < widget.length; i++) {
-      controllers.add(TextEditingController());
-      focusNodes.add(FocusNode());
-    }
-  }
-
-  @override
-  void dispose() {
-    controllers.forEach((controller) => controller.dispose());
-    focusNodes.forEach((node) => node.dispose());
-    super.dispose();
-  }
-
-  void _onChanged(String value, int index) {
-    if (value.length == 1 && index < widget.length - 1) {
-      focusNodes[index + 1].requestFocus();
-    }
-    if (value.isEmpty && index > 0) {
-      focusNodes[index - 1].requestFocus();
-    }
-    String otp = controllers.map((c) => c.text).join();
-    widget.onChanged(otp);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        widget.length,
-        (index) => Container(
-          width: 30,
-          height: 30,
-          margin: const EdgeInsets.symmetric(horizontal: 5),
-          child: TextField(
-            controller: controllers[index],
-            focusNode: focusNodes[index],
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number,
-            maxLength: 1,
-            style: const TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-            decoration: InputDecoration(
-              counterText: "",
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(
-                  color: Color(0xffE15564),
-                ),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide:
-                    const BorderSide(color: Color(0xffE15564), width: 2),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              contentPadding: EdgeInsets.zero,
-              filled: true,
-              fillColor: Colors.white,
-            ),
-            onChanged: (value) => _onChanged(value, index),
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: PinCodeTextField(
+        appContext: Get.context!,
+        length: 6,
+        obscureText: false,
+        animationType: AnimationType.fade,
+        pinTheme: PinTheme(
+          shape: PinCodeFieldShape.box,
+          borderRadius: BorderRadius.circular(5),
+          fieldHeight: 30,
+          fieldWidth: 30,
+          activeFillColor: Colors.white,
+          inactiveFillColor: Colors.white,
+          selectedFillColor: Colors.white,
+          activeColor: Color(0xffE15564),
+          inactiveColor: Color(0xffE15564),
+          selectedColor: Color(0xffE15564),
         ),
+        animationDuration: const Duration(milliseconds: 300),
+        enableActiveFill: true,
+        controller: TextEditingController(),
+        onCompleted: (v) {
+          controller.otpController.text = v;
+        },
+        onChanged: (value) {
+          controller.otpController.text = value;
+        },
+        beforeTextPaste: (text) {
+          return true; // Enable paste
+        },
+        keyboardType: TextInputType.number,
       ),
     );
   }

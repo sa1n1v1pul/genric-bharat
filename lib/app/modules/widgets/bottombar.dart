@@ -1,5 +1,5 @@
+// bottom_nav_bar.dart
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -26,12 +26,13 @@ class BottomNavBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(
-              context, FontAwesome.calendar, 'Bookings', 0, primaryColor),
-          _buildNavItem(context, FontAwesome.tag, 'Offer', 1, primaryColor),
+              context, FontAwesome.cart_plus, 'Cart', 0, primaryColor),
+          _buildNavItem(
+              context, FontAwesome.rupee, 'Refer & Earn', 1, primaryColor),
           const SizedBox(width: 30), // Space for FAB
           _buildNavItem(
-              context, FontAwesome.comments, 'Chatting', 3, primaryColor),
-          _buildNavItem(context, FontAwesome.user, 'Profile', 4, primaryColor),
+              context, FontAwesome.gift, 'My Orders', 3, primaryColor),
+          _buildNavItem(context, FontAwesome.user, 'Account', 4, primaryColor),
         ],
       ),
     );
@@ -59,13 +60,8 @@ class BottomNavBar extends StatelessWidget {
                   duration: 300.ms,
                   builder: (context, value, child) => Transform.translate(
                     offset: Offset(
-                      4 *
-                          sin(value *
-                              2 *
-                              3.14159), // Zigzag horizontal movement
-                      isSelected
-                          ? 2 * sin(value * 4 * 3.14159)
-                          : 0, // Vertical movement only for selected item
+                      4 * sin(value * 2 * 3.14159),
+                      isSelected ? 2 * sin(value * 4 * 3.14159) : 0,
                     ),
                     child: child,
                   ),

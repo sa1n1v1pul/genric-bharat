@@ -169,7 +169,7 @@ class _ServiceExploreState extends State<ServiceExplore> {
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      backgroundColor: CustomTheme.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         iconTheme: IconThemeData(
           color: isDarkMode
@@ -211,7 +211,7 @@ class _ServiceExploreState extends State<ServiceExplore> {
             );
           },
         ),
-        toolbarHeight: 80,
+        toolbarHeight: 60,
         title: Text(
           widget.categoryTitle,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -223,39 +223,7 @@ class _ServiceExploreState extends State<ServiceExplore> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search for services',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 2.0, right: 4.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: CustomTheme.loginGradientStart,
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    ),
-                    height: 50,
-                    width: 50,
-                    child: const Icon(Icons.filter, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
+
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: Text(

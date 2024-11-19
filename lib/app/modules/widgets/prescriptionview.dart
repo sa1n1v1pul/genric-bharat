@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
+import '../../core/theme/theme.dart';
+
 class UploadPrescriptionScreen extends StatefulWidget {
   const UploadPrescriptionScreen({Key? key}) : super(key: key);
 
@@ -76,13 +78,42 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
+        foregroundColor: isDarkMode ? Colors.white : Colors.black,
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        leading: Container(
+          padding: const EdgeInsets.only(left: 4),
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDarkMode ? Colors.grey[800] : Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: (isDarkMode ? Colors.black : Colors.white).withOpacity(0.3),
+                spreadRadius: 5,
+                blurRadius: 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios,
+              size: 18,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            onPressed: () => Navigator.pop(context),
+            padding: EdgeInsets.zero,
+          ),
         ),
+        toolbarHeight: 60,
         title: const Text(
           'Upload Prescription',
           style: TextStyle(
@@ -90,10 +121,9 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
       ),
-      body: SingleChildScrollView(
+
+        body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -121,7 +151,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
+                    border: Border.all( color: CustomTheme.loginGradientStart,),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -131,7 +161,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                         children: [
                           Icon(
                             _selectedFile != null ? Icons.check_circle : Icons.upload_file,
-                            color: Colors.blue,
+                            color: CustomTheme.loginGradientStart,
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -140,8 +170,8 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                                 : _selectedFile != null
                                 ? 'File Selected'
                                 : 'Upload prescription',
-                            style: const TextStyle(
-                              color: Colors.blue,
+                            style: TextStyle(
+                              color: CustomTheme.loginGradientStart,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -187,12 +217,12 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: CustomTheme.loginGradientStart.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child:  Icon(
                         Icons.phone,
-                        color: Colors.blue,
+                          color: CustomTheme.loginGradientStart,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -208,6 +238,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: Colors.black
                                 ),
                               ),
                               Container(

@@ -13,7 +13,6 @@ class OnBoardingView extends StatefulWidget {
 class _OnBoardingViewState extends State<OnBoardingView> {
   int selectPage = 0;
   PageController controller = PageController();
-  List<Image> backgroundImages = [];
 
   List pageArr = [
     {
@@ -25,19 +24,17 @@ class _OnBoardingViewState extends State<OnBoardingView> {
         "assets/images/medicine10.jpg",
       ],
       "layout": "2-1",
-      "background": "assets/images/bg4.jpg",
     },
     {
       "title": "Wellness & Personal Care",
       "subtitle":
-          "Safe and hygienic personal care\nfor your health and wellness",
+      "Safe and hygienic personal care\nfor your health and wellness",
       "images": [
         "assets/images/medicine3.jpg",
         "assets/images/medicine4.jpg",
         "assets/images/medicine5.jpg",
       ],
       "layout": "2-1-right",
-      "background": "assets/images/bg3.jpg",
     },
     {
       "title": "Ayurvedic & OTC Medicines",
@@ -48,7 +45,6 @@ class _OnBoardingViewState extends State<OnBoardingView> {
         "assets/images/medicine9.jpg",
       ],
       "layout": "1-2",
-      "background": "assets/images/bg5.jpg",
     },
   ];
 
@@ -60,20 +56,6 @@ class _OnBoardingViewState extends State<OnBoardingView> {
         selectPage = controller.page?.round() ?? 0;
       });
     });
-    _preloadImages();
-  }
-
-  void _preloadImages() {
-    for (var page in pageArr) {
-      backgroundImages.add(
-        Image.asset(
-          page["background"],
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      );
-    }
   }
 
   Widget buildImageLayout(List<String> images, String layout, Size media) {
@@ -233,13 +215,14 @@ class _OnBoardingViewState extends State<OnBoardingView> {
   }
 
   Widget buildInfoSection(BuildContext context) {
-    return SingleChildScrollView(
+    return Padding(
+      padding: const EdgeInsets.only(top: 15),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             pageArr[selectPage]["title"].toString(),
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 33,
               fontFamily: 'WorkSansBold',
@@ -249,7 +232,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
           Text(
             pageArr[selectPage]["subtitle"].toString(),
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black54,
               fontSize: 18,
               fontFamily: 'WorkSansBold',
@@ -260,8 +243,8 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     );
   }
 
-  Widget buildNavigationSection(BuildContext context) {
-    Widget pageIndicators = Row(
+  Widget buildPageIndicators() {
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: pageArr.map((e) {
         var index = pageArr.indexOf(e);
@@ -278,61 +261,60 @@ class _OnBoardingViewState extends State<OnBoardingView> {
         );
       }).toList(),
     );
+  }
 
-    Widget navigationButton = SizedBox(
-      height: 35,
-      width: 120,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: const Color(0xffE15564),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: TextButton(
-          onPressed: () {
-            if (selectPage >= 2) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LocationView(),
-                ),
-              );
-            } else {
-              setState(() {
-                selectPage = selectPage + 1;
-                controller.animateToPage(
-                  selectPage,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.bounceInOut,
-                );
-              });
-            }
-          },
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            minimumSize: const Size.fromHeight(35),
-            padding: EdgeInsets.zero,
+  Widget buildNavigationButton() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 15,left: 15,right: 15),
+      padding: const EdgeInsets.all(20),
+      child: SizedBox(
+        height: 45,
+        width: double.infinity,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xffE15564),
+            borderRadius: BorderRadius.circular(15),
           ),
-          child: Text(
-            selectPage >= 2 ? "Get Started" : "Next",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18.0,
-              fontFamily: 'WorkSansBold',
+          child: TextButton(
+            onPressed: () {
+              if (selectPage >= 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LocationView(),
+                  ),
+                );
+              } else {
+                setState(() {
+                  selectPage = selectPage + 1;
+                  controller.animateToPage(
+                    selectPage,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.bounceInOut,
+                  );
+                });
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              minimumSize: const Size.fromHeight(45),
+              padding: EdgeInsets.zero,
+            ),
+            child: Text(
+              selectPage >= 2 ? "Get Started" : "Next",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18.0,
+                fontFamily: 'WorkSansBold',
+              ),
             ),
           ),
         ),
       ),
-    );
-    return Column(
-      children: [
-        pageIndicators,
-        const SizedBox(height: 10),
-        navigationButton,
-      ],
     );
   }
 
@@ -341,73 +323,43 @@ class _OnBoardingViewState extends State<OnBoardingView> {
     var media = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          ...List.generate(
-            pageArr.length,
-            (index) => AnimatedOpacity(
-              opacity: index == selectPage ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 500),
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(pageArr[index]["background"]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              flex: 4,
+              child: PageView.builder(
+                controller: controller,
+                itemCount: pageArr.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    selectPage = index;
+                  });
+                },
+                itemBuilder: ((context, index) {
+                  var pObj = pageArr[index] as Map? ?? {};
+                  return buildImageLayout(
+                    List<String>.from(pObj["images"]),
+                    pObj["layout"],
+                    media,
+                  );
+                }),
               ),
             ),
-          ),
-          SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: PageView.builder(
-                    controller: controller,
-                    itemCount: pageArr.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        selectPage = index;
-                      });
-                    },
-                    itemBuilder: ((context, index) {
-                      var pObj = pageArr[index] as Map? ?? {};
-                      return buildImageLayout(
-                        List<String>.from(pObj["images"]),
-                        pObj["layout"],
-                        media,
-                      );
-                    }),
-                  ),
-                ),
-                Expanded(
-                  flex: 3, // Changed from 2 to 3 to give more space
-                  child: Column(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceEvenly, // Changed to spaceEvenly
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              buildInfoSection(context),
-                            ],
-                          ),
-                        ),
-                      ),
-                      buildNavigationSection(context),
-                      const SizedBox(
-                          height: 20), // Added fixed spacing at bottom
-                    ],
-                  ),
-                ),
-              ],
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  buildInfoSection(context),
+                  const SizedBox(height: 20),
+                  buildPageIndicators(),
+                ],
+              ),
             ),
-          ),
-        ],
+            buildNavigationButton(),
+          ],
+        ),
       ),
     );
   }

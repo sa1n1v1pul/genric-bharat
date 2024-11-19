@@ -16,8 +16,10 @@ class HomeController extends GetxController {
   final RxBool isServicesLoading = true.obs;
   final RxList<Map<String, dynamic>> providers = <Map<String, dynamic>>[].obs;
   final RxBool isProvidersLoading = true.obs;
-  final RxList<Map<String, dynamic>> categoryItems = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> categoryItems =
+      <Map<String, dynamic>>[].obs;
   final RxBool isCategoryItemsLoading = true.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -25,6 +27,7 @@ class HomeController extends GetxController {
     fetchCategories();
     fetchSliders();
   }
+
   Future<void> fetchCategoryItems() async {
     try {
       isCategoryItemsLoading.value = true;
@@ -32,14 +35,14 @@ class HomeController extends GetxController {
 
       if (response.statusCode == 200 && response.data['status'] == true) {
         if (response.data['data'] is List) {
-          categoryItems.value = List<Map<String, dynamic>>.from(response.data['data']);
+          categoryItems.value =
+              List<Map<String, dynamic>>.from(response.data['data']);
 
           // Debug print for category names
           print("Available Categories:");
           for (var category in categoryItems) {
             print("- ${category['category_name']}");
           }
-
         } else {
           print('Unexpected response structure: ${response.data}');
         }
@@ -55,7 +58,7 @@ class HomeController extends GetxController {
   List<Map<String, dynamic>> getItemsForCategory(String categoryName) {
     try {
       final category = categoryItems.firstWhere(
-            (element) => element['category_name'] == categoryName,
+        (element) => element['category_name'] == categoryName,
         orElse: () => {'items': []},
       );
       return List<Map<String, dynamic>>.from(category['items'] ?? []);
@@ -138,7 +141,8 @@ class HomeController extends GetxController {
       final response = await _dio.get(ApiEndpoints.sliders);
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('data')) {
           final List<dynamic> slidersList = responseData['data'];
           sliders.value = List<Map<String, dynamic>>.from(slidersList);
           print("Fetched sliders successfully: ${sliders.length}");

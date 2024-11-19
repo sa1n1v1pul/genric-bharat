@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import '../api_endpoints/api_endpoints.dart';
 import 'package:genric_bharat/app/core/theme/theme.dart';
 
+import '../cart/controller/cartcontroller.dart';
+import '../cart/view/cartscreen.dart';
+
 class MedicineDetailsSheet extends StatefulWidget {
   final Map<String, dynamic> service;
 
@@ -95,8 +98,9 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
     );
   }
 
-  Widget _buildAccordionSection(String title, String? content, IconData icon, int index) {
-    if (content == null || content.isEmpty) return const SizedBox.shrink();
+  Widget _buildAccordionSection(
+      String title, String? content, IconData icon, int index) {
+    if (content == null) return const SizedBox.shrink();
 
     return ExpansionTile(
       key: Key(index.toString()),
@@ -106,7 +110,8 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
           expandedIndex = isExpanded ? index : null;
         });
       },
-      leading: Icon(icon, color: Get.isDarkMode ? Colors.white70 : Colors.black54),
+      leading:
+          Icon(icon, color: Get.isDarkMode ? Colors.white70 : Colors.black54),
       title: Text(
         title,
         style: TextStyle(
@@ -143,7 +148,8 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
     final double previousPrice = _parseDouble(widget.service['previous_price']);
     final double discountPrice = _parseDouble(widget.service['discount_price']);
     final int stock = _parseInt(widget.service['stock']);
-    final int discountPercentage = _parseInt(widget.service['discount_percentage']);
+    final int discountPercentage =
+        _parseInt(widget.service['discount_percentage']);
 
     return Container(
       decoration: BoxDecoration(
@@ -231,7 +237,7 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
                                 ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                                    loadingProgress.expectedTotalBytes!
                                 : null,
                           ),
                         );
@@ -242,7 +248,8 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
 
                 // Medicine Name Section
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
                   child: Text(
                     title,
                     style: TextStyle(
@@ -298,7 +305,8 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
 
                 // Discounted Price
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
@@ -352,42 +360,45 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
                 // Accordion Sections
                 _buildAccordionSection(
                   'Introduction',
-                  widget.service['how_it_work'],
+                  'Not available',
                   Icons.info_outline,
                   0,
                 ),
                 _buildAccordionSection(
-                  'Medicine Activity',
-                  widget.service['medicine_activity'],
-                  Icons.local_hospital,
+                  'How it Works',
+                  widget.service['how_it_work'],
+                  Icons.medical_information_outlined,
                   1,
-                ),
-                _buildAccordionSection(
-                  'Uses',
-                  widget.service['direction_for_use'],
-                  Icons.check_circle_outline,
-                  2,
                 ),
                 _buildAccordionSection(
                   'Direction for Use',
                   widget.service['direction_for_use'],
                   Icons.assignment_outlined,
-                  3,
+                  2,
                 ),
                 _buildAccordionSection(
                   'Side Effects',
                   widget.service['side_effect'],
                   Icons.warning_amber_outlined,
+                  3,
+                ),
+                _buildAccordionSection(
+                  'Manufacturer Details',
+                  widget.service['sort_details'],
+                  Icons.factory_outlined,
                   4,
                 ),
 
                 // Add Button
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
+                  child: // In MedicineDetailsSheet
+                  ElevatedButton(
                     onPressed: stock > 0
                         ? () {
-                      // Add to cart functionality
+                      final cartController = Get.find<CartController>();
+                      cartController.addToCart(widget.service);
+                      Get.to(() => const CartScreen());
                     }
                         : null,
                     style: ElevatedButton.styleFrom(
@@ -400,9 +411,10 @@ class _MedicineDetailsSheetState extends State<MedicineDetailsSheet> {
                       ),
                     ),
                     child: const Text(
-                      'Add',
+                      'Add to Cart',
                       style: TextStyle(
-                        fontSize: 16,color: Colors.white,
+                        fontSize: 16,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

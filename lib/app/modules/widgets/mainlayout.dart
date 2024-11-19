@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:genric_bharat/app/modules/cart/view/cartscreen.dart';
 import 'package:genric_bharat/app/modules/profile/views/profile_view.dart';
 
+
 import '../Message/view/messageview.dart';
-import '../booking/view/bookingview.dart';
+
 import '../home/views/homepage.dart';
 import '../offers/views/offers.dart';
 import 'bottombar.dart';
@@ -25,10 +27,10 @@ class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 2; // Start with Home selected
 
   final List<Widget> _widgetOptions = <Widget>[
-    const BookingView(),
+    const CartScreen(fromBottomNav: true),
     const OffersViews(),
     const HomePage(),
-    const MessageView(),
+    Messageview(),
     const ProfileView(),
   ];
 
