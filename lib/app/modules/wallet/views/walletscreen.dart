@@ -16,12 +16,13 @@ class WalletScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
+      appBar: AppBar(centerTitle: true,
         backgroundColor: isDarkMode ? Colors.black45 : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: isDarkMode ? Colors.white : Colors.black
+          icon: Icon(Icons.arrow_back_ios,
+              color: isDarkMode ? Colors.white : Colors.black,
+              size: 18,
           ),
           onPressed: () => Get.back(),
         ),

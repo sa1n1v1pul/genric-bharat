@@ -1,3 +1,5 @@
+import 'package:genric_bharat/app/modules/delivery/binding/deliverybindings.dart';
+import 'package:genric_bharat/app/modules/delivery/views/deliveryviews.dart';
 import 'package:get/get.dart';
 
 import '../Message/binding/messagebindings.dart';
@@ -28,6 +30,12 @@ class AppPages {
       name: Routes.LOCATION,
       page: () => const LocationView(),
       binding: LocationBinding(),
+      transition: Transition.fade,
+    ),
+    GetPage(
+      name: Routes.DELIVERY,
+      page: () => const DeliveryDetailsScreen(),
+      binding: DeliveryDetailsBinding(),
       transition: Transition.fade,
     ),
     GetPage(

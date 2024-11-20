@@ -1,64 +1,177 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'api_endpoints.dart';
 
 class ApiProvider extends GetxController {
   late dio.Dio _dio;
+  final int maxRetries = 3;
+  final Duration retryDelay = const Duration(seconds: 2);
 
   @override
   void onInit() {
     super.onInit();
+    _initializeDio();
+  }
+
+  void _initializeDio() {
     _dio = dio.Dio(dio.BaseOptions(
       baseUrl: ApiEndpoints.baseUrl,
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 3),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
     ));
+
     _dio.interceptors.add(dio.LogInterceptor(
       responseBody: true,
       requestBody: true,
       requestHeader: true,
+      error: true,
     ));
+
+    _dio.interceptors.add(
+      dio.InterceptorsWrapper(
+        onError: (error, handler) async {
+          if (_shouldRetry(error)) {
+            return await _retryRequest(error, handler);
+          }
+          return handler.next(error);
+        },
+      ),
+    );
   }
 
-  Future<dio.Response> requestOtp(String mobileNumber) async {
+  bool _shouldRetry(dio.DioException error) {
+    return error.type == dio.DioExceptionType.connectionTimeout ||
+        error.type == dio.DioExceptionType.receiveTimeout ||
+        error.type == dio.DioExceptionType.sendTimeout ||
+        (error.type == dio.DioExceptionType.unknown &&
+            error.error is TimeoutException);
+  }
+
+  Future<void> _retryRequest(
+      dio.DioException err, dio.ErrorInterceptorHandler handler) async {
+    dio.RequestOptions requestOptions = err.requestOptions;
+
+    // Get the retry attempt from options or default to 1
+    int retryCount = (requestOptions.extra['retryCount'] ?? 0) + 1;
+
+    if (retryCount <= maxRetries) {
+      // Wait before retrying
+      await Future.delayed(retryDelay * retryCount);
+
+      try {
+        print('Retry attempt $retryCount for ${requestOptions.path}');
+
+        // Create new options with incremented retry count
+        final newRequestOptions = dio.RequestOptions(
+          path: requestOptions.path,
+          method: requestOptions.method,
+          data: requestOptions.data,
+          headers: requestOptions.headers,
+          extra: {...requestOptions.extra, 'retryCount': retryCount},
+        );
+
+        final response = await _dio.fetch(newRequestOptions);
+        return handler.resolve(response);
+      } catch (e) {
+        if (retryCount == maxRetries) {
+          // Show error message on final retry
+          Get.snackbar(
+            'Connection Error',
+            'Unable to connect to server. Please check your internet connection.',
+            backgroundColor: Colors.red[100],
+            colorText: Colors.black,
+            duration: const Duration(seconds: 5),
+          );
+        }
+        return handler.next(err);
+      }
+    }
+    return handler.next(err);
+  }
+
+  Future<dio.Response> _handleRequest(Future<dio.Response> Function() request) async {
     try {
-      return await _dio.post(
-        ApiEndpoints.requestOtp,
-        data: {'mobile_number': mobileNumber},
+      return await request();
+    } on dio.DioException catch (e) {
+      print('DioException details: ${e.message}');
+      print('DioException type: ${e.type}');
+      print('DioException response: ${e.response}');
+
+      String errorMessage = _getErrorMessage(e);
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+        duration: const Duration(seconds: 3),
       );
+      throw e;
     } catch (e) {
-      print('Error in requestOtp: $e');
+      print('Unexpected error: $e');
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+        duration: const Duration(seconds: 3),
+      );
       throw e;
     }
   }
 
-  Future<dio.Response> updateUserLocation(int userId, double latitude, double longitude) async {
-    try {
+  String _getErrorMessage(dio.DioException e) {
+    switch (e.type) {
+      case dio.DioExceptionType.connectionTimeout:
+        return 'Connection timeout. Please check your internet connection.';
+      case dio.DioExceptionType.receiveTimeout:
+        return 'Server is taking too long to respond. Please try again.';
+      case dio.DioExceptionType.sendTimeout:
+        return 'Unable to send request. Please check your internet connection.';
+      case dio.DioExceptionType.badResponse:
+        return 'Server returned an error: ${e.response?.statusCode ?? "Unknown"}';
+      case dio.DioExceptionType.cancel:
+        return 'Request was cancelled';
+      default:
+        return 'Network error occurred. Please try again.';
+    }
+  }
+
+  Future<dio.Response> updateUserLocation(
+      int userId, double latitude, double longitude) async {
+    return _handleRequest(() async {
       final token = await getToken();
       return await _dio.put(
         '${ApiEndpoints.updateUserLocation}$userId/location',
         data: {
-          'latitu': latitude.toString(),
-          'longitu': longitude.toString(),
+          'latitu': latitude,
+          'longitu': longitude,
         },
         options: dio.Options(
           headers: {
             'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
           },
         ),
       );
-    } catch (e) {
-      print('Error in updateUserLocation: $e');
-      throw e;
-    }
+    });
   }
 
-
+  Future<dio.Response> requestOtp(String mobileNumber) async {
+    return _handleRequest(() async {
+      return await _dio.post(
+        ApiEndpoints.requestOtp,
+        data: {'mobile_number': mobileNumber},
+      );
+    });
+  }
 
   Future<dio.Response> verifyOtp(
       String mobileNumber, String otp, int? id) async {
-    try {
+    return _handleRequest(() async {
       final data = {
         'mobile_number': mobileNumber,
         'otp': otp,
@@ -69,33 +182,43 @@ class ApiProvider extends GetxController {
         ApiEndpoints.verifyOtp,
         data: data,
       );
-    } catch (e) {
-      print('Error in verifyOtp: $e');
-      if (e is dio.DioException) {
-        print('DioException details: ${e.message}');
-        print('DioException type: ${e.type}');
-        print('DioException response: ${e.response}');
-      }
-      throw e;
-    }
+    });
   }
 
   Future<dio.Response> getOtp(String mobileNumber) async {
-    try {
+    return _handleRequest(() async {
       return await _dio.get(
         ApiEndpoints.getOtp,
         queryParameters: {'mobile_number': mobileNumber},
       );
-    } catch (e) {
-      print('Error in getOtp: $e');
-      throw e;
-    }
+    });
+  }
+
+  Future<dio.Response> updateAddress(Map<String, String> addressData) async {
+    print('Updating address with data: $addressData');
+    return _handleRequest(() async {
+      final token = await getToken();
+      final formData = dio.FormData.fromMap(addressData);
+
+      final response = await _dio.post(
+        ApiEndpoints.address_update,
+        data: formData,
+        options: dio.Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      print('Address update response: ${response.data}');
+      return response;
+    });
   }
 
   Future<dio.Response> getUserProfile(int userId) async {
-    try {
+    print('Fetching user profile for ID: $userId');
+    return _handleRequest(() async {
       final token = await getToken();
-      return await _dio.get(
+      final response = await _dio.get(
         '${ApiEndpoints.profile}?id=$userId',
         options: dio.Options(
           headers: {
@@ -103,15 +226,14 @@ class ApiProvider extends GetxController {
           },
         ),
       );
-    } catch (e) {
-      print('Error in getUserProfile: $e');
-      throw e;
-    }
+      print('User profile response: ${response.data}');
+      return response;
+    });
   }
 
-  // New method for updating user profile
-  Future<dio.Response> updateUserProfile(int userId, Map<String, dynamic> userData) async {
-    try {
+  Future<dio.Response> updateUserProfile(
+      int userId, Map<String, dynamic> userData) async {
+    return _handleRequest(() async {
       final token = await getToken();
       return await _dio.put(
         '${ApiEndpoints.profile_update}$userId',
@@ -122,14 +244,24 @@ class ApiProvider extends GetxController {
           },
         ),
       );
-    } catch (e) {
-      print('Error in updateUserProfile: $e');
-      throw e;
-    }
+    });
   }
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
+  }
+}
+
+class UserService extends GetxService {
+  final RxInt userId = 0.obs;
+
+  Future<void> initialize() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId.value = prefs.getInt('user_id') ?? 0;
+  }
+
+  int getCurrentUserId() {
+    return userId.value;
   }
 }

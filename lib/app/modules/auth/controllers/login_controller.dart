@@ -80,9 +80,11 @@ class LoginController extends GetxController {
         otpController.text,
         userId.value,
       );
+
       if (response.statusCode == 200) {
         final responseData = response.data;
         if (responseData['success'] == true) {
+          // Save user data
           String token = responseData['token'] ?? '';
           await _authController.saveToken(token);
           await _authController.setUserPhone(phoneController.text);
@@ -91,7 +93,7 @@ class LoginController extends GetxController {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setInt('user_id', responseData['user']['id']);
 
-          // Fetch user data
+          // Fetch user data and initialize cart
           await _authController.getUserData();
 
           Get.off(() => const OnBoardingView());

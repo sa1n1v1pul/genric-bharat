@@ -16,6 +16,7 @@ class ApiEndpoints {
   static const String services = '${apibaseUrl}item';
   static const String search = '${apibaseUrl}items/search';
   static const String profile_update = '${apibaseUrl}users_update/';
+  static const String address_update = '${apibaseUrl}update-address';
   static const String updateUserLocation = '${baseUrl}users/';
   static const String providersList = '${baseUrl}providers/';
 }

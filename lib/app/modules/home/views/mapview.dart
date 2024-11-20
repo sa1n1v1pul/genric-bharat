@@ -54,6 +54,7 @@ class SetLocationState extends State<SetLocatio> {
   dynamic lng;
   CameraPosition? kGooglePlex;
   bool isLoading = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   SetLocationState(this.lat, this.lng) {
     kGooglePlex = CameraPosition(
       target: LatLng(lat, lng),
@@ -69,6 +70,35 @@ class SetLocationState extends State<SetLocatio> {
   bool button = false;
 
   var currentAddress = '';
+
+  Future<void> handleContinuePressed() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      await updateLocationInDatabase(lat, lng);
+
+      if (mounted) {
+        Navigator.of(context).pop(BackLatLng(lat, lng));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating location: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   Future<void> updateLocationInDatabase(double lat, double lng) async {
     try {
@@ -259,6 +289,7 @@ class SetLocationState extends State<SetLocatio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(110.0),
         child: CustomAppBar(
@@ -389,51 +420,48 @@ class SetLocationState extends State<SetLocatio> {
           ),
           (button)
               ? ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      backgroundColor: CustomTheme.loginGradientStart,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 20),
-                      textStyle: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w400)),
-                  onPressed: () async {
-                    await updateLocationInDatabase(lat, lng);
-                    Navigator.pop(context, BackLatLng(lat, lng));
-                  },
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w400),
-                  ),
-                )
+            style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                backgroundColor: CustomTheme.loginGradientStart,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 50, vertical: 20),
+                textStyle: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w400)),
+            onPressed: isLoading ? null : handleContinuePressed,
+            child: isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text(
+              'Continue',
+              style: TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w400),
+            ),
+          )
               : ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      backgroundColor: Colors.grey,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 20),
-                      textStyle: const TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w400)),
-                  onPressed: () async {
-                    await updateLocationInDatabase(lat, lng);
-
-                    // Then navigate back with the new location
-                    Navigator.pop(context, BackLatLng(lat, lng));
-                  },
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.w400),
-                  ),
-                )
+            style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                backgroundColor: Colors.grey,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 50, vertical: 20),
+                textStyle: const TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.w400)),
+            onPressed: isLoading ? null : handleContinuePressed,
+            child: isLoading
+                ? const CircularProgressIndicator(color: Colors.black)
+                : const Text(
+              'Continue',
+              style: TextStyle(
+                  color: Colors.black, fontWeight: FontWeight.w400),
+            ),
+          )
         ],
       ),
     );
   }
+
 
   void getMapLoc() async {
     _getCameraMoveLocation(LatLng(lat, lng));

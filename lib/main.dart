@@ -14,23 +14,64 @@ import 'app/modules/onboarding/startup_view.dart';
 import 'app/modules/routes/app_pages.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await GetStorage.init();
-  LocationBinding().dependencies();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    await InitializationService.initServices();
+    runApp(const MyApp());
+  } catch (e) {
+    print('Fatal error during app initialization: $e');
+  }
+}
 
-  SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+class InitializationService {
+  static Future<void> initServices() async {
+    try {
+      print('Starting services initialization...');
 
-  CustomTheme.loadSavedTheme();
-  Get.put(ThemeController());
-  Get.lazyPut(() => ApiProvider());
-  Get.put(AuthController());
-  Get.put(LoginController());
-  Get.put(CartController());
-  Get.put(CartApiService());
-  runApp(const MyApp());
+      // Initialize GetStorage
+      await GetStorage.init();
+      print('✓ GetStorage initialized');
+
+      // Initialize Location Services
+      LocationBinding().dependencies();
+      print('✓ Location services initialized');
+
+      // Set Screen Orientation
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+      print('✓ Screen orientation set');
+
+      // Initialize Theme
+      CustomTheme.loadSavedTheme();
+      print('✓ Theme loaded');
+
+      // Initialize Core Controllers
+      Get.put(ApiProvider());
+      Get.put(ThemeController());
+      Get.put(AuthController(), permanent: true);
+      Get.put(LoginController());
+      print('✓ Core controllers initialized');
+
+      // Initialize User Service
+      final userService = UserService();
+      await userService.initialize();
+      Get.put(userService);
+
+      // Initialize CartApiService but don't initialize CartController yet
+      final cartService = CartApiService();
+      await cartService.initializeService();
+      Get.put(cartService);
+      print('✓ Cart service initialized');
+
+    } catch (e, stackTrace) {
+      print('❌ Error during initialization: $e');
+      print('Stack trace: $stackTrace');
+    }
+
+    print('Services initialization completed');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -46,10 +87,13 @@ class MyApp extends StatelessWidget {
       themeMode: CustomTheme.themeMode,
       home: const StartupView(),
       getPages: AppPages.routes,
+      initialBinding: BindingsBuilder(() {
+        // Cart controller will be initialized after login
+        Get.lazyPut(() => CartController(), fenix: true);
+      }),
     );
   }
 }
-
 class ThemeController extends GetxController {
   void changeTheme(int colorIndex) {
     CustomTheme.changeTheme(colorIndex);

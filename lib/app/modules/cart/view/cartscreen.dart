@@ -17,7 +17,6 @@ class CartScreen extends GetView<CartController> {
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      // Conditional background color based on navigation source
       backgroundColor: fromBottomNav ? CustomTheme.backgroundColor : Colors.white,
       appBar: AppBar(
         backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
@@ -52,6 +51,14 @@ class CartScreen extends GetView<CartController> {
           ),
         )
             : null,
+        actions: [
+          Obx(() => controller.cartItems.isNotEmpty
+              ? IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => _showClearCartDialog(context),
+          )
+              : const SizedBox()),
+        ],
         iconTheme: IconThemeData(
           color: isDarkMode
               ? const Color.fromARGB(255, 244, 243, 248)
@@ -68,6 +75,31 @@ class CartScreen extends GetView<CartController> {
             ? _buildEmptyCart()
             : _buildCartContent(),
       ),
+    );
+  }
+
+  void _showClearCartDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear Cart'),
+          content: const Text('Are you sure you want to clear all items from your cart?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                controller.clearAllCart();
+              },
+              child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -112,7 +144,7 @@ class CartScreen extends GetView<CartController> {
             itemBuilder: (context, index) {
               final item = controller.cartItems[index];
               return Dismissible(
-                key: Key(item.id),
+                key: UniqueKey(), // Use UniqueKey instead of item.id to ensure unique keys
                 direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: Alignment.centerRight,
@@ -123,8 +155,39 @@ class CartScreen extends GetView<CartController> {
                     color: Colors.white,
                   ),
                 ),
-                onDismissed: (direction) {
-                  controller.removeFromCart(item.id);
+                confirmDismiss: (direction) async {
+                  final result = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Remove Item'),
+                        content: Text(
+                            'Are you sure you want to remove ${item.name} from your cart?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text(
+                              'Remove',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
+                  if (result == true) {
+                    // Remove item from local list first
+                    controller.cartItems.removeAt(index);
+                    // Then call API to remove from backend
+                    await controller.removeFromCart(item.id);
+                  }
+
+                  return false; // Always return false to let us handle the dismissal
                 },
                 child: _buildCartItemCard(item),
               );
@@ -281,6 +344,7 @@ class CartScreen extends GetView<CartController> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -301,32 +365,68 @@ class CartScreen extends GetView<CartController> {
             ],
           ),
           const SizedBox(height: 16),
-          SizedBox(
+          Obx(() => SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                // Handle checkout
-              },
+              onPressed: _getButtonAction(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: CustomTheme.loginGradientStart,
+                backgroundColor: _getButtonColor(),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
-                'Proceed to Checkout',
+              child: Text(
+                _getButtonText(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white, // White text color
+                  color: controller.cartItems.isEmpty ? Colors.grey[600] : Colors.white,
                 ),
               ),
             ),
-
-          ),
+          )),
+          if (controller.cartItems.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Obx(() => Text(
+              _getHelperText(),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            )),
+          ],
         ],
       ),
     );
+  }
+
+
+  VoidCallback? _getButtonAction() {
+    if (controller.cartItems.isEmpty) return null;
+    return () => controller.proceedToCheckout();
+  }
+
+  Color _getButtonColor() {
+    if (controller.cartItems.isEmpty) {
+      return Colors.grey[300]!;
+    }
+    return CustomTheme.loginGradientStart;
+  }
+
+  String _getButtonText() {
+    if (controller.cartItems.isEmpty) {
+      return 'Cart is Empty';
+    }
+    return controller.hasAddress.value
+        ? 'Proceed to Checkout'
+        : 'Add Delivery Address';
+  }
+
+  String _getHelperText() {
+    if (controller.hasAddress.value) {
+      return 'Inclusive of all taxes';
+    }
+    return 'Please add delivery address to continue';
   }
 }
