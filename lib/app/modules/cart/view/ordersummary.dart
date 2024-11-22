@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:genric_bharat/app/modules/cart/view/razorpayscreen.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
@@ -92,7 +93,7 @@ class OrderSummaryScreen extends GetView<CartController> {
             // Delivery details
             _buildDeliveryDetails(deliveryController),
             // Bottom summary
-            _buildOrderSummary(),
+            _buildOrderSummary(deliveryController),
           ],
         ),
       ),
@@ -315,7 +316,7 @@ class OrderSummaryScreen extends GetView<CartController> {
     });
   }
 
-  Widget _buildOrderSummary() {
+  Widget _buildOrderSummary(DeliveryDetailsController deliveryController) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -331,20 +332,61 @@ class OrderSummaryScreen extends GetView<CartController> {
       ),
       child: Column(
         children: [
+          // Show original amount if there's a discount
+          if (deliveryController.discount.value > 0) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Subtotal:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Text(
+                  '₹${deliveryController.subtotal.value.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Discount (${deliveryController.appliedCoupon.value}):',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.green[700],
+                  ),
+                ),
+                Text(
+                  '-₹${deliveryController.discount.value.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.green[700],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Total Amount:',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              Obx(
-                    () => Text(
-                  '₹${controller.total.value.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+              Text(
+                '₹${deliveryController.finalAmount.value.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -354,8 +396,7 @@ class OrderSummaryScreen extends GetView<CartController> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Handle payment
-                Get.toNamed('/payment');
+                Get.to(() => const RazorpayCheckoutScreen());
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: CustomTheme.loginGradientStart,

@@ -11,6 +11,7 @@ import 'app/modules/cart/controller/cartcontroller.dart';
 import 'app/modules/cart/controller/cartservice.dart';
 import 'app/modules/location/binding/location_binding.dart';
 import 'app/modules/onboarding/startup_view.dart';
+import 'app/modules/profile/controller/profile_controller.dart';
 import 'app/modules/routes/app_pages.dart';
 
 void main() async {
@@ -52,6 +53,7 @@ class InitializationService {
       Get.put(ThemeController());
       Get.put(AuthController(), permanent: true);
       Get.put(LoginController());
+      Get.put(ProfileController());
       print('✓ Core controllers initialized');
 
       // Initialize User Service

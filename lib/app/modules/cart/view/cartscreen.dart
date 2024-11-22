@@ -17,12 +17,17 @@ class CartScreen extends GetView<CartController> {
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      backgroundColor: fromBottomNav ? CustomTheme.backgroundColor : Colors.white,
+      backgroundColor:
+      fromBottomNav ? CustomTheme.backgroundColor : Colors.white,
       appBar: AppBar(
         backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         centerTitle: true,
         scrolledUnderElevation: 0,
+        // Modify this part
+        automaticallyImplyLeading:
+        !fromBottomNav,
+        // This will automatically handle back button visibility
         leading: !fromBottomNav
             ? Container(
           padding: const EdgeInsets.only(left: 4),
@@ -52,9 +57,10 @@ class CartScreen extends GetView<CartController> {
         )
             : null,
         actions: [
-          Obx(() => controller.cartItems.isNotEmpty
+          Obx(() =>
+          controller.cartItems.isNotEmpty
               ? IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(Icons.delete_outline,color: Colors.red,),
             onPressed: () => _showClearCartDialog(context),
           )
               : const SizedBox()),
@@ -71,7 +77,8 @@ class CartScreen extends GetView<CartController> {
         ),
       ),
       body: Obx(
-            () => controller.cartItems.isEmpty
+            () =>
+        controller.cartItems.isEmpty
             ? _buildEmptyCart()
             : _buildCartContent(),
       ),
@@ -84,7 +91,8 @@ class CartScreen extends GetView<CartController> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Clear Cart'),
-          content: const Text('Are you sure you want to clear all items from your cart?'),
+          content: const Text(
+              'Are you sure you want to clear all items from your cart?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -144,7 +152,9 @@ class CartScreen extends GetView<CartController> {
             itemBuilder: (context, index) {
               final item = controller.cartItems[index];
               return Dismissible(
-                key: UniqueKey(), // Use UniqueKey instead of item.id to ensure unique keys
+                key:
+                UniqueKey(),
+                // Use UniqueKey instead of item.id to ensure unique keys
                 direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: Alignment.centerRight,
@@ -162,7 +172,8 @@ class CartScreen extends GetView<CartController> {
                       return AlertDialog(
                         title: const Text('Remove Item'),
                         content: Text(
-                            'Are you sure you want to remove ${item.name} from your cart?'),
+                            'Are you sure you want to remove ${item
+                                .name} from your cart?'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
@@ -200,30 +211,55 @@ class CartScreen extends GetView<CartController> {
   }
 
   Widget _buildCartItemCard(CartItem item) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                '${ApiEndpoints.imageBaseUrl}${item.image}',
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.error_outline),
-                  );
-                },
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  '${ApiEndpoints.imageBaseUrl}${item.image}',
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 90,
+                      height: 90,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.error_outline),
+                    );
+                  },
+                ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,98 +268,109 @@ class CartScreen extends GetView<CartController> {
                     item.name,
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     '₹${item.price.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: CustomTheme.loginGradientStart,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
-            Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.white,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () {
-                        if (item.quantity > 1) {
-                          controller.decrementQuantity(item.id);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.remove,
-                          size: 20,
-                          color: item.quantity > 1 ? Colors.black : Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    '${item.quantity}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.white,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () => controller.incrementQuantity(item.id),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.add,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _buildQuantityControls(item),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuantityControls(CartItem item) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildQuantityButton(
+            icon: Icons.remove,
+            onTap: () {
+              if (item.quantity > 1) {
+                controller.decrementQuantity(item.id);
+              }
+            },
+            isEnabled: item.quantity > 1,
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              '${item.quantity}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          _buildQuantityButton(
+            icon: Icons.add,
+            onTap: () => controller.incrementQuantity(item.id),
+            isEnabled: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required bool isEnabled,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isEnabled ? Colors.white : Colors.grey[200],
+        boxShadow: isEnabled
+            ? [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: isEnabled ? onTap : null,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isEnabled ? CustomTheme.loginGradientStart : Colors.grey,
+            ),
+          ),
         ),
       ),
     );
@@ -333,74 +380,248 @@ class CartScreen extends GetView<CartController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.98),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, -2),
+            blurRadius: 15,
+            offset: const Offset(0, -3),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Total Amount:',
-                style: TextStyle(fontSize: 16),
+          if (controller.cartItems.isNotEmpty) ...[
+            // Coupon Section with Dropdown/Dialog approach
+            Row(
+              children: [
+                Expanded(
+                  child: Obx(() => controller.appliedCouponCode.isEmpty
+                      ? OutlinedButton.icon(
+                    icon: const Icon(Icons.local_offer_outlined, size: 16),
+                    label: const Text('Apply Coupon'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onPressed: () => _showCouponsDialog(),
+                  )
+                      : Chip(
+                    label: Text(
+                      'Applied Coupon: ${controller.appliedCouponCode.value}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    deleteIcon: const Icon(Icons.close, size: 16,color: Colors.red,),
+                    onDeleted: () => controller.removeCoupon(),
+                  )),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+          ],
+
+          // Order Summary Section
+          _buildSummaryRow('Subtotal:', controller.total.value),
+          if (controller.discountAmount.value > 0) ...[
+            const SizedBox(height: 8),
+            _buildSummaryRow(
+              'Discount (${controller.appliedCouponCode.value}):',
+              -controller.discountAmount.value,
+              isDiscount: true,
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // Total Amount Container
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blue.withOpacity(0.1),
+                  Colors.purple.withOpacity(0.1),
+                ],
               ),
-              Obx(
-                    () => Text(
-                  '₹${controller.total.value.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 18,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Amount:',
+                  style: TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            ],
+                Obx(() =>
+                    Text(
+                      '₹${(controller.total.value -
+                          controller.discountAmount.value).toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        foreground: Paint()
+                          ..shader = LinearGradient(
+                            colors: [
+                              CustomTheme.loginGradientStart,
+                              CustomTheme.loginGradientStart.withBlue(255),
+                            ],
+                          ).createShader(
+                              const Rect.fromLTWH(0.0, 0.0, 100.0, 30.0)),
+                      ),
+                    )),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
+
+          // Proceed Button
           Obx(() => SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _getButtonAction(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getButtonColor(),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: Text(
                 _getButtonText(),
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
                   color: controller.cartItems.isEmpty ? Colors.grey[600] : Colors.white,
                 ),
               ),
             ),
           )),
           if (controller.cartItems.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Obx(() => Text(
-              _getHelperText(),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            )),
+                  _getHelperText(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                )),
           ],
         ],
       ),
     );
   }
 
+  Widget _buildSummaryRow(String label, double amount, {bool isDiscount = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: isDiscount ? Colors.green : Colors.grey[800],
+            ),
+          ),
+          Text(
+            '₹${amount.toStringAsFixed(2)}',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDiscount ? Colors.green : Colors.grey[800],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCouponsDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Available Coupons',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Get.back(),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Obx(() => controller.isLoadingCoupons.value
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.separated(
+                shrinkWrap: true,
+                itemCount: controller.availablePromoCodes.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final promoCode = controller.availablePromoCodes[index];
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      promoCode.codeName,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${promoCode.discount}${promoCode.type == 'percentage' ? '%' : '₹'} off',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    trailing: TextButton(
+                      onPressed: () {
+                        controller.applyCoupon(promoCode.codeName);
+                        Get.back();
+                      },
+                      child: const Text('Apply'),
+                    ),
+                  );
+                },
+              ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getButtonText() {
+    if (controller.cartItems.isEmpty) {
+      return 'Cart is Empty';
+    }
+    return controller.hasAddress.value ? 'Proceed to Checkout' : 'Add Delivery Address';
+  }
 
   VoidCallback? _getButtonAction() {
     if (controller.cartItems.isEmpty) return null;
@@ -413,16 +634,6 @@ class CartScreen extends GetView<CartController> {
     }
     return CustomTheme.loginGradientStart;
   }
-
-  String _getButtonText() {
-    if (controller.cartItems.isEmpty) {
-      return 'Cart is Empty';
-    }
-    return controller.hasAddress.value
-        ? 'Proceed to Checkout'
-        : 'Add Delivery Address';
-  }
-
   String _getHelperText() {
     if (controller.hasAddress.value) {
       return 'Inclusive of all taxes';

@@ -43,9 +43,9 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildPatientNameCard(),
+                _buildPatientNameWidget(),
                 const SizedBox(height: 24),
-                _buildSectionHeader('Select Address'),
+                _buildSectionHeader('Delivery Address'),
                 const SizedBox(height: 12),
                 _buildAddressCard(),
                 const SizedBox(height: 40),
@@ -65,6 +65,35 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
     );
   }
 
+  Widget _buildPatientNameWidget() {
+    return Obx(() {
+      if (controller.selectedPatientName.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: TextField(
+            controller: controller.patientNameController,
+            decoration: InputDecoration(
+              hintText: 'Enter patient name',
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      } else {
+        return _buildPatientNameCard();
+      }
+    });
+  }
+
   Widget _buildSectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -75,17 +104,6 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
-          ),
-        ),
-        TextButton.icon(
-          onPressed: controller.onAddAddressPressed,
-          icon: const Icon(Icons.add, color: Colors.blue),
-          label: const Text(
-            'Add Address',
-            style: TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.w500,
-            ),
           ),
         ),
       ],
@@ -110,110 +128,105 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
   }
 
   Widget _buildAddressCard() {
+    // Existing address card code remains the same
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
       ),
-      child: RadioListTile<String>(
-        value: 'home',
-        groupValue: 'home',
-        onChanged: (value) {},
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Home',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Delivery Address',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                  onPressed: controller.onAddAddressPressed,
-                ),
-              ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                onPressed: controller.onAddAddressPressed,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            controller.selectedAddress.value,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
             ),
-            const SizedBox(height: 8),
-            Text(
-              controller.selectedAddress.value,
+          ),
+          const SizedBox(height: 4),
+          RichText(
+            text: TextSpan(
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
-            ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+              children: [
+                const TextSpan(
+                  text: 'Area: ',
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'Locality: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: controller.selectedLocality.value),
-                ],
-              ),
+                TextSpan(text: controller.selectedLocality.value),
+              ],
             ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+          ),
+          const SizedBox(height: 4),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              children: [
+                const TextSpan(
+                  text: 'City: ',
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'City: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: controller.selectedCity.value),
-                ],
-              ),
+                TextSpan(text: controller.selectedCity.value),
+              ],
             ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+          ),
+          const SizedBox(height: 4),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              children: [
+                const TextSpan(
+                  text: 'State: ',
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'State: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: controller.selectedState.value),
-                ],
-              ),
+                TextSpan(text: controller.selectedState.value),
+              ],
             ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
+          ),
+          const SizedBox(height: 4),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
+              children: [
+                const TextSpan(
+                  text: 'PIN: ',
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'PIN: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: controller.selectedPincode.value),
-                ],
-              ),
+                TextSpan(text: controller.selectedPincode.value),
+              ],
             ),
-          ],
-        ),
-        activeColor: CustomTheme.loginGradientStart,
-        selected: true,
+          ),
+        ],
       ),
     );
   }

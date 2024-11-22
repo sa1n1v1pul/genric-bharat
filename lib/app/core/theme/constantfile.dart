@@ -7,4 +7,5 @@ SizedBox widthSpace = const SizedBox(width: 10.0);
 dynamic headingSize = 16.0;
 dynamic titleSize = 14.0;
 
-const apiKey = 'AIzaSyCRQIhsGS3xrGeopcSPW70zal2yNRIQAJc';
+const apiKey =
+    'AIzaSyCRQIhsGS3xrGeopcSPW70zal2yNRIQAJc';

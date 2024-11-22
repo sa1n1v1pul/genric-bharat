@@ -16,6 +16,22 @@ class ApiProvider extends GetxController {
     _initializeDio();
   }
 
+  Future<dio.Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+    return _handleRequest(() async {
+      final token = await getToken();
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: dio.Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+    });
+  }
+
   void _initializeDio() {
     _dio = dio.Dio(dio.BaseOptions(
       baseUrl: ApiEndpoints.baseUrl,
@@ -91,6 +107,18 @@ class ApiProvider extends GetxController {
       }
     }
     return handler.next(err);
+  }
+
+  Future<dio.Response> checkPincode(String pincode) async {
+    print('Checking pincode: $pincode');
+    return _handleRequest(() async {
+      final response = await _dio.get(
+        ApiEndpoints.pincode_checking,
+        queryParameters: {'pin_code': pincode},
+      );
+      print('Pincode check response: ${response.data}');
+      return response;
+    });
   }
 
   Future<dio.Response> _handleRequest(Future<dio.Response> Function() request) async {
@@ -235,12 +263,14 @@ class ApiProvider extends GetxController {
       int userId, Map<String, dynamic> userData) async {
     return _handleRequest(() async {
       final token = await getToken();
-      return await _dio.put(
+      // Changed from PUT to POST
+      return await _dio.post(
         '${ApiEndpoints.profile_update}$userId',
         data: userData,
         options: dio.Options(
           headers: {
             'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
           },
         ),
       );
@@ -258,7 +288,14 @@ class UserService extends GetxService {
 
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
-    userId.value = prefs.getInt('user_id') ?? 0;
+    final savedUserId = prefs.getInt('user_id');
+
+    if (savedUserId != null && savedUserId > 0) {
+      userId.value = savedUserId;
+      print('Initialized UserService with User ID: $savedUserId');
+    } else {
+      print('No valid user ID found in SharedPreferences');
+    }
   }
 
   int getCurrentUserId() {

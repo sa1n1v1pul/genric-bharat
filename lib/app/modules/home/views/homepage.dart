@@ -1642,10 +1642,10 @@ class _HomePageState extends State<HomePage> {
     required double originalPrice,
     required double discountedPrice,
     required String image,
-    required Map<String, dynamic> product,  // Add this parameter
+    required Map<String, dynamic> product,
     bool isNetworkImage = false,
   }) {
-    final cartController = Get.find<CartController>();  // Get cart controller instance
+    final cartController = Get.find<CartController>();
 
     return Container(
       width: 160,
@@ -1748,9 +1748,8 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Add to cart and navigate
-                        // cartController.addToCart(product);
+                      onPressed: () async {
+                        await cartController.addToCart(product);
                         Get.to(() => const CartScreen());
                       },
                       style: ElevatedButton.styleFrom(

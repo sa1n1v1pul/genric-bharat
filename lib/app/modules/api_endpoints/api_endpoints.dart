@@ -11,12 +11,15 @@ class ApiEndpoints {
   static const String categories = '${apibaseUrl}categori';
   static const String categories_item = '${apibaseUrl}category-item';
   static const String profile = '${apibaseUrl}users';
+  static const String pincode_checking = '${apibaseUrl}check-pin';
   static const String subcategories = '${apibaseUrl}subcategories';
   static const String sliders = '${apibaseUrl}sliders';
   static const String services = '${apibaseUrl}item';
   static const String search = '${apibaseUrl}items/search';
+  static const String coupnecode = '${apibaseUrl}promo-codes';
   static const String profile_update = '${apibaseUrl}users_update/';
   static const String address_update = '${apibaseUrl}update-address';
   static const String updateUserLocation = '${baseUrl}users/';
   static const String providersList = '${baseUrl}providers/';
 }
+

@@ -1,7 +1,11 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:genric_bharat/app/modules/cart/controller/cartservice.dart';
 import 'package:get/get.dart';
 
 
+import '../../api_endpoints/api_endpoints.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../home/views/addressview.dart';
 import '../../routes/app_routes.dart';
@@ -14,15 +18,77 @@ class CartController extends GetxController {
   RxInt cartCount = 0.obs;
   RxBool isLoading = false.obs;
   RxBool hasAddress = false.obs;
-
+  RxString appliedCouponCode = ''.obs;
+  RxDouble discountAmount = 0.0.obs;
+  RxList<PromoCode> availablePromoCodes = <PromoCode>[].obs;
+  RxBool isLoadingCoupons = false.obs;
+  RxBool isCouponValid = false.obs;
+  RxString couponErrorMessage = ''.obs;
+  double get finalAmount => total.value - discountAmount.value;
   @override
   void onInit() async {
     super.onInit();
     print('🚀 CartController initialized');
-
+    await fetchPromoCodes();
 
   }
 
+  Future<void> fetchPromoCodes() async {
+    try {
+      isLoadingCoupons.value = true;
+      final response = await _apiProvider.get(ApiEndpoints.coupnecode);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        availablePromoCodes.value = (data['promo_codes'] as List)
+            .map((code) => PromoCode.fromJson(code))
+            .toList();
+      }
+    } catch (e) {
+      print('Error fetching promo codes: $e');
+    } finally {
+      isLoadingCoupons.value = false;
+    }
+  }
+
+  // Add method to apply coupon
+  void applyCoupon(String code) {
+    final promoCode = availablePromoCodes.firstWhereOrNull(
+          (coupon) => coupon.codeName.toLowerCase() == code.toLowerCase(),
+    );
+
+    if (promoCode == null) {
+      couponErrorMessage.value = 'Invalid coupon code';
+      isCouponValid.value = false;
+      discountAmount.value = 0.0;
+      return;
+    }
+
+    if (total.value < 500) {
+      couponErrorMessage.value = 'Minimum order amount should be ₹500';
+      isCouponValid.value = false;
+      discountAmount.value = 0.0;
+      return;
+    }
+
+    isCouponValid.value = true;
+    appliedCouponCode.value = promoCode.codeName;
+
+    // Calculate discount
+    if (promoCode.type == 'percentage') {
+      discountAmount.value = (total.value * promoCode.discount / 100);
+    } else {
+      discountAmount.value = promoCode.discount;
+    }
+  }
+
+  // Add method to remove coupon
+  void removeCoupon() {
+    appliedCouponCode.value = '';
+    discountAmount.value = 0.0;
+    isCouponValid.value = false;
+    couponErrorMessage.value = '';
+  }
   Future<void> initializeCart() async {
     try {
       final userId = await _apiService.getUserId();
@@ -66,13 +132,46 @@ class CartController extends GetxController {
   }
 
   Future<void> proceedToCheckout() async {
-    if (!hasAddress.value) {
-      Get.to(() => AddressScreen());
-      return;
-    }
+    try {
+      if (total.value < 500) {
+        Get.snackbar(
+          'Error',
+          'Minimum order amount should be ₹500',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.black,
+        );
+        return;
+      }
 
-    Get.toNamed(Routes.DELIVERY);
+      if (!hasAddress.value) {
+        Get.to(() => AddressScreen());
+        return;
+      }
+
+      // Pass order summary data through Get.arguments
+      Get.toNamed(Routes.DELIVERY, arguments: getOrderSummary());
+    } catch (e) {
+      print('Error proceeding to checkout: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to proceed to checkout',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+      );
+    }
   }
+
+  Map<String, dynamic> getOrderSummary() {
+    return {
+      'subtotal': total.value,
+      'discount': discountAmount.value,
+      'finalAmount': finalAmount,
+      'appliedCoupon': appliedCouponCode.value,
+    };
+  }
+
+
+
 
   Future<void> addToCart(Map<String, dynamic> service) async {
     try {
@@ -279,4 +378,33 @@ class CartItem {
     required this.image,
     required this.quantity,
   });
+}
+
+class PromoCode {
+  final int id;
+  final String codeName;
+  final String title;
+  final double discount;
+  final String type;
+  final bool status;
+
+  PromoCode({
+    required this.id,
+    required this.codeName,
+    required this.title,
+    required this.discount,
+    required this.type,
+    required this.status,
+  });
+
+  factory PromoCode.fromJson(Map<String, dynamic> json) {
+    return PromoCode(
+      id: json['id'],
+      codeName: json['code_name'],
+      title: json['title'],
+      discount: double.parse(json['discount'].toString()),
+      type: json['type'],
+      status: json['status'] == 1,
+    );
+  }
 }

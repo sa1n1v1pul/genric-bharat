@@ -146,7 +146,7 @@ class LocationController extends GetxController {
     try {
       print("Executing getAddressFromLatLng");
       List<Placemark> placemarks =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
+      await placemarkFromCoordinates(position.latitude, position.longitude);
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
@@ -154,16 +154,16 @@ class LocationController extends GetxController {
         String localityName = place.subLocality?.isNotEmpty == true
             ? place.subLocality!
             : (place.locality?.isNotEmpty == true
-                ? place.locality!
-                : (place.subAdministrativeArea?.isNotEmpty == true
-                    ? place.subAdministrativeArea!
-                    : 'Unknown Location'));
+            ? place.locality!
+            : (place.subAdministrativeArea?.isNotEmpty == true
+            ? place.subAdministrativeArea!
+            : 'Unknown Location'));
 
         String city = place.locality?.isNotEmpty == true
             ? place.locality!
             : (place.subAdministrativeArea?.isNotEmpty == true
-                ? place.subAdministrativeArea!
-                : 'Unknown City');
+            ? place.subAdministrativeArea!
+            : 'Unknown City');
 
         stateName.value = place.administrativeArea ?? 'Unknown State';
 
@@ -175,7 +175,7 @@ class LocationController extends GetxController {
         }
 
         currentAddress.value =
-            "${place.street}, $localityName, $city, ${stateName.value}";
+        "${place.street}, $localityName, $city, ${stateName.value}";
 
         // Save the new location
         saveLastKnownLocation();
@@ -183,7 +183,7 @@ class LocationController extends GetxController {
     } catch (e) {
       print('Error in reverse geocoding: $e');
       currentAddress.value =
-          '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+      '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
       cityName.value = 'Location Unavailable';
       stateName.value = '';
     }
@@ -325,23 +325,23 @@ class LocationController extends GetxController {
   Future<void> updateSelectedLocation(LatLng location) async {
     selectedLocation.value = location;
     List<Placemark> placemarks =
-        await placemarkFromCoordinates(location.latitude, location.longitude);
+    await placemarkFromCoordinates(location.latitude, location.longitude);
     if (placemarks.isNotEmpty) {
       Placemark place = placemarks[0];
 
       String localityName = place.subLocality?.isNotEmpty == true
           ? place.subLocality!
           : (place.locality?.isNotEmpty == true
-              ? place.locality!
-              : (place.subAdministrativeArea?.isNotEmpty == true
-                  ? place.subAdministrativeArea!
-                  : 'Unknown Location'));
+          ? place.locality!
+          : (place.subAdministrativeArea?.isNotEmpty == true
+          ? place.subAdministrativeArea!
+          : 'Unknown Location'));
 
       String city = place.locality?.isNotEmpty == true
           ? place.locality!
           : (place.subAdministrativeArea?.isNotEmpty == true
-              ? place.subAdministrativeArea!
-              : 'Unknown City');
+          ? place.subAdministrativeArea!
+          : 'Unknown City');
 
       stateName.value = place.administrativeArea ?? 'Unknown State';
 
@@ -353,7 +353,7 @@ class LocationController extends GetxController {
       }
 
       currentAddress.value =
-          "${place.street}, $localityName, $city, ${stateName.value}";
+      "${place.street}, $localityName, $city, ${stateName.value}";
     }
 
     final GoogleMapController controller = await mapController.future;

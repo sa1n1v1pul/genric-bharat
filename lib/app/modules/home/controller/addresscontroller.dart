@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../cart/controller/cartcontroller.dart';
 import '../../location/controller/location_controller.dart';
@@ -9,8 +10,8 @@ import '../../routes/app_routes.dart';
 class AddressController extends GetxController {
   final LocationController locationController = Get.find<LocationController>();
   final ApiProvider apiProvider = Get.find<ApiProvider>();
-  final UserService userService = Get.find<UserService>();
   final formKey = GlobalKey<FormState>();
+  final RxBool isManualPincodeEntry = true.obs;
 
   // Text Controllers
   final pincodeController = TextEditingController();
@@ -25,19 +26,124 @@ class AddressController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool hasAddress = false.obs;
   final RxString savedAddress = ''.obs;
-  final RxInt selectedAddressType = 0.obs; // 0: Home, 1: Office, 2: Other
+  final RxInt selectedAddressType = 0.obs;
+  final RxBool isPincodeValid = false.obs;
+  final RxString pincodeValidationMessage = ''.obs;
+  final RxBool isDeliveryAvailable = false.obs;
+
+  // Previous pincode to track changes
+  String previousPincode = '';
+  String? validatePincode(String? value) {
+    if (value?.isEmpty ?? true) {
+      return 'Please enter pincode';
+    }
+    if (value!.length != 6) {
+      return 'Please enter valid 6-digit pincode';
+    }
+    if (!isPincodeValid.value) {
+      return 'Invalid pincode';
+    }
+    if (!isDeliveryAvailable.value) {
+      return 'Delivery not available in this location';
+    }
+    return null;
+  }
 
   @override
   void onInit() {
     super.onInit();
+    pincodeController.addListener(_handlePincodeChange);
     loadSavedAddress();
     if (locationController.currentPosition.value != null) {
       _populateFieldsFromLocation();
     }
   }
 
+  void _handlePincodeChange() {
+    final currentPincode = pincodeController.text.trim();
+
+    // Only proceed if pincode has actually changed
+    if (currentPincode != previousPincode) {
+      previousPincode = currentPincode;
+      isManualPincodeEntry.value = true;
+
+      // Clear all fields when pincode changes
+      _clearFieldsExceptPincode();
+
+      // Validate and populate new data if pincode is complete
+      if (currentPincode.length == 6) {
+        _validateAndPopulateFromPincode();
+      } else {
+        // Reset validation states if pincode is incomplete
+        _resetValidationStates();
+      }
+    }
+  }
+
+  void _clearFieldsExceptPincode() {
+    addressLine1Controller.clear();
+    addressLine2Controller.clear();
+    localityController.clear();
+    landmarkController.clear();
+    cityController.clear();
+    stateController.clear();
+  }
+
+  void _resetValidationStates() {
+    isPincodeValid.value = false;
+    isDeliveryAvailable.value = false;
+    pincodeValidationMessage.value = '';
+  }
+
+  Future<void> _validateAndPopulateFromPincode() async {
+    try {
+      isLoading.value = true;
+      _resetValidationStates();
+
+      final response = await apiProvider.checkPincode(pincodeController.text);
+      print('Pincode API Response: ${response.data}');
+
+      if (response.data['status'] == 'success') {
+        isPincodeValid.value = true;
+        final locationData = response.data['data'];
+
+        isDeliveryAvailable.value = locationData['delivery_status'] == 'Available';
+        pincodeValidationMessage.value = isDeliveryAvailable.value
+            ? 'Delivery available in this location'
+            : 'Delivery not available in this location';
+
+        if (isDeliveryAvailable.value) {
+          _populateFieldsFromPincodeData(locationData);
+        }
+      } else {
+        pincodeValidationMessage.value = response.data['message'] ?? 'Invalid pincode';
+      }
+    } catch (e) {
+      print('Pincode validation error: $e');
+      pincodeValidationMessage.value = 'Error validating pincode';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _populateFieldsFromPincodeData(Map<String, dynamic> data) {
+    cityController.text = data['city_name'] ?? '';
+    stateController.text = data['state'] ?? '';
+    localityController.text = data['locality'] ?? '';
+    addressLine2Controller.text = data['post_office'] ?? ''; // Always use post office
+
+    if (data['landmark'] != null) {
+      landmarkController.text = data['landmark'];
+    }
+
+    if (data['sublocality'] != null) {
+      addressLine1Controller.text = data['sublocality'];
+    }
+  }
+
   @override
   void onClose() {
+    pincodeController.removeListener(_handlePincodeChange);
     pincodeController.dispose();
     addressLine1Controller.dispose();
     addressLine2Controller.dispose();
@@ -48,9 +154,15 @@ class AddressController extends GetxController {
     super.onClose();
   }
 
+  Future<int> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('user_id') ?? 0;
+  }
+
   Future<void> getCurrentLocation() async {
     try {
       isLoading.value = true;
+      isManualPincodeEntry.value = false;
       await locationController.requestPermissionAndGetLocation();
       await _populateFieldsFromLocation();
     } catch (e) {
@@ -71,7 +183,18 @@ class AddressController extends GetxController {
       print('Loading address from API...');
       isLoading.value = true;
 
-      final userId = userService.getCurrentUserId();
+      final userId = await _getUserId();
+      if (userId <= 0) {
+        print('Invalid User ID: $userId');
+        Get.snackbar(
+          'Error',
+          'Please log in again',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.black,
+        );
+        return;
+      }
+
       final response = await apiProvider.getUserProfile(userId);
       final userData = response.data['data'];
       print('Received user profile data: $userData');
@@ -103,6 +226,7 @@ class AddressController extends GetxController {
       isLoading.value = false;
     }
   }
+
   String _formatAddress(Map<String, dynamic> userData) {
     final parts = <String>[];
 
@@ -142,19 +266,34 @@ class AddressController extends GetxController {
 
           if (place.postalCode != null && place.postalCode!.isNotEmpty) {
             pincodeController.text = place.postalCode!;
+            // Always make API call to get post office name
+            if (pincodeController.text.length == 6) {
+              try {
+                final response = await apiProvider.checkPincode(pincodeController.text);
+                if (response.data['status'] == 'success' &&
+                    response.data['data'] != null) {
+                  final locationData = response.data['data'];
+                  addressLine2Controller.text = locationData['post_office'] ?? '';
+
+                  // Update other fields from API response
+                  if (locationData['locality'] != null) {
+                    localityController.text = locationData['locality'];
+                  }
+                  if (locationData['landmark'] != null) {
+                    landmarkController.text = locationData['landmark'];
+                  }
+                  if (locationData['sublocality'] != null) {
+                    addressLine1Controller.text = locationData['sublocality'];
+                  }
+                }
+              } catch (e) {
+                print('Error fetching post office data: $e');
+              }
+            }
           }
 
-          if (place.subLocality != null && place.subLocality!.isNotEmpty) {
-            localityController.text = place.subLocality!;
-          }
-
-          if (place.street != null && place.street!.isNotEmpty && addressLine1Controller.text.isEmpty) {
-            addressLine1Controller.text = place.street!;
-          }
-
-          // Add thoroughfare (street name) to address line 2
-          if (place.thoroughfare != null && place.thoroughfare!.isNotEmpty) {
-            addressLine2Controller.text = place.thoroughfare!;
+          if (place.subLocality != null && place.subLocality!.isNotEmpty && addressLine1Controller.text.isEmpty) {
+            addressLine1Controller.text = place.subLocality!;
           }
         }
       }
@@ -176,8 +315,14 @@ class AddressController extends GetxController {
       print('Saving address to API...');
       isLoading.value = true;
 
+      final userId = await _getUserId();
+      if (userId <= 0) {
+        throw Exception('Invalid User ID');
+      }
+
       final addressData = {
-        'user_id': userService.getCurrentUserId().toString(),
+        'address_type': selectedAddressType.value.toString(),
+        'user_id': userId.toString(),
         'ship_zip': pincodeController.text,
         'ship_address1': addressLine1Controller.text,
         'ship_address2': addressLine2Controller.text,
