@@ -20,6 +20,7 @@ class ApiEndpoints {
   static const String profile_update = '${apibaseUrl}users_update/';
   static const String address_update = '${apibaseUrl}update-address';
   static const String updateUserLocation = '${apibaseUrl}users/';
+  static const String vlogs = '${apibaseUrl}posts-app';
   static const String providersList = '${baseUrl}providers/';
 }
 

@@ -13,6 +13,8 @@ import '../location/views/locationservices.dart';
 import '../offers/bindings/offersbinding.dart';
 import '../profile/binding/profile_binding.dart';
 
+import '../profile/binding/vlogsbindings.dart';
+import '../profile/views/vlogsitem.dart';
 import '../widgets/mainlayout.dart';
 import 'app_routes.dart';
 
@@ -25,6 +27,18 @@ class AppPages {
       page: () => LoginView(),
       binding: AuthBinding(),
       transition: Transition.fade,
+    ),
+    GetPage(
+      name: Routes.VLOGS,
+      page: () => const VlogsListScreen(),
+      binding: VlogsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: Routes.VLOG_DETAILS,
+      page: () => const VlogDetailsScreen(),
+      binding: VlogsBinding(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: Routes.LOCATION,

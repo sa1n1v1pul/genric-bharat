@@ -1,26 +1,122 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../api_endpoints/api_endpoints.dart';
 import '../../api_endpoints/api_provider.dart';
 
 class ProfileController extends GetxController {
   final ApiProvider apiProvider = Get.find<ApiProvider>();
 
-  // Observable states
+  // Existing states
   final Rx<Map<String, dynamic>> userData = Rx<Map<String, dynamic>>({});
   final RxBool isLoading = false.obs;
   final RxString profileImagePath = RxString('');
   final RxBool isImageLoading = false.obs;
   final RxInt userId = 0.obs;
 
-  // Constants
-  static const String baseUrl = 'https://hayshay.gullygood.com/';
+  // Vlogs states
+  final RxList<Map<String, dynamic>> vlogsList = RxList<Map<String, dynamic>>([]);
+  final RxBool isVlogsLoading = false.obs;
+  final Rx<Map<String, dynamic>> selectedVlog = Rx<Map<String, dynamic>>({});
 
-  @override
-  void onInit() async {
-    super.onInit();
-    // Try to get userId from SharedPreferences when controller initializes
-    await loadUserIdFromPrefs();
+  // New method to handle API response
+  Future<void> fetchVlogs() async {
+    print('Fetching vlogs...');
+    if (isVlogsLoading.value) {
+      print('Already loading vlogs, skipping request');
+      return;
+    }
+
+    isVlogsLoading.value = true;
+    try {
+      // Get token from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw 'Authentication token not found';
+      }
+
+      final response = await apiProvider.get(
+        ApiEndpoints.vlogs,
+
+      );
+
+      print('Vlogs API response: ${response.data}');
+
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['success'] == true &&
+          response.data['data'] is List) {
+
+        final List<Map<String, dynamic>> processedVlogs = [];
+
+        for (var vlog in response.data['data']) {
+          // Process the photo URL
+          if (vlog['photo'] != null) {
+            vlog['photo'] = '${ApiEndpoints.imageBaseUrl}${vlog['photo']}';
+          }
+          processedVlogs.add(Map<String, dynamic>.from(vlog));
+        }
+
+        vlogsList.value = processedVlogs;
+        update();
+        print('Vlogs loaded successfully: ${vlogsList.length} items');
+      } else {
+        print('Invalid response format or unsuccessful response: ${response.data}');
+        throw 'Failed to load vlogs: ${response.statusCode}';
+      }
+    } catch (e) {
+      print('Error fetching vlogs: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load vlogs. Please try again later.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      // Clear the list in case of error
+      vlogsList.clear();
+    } finally {
+      isVlogsLoading.value = false;
+    }
+  }
+
+  void setSelectedVlog(Map<String, dynamic> vlog) {
+    print('Setting selected vlog: ${vlog['title']}');
+    selectedVlog.value = vlog;
+    update();
+  }
+
+  String getVlogImageUrl(String? photoName) {
+    if (photoName == null || photoName.isEmpty) {
+      return ''; // Return empty string or a default image URL
+    }
+    return '${ApiEndpoints.imageBaseUrl}$photoName';
+  }
+
+  // Helper method to process HTML content if needed
+  String processVlogContent(String content) {
+    // Remove HTML tags and decode HTML entities
+    return content
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&');
+  }
+
+  // Navigate to vlogs list
+  void navigateToVlogsList() {
+    fetchVlogs(); // Start loading the vlogs
+    Get.toNamed('/vlogs'); // Navigate to vlogs list screen
+  }
+
+  // Navigate to vlog details
+  void navigateToVlogDetails(Map<String, dynamic> vlog) {
+    setSelectedVlog(vlog);
+    Get.toNamed('/vlog-details');
   }
 
   Future<void> loadUserIdFromPrefs() async {
@@ -30,7 +126,7 @@ class ProfileController extends GetxController {
       if (storedUserId != null && storedUserId > 0) {
         userId.value = storedUserId;
         print('Loaded userId from SharedPreferences: $storedUserId');
-        await getUserData(); // Fetch user data once we have the userId
+        await getUserData();
       } else {
         print('No userId found in SharedPreferences');
       }
@@ -87,7 +183,7 @@ class ProfileController extends GetxController {
           final relativePath = updatedData['profile'] as String;
           updatedData['profile'] = relativePath.startsWith('http')
               ? relativePath
-              : baseUrl + relativePath;
+              : ApiEndpoints.baseUrl + relativePath;
         }
 
         // Update state
@@ -118,9 +214,9 @@ class ProfileController extends GetxController {
   void _setDefaultUserData() {
     userData.value = {
       'fullname': 'User',
-      'mobile_number': '',
+      'mobile_number': '+91 0123456789',
       'profile': '',
-      'email': '',
+      'email': 'user@gmail.com',
       'ship_address1': '',
       'ship_address2': '',
       'ship_zip': '',

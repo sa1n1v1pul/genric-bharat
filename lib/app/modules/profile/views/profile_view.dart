@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/theme.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../routes/app_routes.dart';
 import '../controller/profile_controller.dart';
 import 'edit_profile.dart';
 
@@ -145,8 +146,8 @@ class ProfileView extends GetView<ProfileController> {
 
               final fullName = userData['fullname'] ?? 'User';
               final mobileNumber = userData['mobile_number'] ?? '';
+              final email = userData['email'] ?? 'User@gmail.com';
 
-              print('Rendering profile with name: $fullName');
 
               return Column(
                 children: [
@@ -154,91 +155,95 @@ class ProfileView extends GetView<ProfileController> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 40),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              GestureDetector(
-                                onTap: () => _showImageSourceActionSheet(context),
-                                child: Stack(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 50,
-                                      backgroundColor: Colors.grey[300],
-                                      child: Obx(() {
-                                        if (controller.isImageLoading.value) {
-                                          return const CircularProgressIndicator();
-                                        }
-
-                                        final profileImage = _getProfileImage();
-                                        if (profileImage == null) {
-                                          return Icon(
-                                              Icons.person,
-                                              size: 50,
-                                              color: Colors.grey[600]
-                                          );
-                                        }
-
-                                        return Container(
-                                          width: 100,
-                                          height: 100,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            image: DecorationImage(
-                                              image: profileImage,
-                                              fit: BoxFit.cover,
-                                              onError: (exception, stackTrace) {
-                                                print('Error loading image: $exception');
-                                              },
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: CustomTheme.loginGradientStart,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.camera_alt,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _showImageSourceActionSheet(context),
+                              child: Stack(
                                 children: [
-                                  Text(
-                                    fullName,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.grey[300],
+                                    child: Obx(() {
+                                      if (controller.isImageLoading.value) {
+                                        return const CircularProgressIndicator();
+                                      }
+
+                                      final profileImage = _getProfileImage();
+                                      if (profileImage == null) {
+                                        return Icon(
+                                            Icons.person,
+                                            size: 50,
+                                            color: Colors.grey[600]
+                                        );
+                                      }
+
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          image: DecorationImage(
+                                            image: profileImage,
+                                            fit: BoxFit.cover,
+                                            onError: (exception, stackTrace) {
+                                              print('Error loading image: $exception');
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: CustomTheme.loginGradientStart,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.camera_alt,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
-                                  if (mobileNumber.isNotEmpty)
-                                    Text(
-                                      mobileNumber,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  fullName,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                if (mobileNumber.isNotEmpty)
+                                  Text(
+                                    mobileNumber,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                Text(
+                                  email,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         TextButton(
@@ -290,14 +295,15 @@ class ProfileView extends GetView<ProfileController> {
                       ),
                       child: ListView(
                         children: [
+
                           _buildProfileItem(
-                            Icons.help_outline,
-                            'Help Center',
+                            Icons.location_on_outlined,
+                            'Manage Addresses',
                             isDarkMode,
                           ),
                           _buildProfileItem(
-                            Icons.language,
-                            'About BDS Infotech',
+                            Icons.book_outlined,
+                            'Blogs',
                             isDarkMode,
                           ),
                           _buildProfileItem(
@@ -306,18 +312,8 @@ class ProfileView extends GetView<ProfileController> {
                             isDarkMode,
                           ),
                           _buildProfileItem(
-                            Icons.calendar_today,
-                            'Scheduled Booking',
-                            isDarkMode,
-                          ),
-                          _buildProfileItem(
                             Icons.thumb_up_outlined,
                             'Rate Us',
-                            isDarkMode,
-                          ),
-                          _buildProfileItem(
-                            Icons.credit_card,
-                            'Add Payment Method',
                             isDarkMode,
                           ),
                           _buildProfileItem(
@@ -325,6 +321,12 @@ class ProfileView extends GetView<ProfileController> {
                             'Privacy policy',
                             isDarkMode,
                           ),
+                          _buildProfileItem(
+                            Icons.help_outline,
+                            'Help Center',
+                            isDarkMode,
+                          ),
+
                           _buildProfileItem(
                             Icons.description_outlined,
                             'Terms and conditions',
@@ -369,6 +371,8 @@ class ProfileView extends GetView<ProfileController> {
         onTap: () {
           if (title == 'Logout') {
             _handleLogout();
+          } else if (title == 'Blogs') {
+            controller.navigateToVlogsList();
           }
         },
       ),
