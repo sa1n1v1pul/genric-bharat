@@ -31,7 +31,7 @@ class _MainLayoutState extends State<MainLayout> {
     const OffersViews(),
     const HomePage(),
     Messageview(),
-    const ProfileView(),
+     ProfileView(),
   ];
 
   void _onItemTapped(int index) {

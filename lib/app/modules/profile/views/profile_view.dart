@@ -1,24 +1,17 @@
-// profile_view.dart
 import 'package:flutter/material.dart';
-import 'package:genric_bharat/app/core/theme/theme.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import '../../../core/theme/theme.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controller/profile_controller.dart';
 import 'edit_profile.dart';
 
-class ProfileView extends StatefulWidget {
-  const ProfileView({Key? key}) : super(key: key);
 
-  @override
-  _ProfileViewState createState() => _ProfileViewState();
-}
+class ProfileView extends GetView<ProfileController> {
+  ProfileView({Key? key}) : super(key: key);
 
-class _ProfileViewState extends State<ProfileView> {
   final AuthController _authController = Get.find<AuthController>();
-  final ProfileController _profileController = Get.put(ProfileController());
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -26,8 +19,7 @@ class _ProfileViewState extends State<ProfileView> {
       final pickedFile = await picker.pickImage(source: source);
 
       if (pickedFile != null) {
-        await _profileController.saveProfileImagePath(pickedFile.path);
-        setState(() {});
+        await controller.updateProfileImage(pickedFile.path);
       }
     } catch (e) {
       print('Error picking image: $e');
@@ -49,7 +41,7 @@ class _ProfileViewState extends State<ProfileView> {
         return SafeArea(
           child: Wrap(
             children: <Widget>[
-              if (_profileController.profileImagePath.isNotEmpty)
+              if (controller.profileImagePath.isNotEmpty)
                 ListTile(
                   leading: Icon(
                     Icons.delete,
@@ -63,7 +55,7 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    _removePhoto();
+
                   },
                 ),
               ListTile(
@@ -105,211 +97,253 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  void _removePhoto() async {
-    await _profileController.removeProfileImagePath();
-    setState(() {});
-  }
+
 
   ImageProvider? _getProfileImage() {
-    final localPath = _profileController.profileImagePath.value;
-    final networkUrl = _profileController.userData.value['profile'];
+    try {
+      final networkUrl = controller.userData.value['profile'];
+      final localPath = controller.profileImagePath.value;
 
-    if (localPath.isNotEmpty) {
-      return FileImage(File(localPath));
-    } else if (networkUrl != null && networkUrl.isNotEmpty) {
-      return NetworkImage(networkUrl);
+      if (localPath.isNotEmpty) {
+        if (localPath.startsWith('http')) {
+          return NetworkImage(localPath);
+        } else if (File(localPath).existsSync()) {
+          return FileImage(File(localPath));
+        }
+      }
+
+      if (networkUrl != null && networkUrl.isNotEmpty) {
+        return NetworkImage(networkUrl);
+      }
+
+      return null;
+    } catch (e) {
+      print('Error loading profile image: $e');
+      return null;
     }
-    return null;
   }
-
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Obx(() {
-          if (_profileController.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
+        backgroundColor: Colors.white,
+        body: SafeArea(
+            child: Obx(() {
+              // Debug prints
+              print('Building ProfileView');
+              print('IsLoading: ${controller.isLoading.value}');
+              print('UserData: ${controller.userData.value}');
 
-          final profileImage = _getProfileImage();
+              final userData = controller.userData.value;
 
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16,right: 16,top: 16,bottom: 16),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 40),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          GestureDetector(
-                            onTap: () => _showImageSourceActionSheet(context),
-                            child: Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: Colors.grey[300],
-                                  backgroundImage: profileImage,
-                                  child: profileImage == null
-                                      ? Icon(Icons.person,
-                                      size: 50, color: Colors.grey[600])
-                                      : null,
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: CustomTheme.loginGradientStart,
-                                      shape: BoxShape.circle,
+              // Show loading only during initial load
+              if (controller.isLoading.value && userData.isEmpty) {
+                print('Showing loading indicator');
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final fullName = userData['fullname'] ?? 'User';
+              final mobileNumber = userData['mobile_number'] ?? '';
+
+              print('Rendering profile with name: $fullName');
+
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 40),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _showImageSourceActionSheet(context),
+                                child: Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 50,
+                                      backgroundColor: Colors.grey[300],
+                                      child: Obx(() {
+                                        if (controller.isImageLoading.value) {
+                                          return const CircularProgressIndicator();
+                                        }
+
+                                        final profileImage = _getProfileImage();
+                                        if (profileImage == null) {
+                                          return Icon(
+                                              Icons.person,
+                                              size: 50,
+                                              color: Colors.grey[600]
+                                          );
+                                        }
+
+                                        return Container(
+                                          width: 100,
+                                          height: 100,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            image: DecorationImage(
+                                              image: profileImage,
+                                              fit: BoxFit.cover,
+                                              onError: (exception, stackTrace) {
+                                                print('Error loading image: $exception');
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      }),
                                     ),
-                                    child: Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.white,
-                                      size: 20,
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: CustomTheme.loginGradientStart,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    fullName,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _profileController.userData.value['fullname'] ??
-                                    'Verified Customer',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDarkMode ? Colors.black : Colors.black,
-                                ),
-                              ),Text(
-                                _profileController.userData.value['mobile_number'] ?? '',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
+                                  if (mobileNumber.isNotEmpty)
+                                    Text(
+                                      mobileNumber,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                ],
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-
-                    TextButton(
-                      onPressed: () => Get.to(() => const EditProfile()),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                            color: CustomTheme.loginGradientStart,
-                            width: 1.5, // Outline thickness
-                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                         Text(
-                            'Edit Profile',
-                            style: TextStyle(
-                              color: CustomTheme.loginGradientStart,
-                              fontSize: 16,
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () async {
+                            await Get.to(() => const EditProfile());
+                            controller.getUserData();
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: CustomTheme.loginGradientStart,
+                                width: 1.5,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: CustomTheme.loginGradientStart,
-                            size: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Edit Profile',
+                                style: TextStyle(
+                                  color: CustomTheme.loginGradientStart,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward,
+                                color: CustomTheme.loginGradientStart,
+                                size: 20,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.grey[900] : CustomTheme.backgroundColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                      ),
+                      child: ListView(
+                        children: [
+                          _buildProfileItem(
+                            Icons.help_outline,
+                            'Help Center',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.language,
+                            'About BDS Infotech',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.star_border,
+                            'My Rating',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.calendar_today,
+                            'Scheduled Booking',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.thumb_up_outlined,
+                            'Rate Us',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.credit_card,
+                            'Add Payment Method',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.privacy_tip_outlined,
+                            'Privacy policy',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.description_outlined,
+                            'Terms and conditions',
+                            isDarkMode,
+                          ),
+                          _buildProfileItem(
+                            Icons.logout,
+                            'Logout',
+                            isDarkMode,
+                            color: Colors.red,
                           ),
                         ],
                       ),
                     ),
-
-
-                  ],
-                ),
-              ),
-
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? Colors.grey[900] : CustomTheme.backgroundColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
                   ),
-                  child: ListView(
-                    children: [
-                      _buildProfileItem(
-                        Icons.help_outline,
-                        'Help Center',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.language,
-                        'About BDS Infotech',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.star_border,
-                        'My Rating',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.calendar_today,
-                        'Scheduled Booking',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.thumb_up_outlined,
-                        'Rate Us',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.credit_card,
-                        'Add Payment Method',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.privacy_tip_outlined,
-                        'Privacy policy',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.description_outlined,
-                        'Terms and conditions',
-                        isDarkMode,
-                      ),
-                      _buildProfileItem(
-                        Icons.logout,
-                        'Logout',
-                        isDarkMode,
-                        color: Colors.red,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        }),
-      ),
-    );
+                ],
+              );
+            })));
+
   }
 
   Widget _buildProfileItem(IconData icon, String title, bool isDarkMode,
@@ -348,8 +382,11 @@ class _ProfileViewState extends State<ProfileView> {
       textConfirm: 'Yes',
       textCancel: 'No',
       confirmTextColor: Colors.white,
-      onConfirm: () {
-        _authController.logout();
+      onConfirm: () async {
+        // Clear ProfileController data
+        await controller.clearUserData();
+        // Perform logout in AuthController
+        await _authController.logout();
         Get.back();
       },
     );

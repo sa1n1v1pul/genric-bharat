@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -260,22 +262,46 @@ class ApiProvider extends GetxController {
   }
 
   Future<dio.Response> updateUserProfile(
-      int userId, Map<String, dynamic> userData) async {
+      int userId, Map<String, dynamic> userData, {File? profileImage}) async {
     return _handleRequest(() async {
       final token = await getToken();
-      // Changed from PUT to POST
-      return await _dio.post(
-        '${ApiEndpoints.profile_update}$userId',
-        data: userData,
-        options: dio.Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
+
+      if (profileImage != null) {
+        // Create form data for multipart request
+        final formData = dio.FormData.fromMap({
+          ...userData,
+          'profile': await dio.MultipartFile.fromFile(
+            profileImage.path,
+            filename: 'profile_image.jpg',
+          ),
+        });
+
+        return await _dio.post(
+          '${ApiEndpoints.profile_update}$userId',
+          data: formData,
+          options: dio.Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'multipart/form-data',
+            },
+          ),
+        );
+      } else {
+        // Regular JSON request without image
+        return await _dio.post(
+          '${ApiEndpoints.profile_update}$userId',
+          data: userData,
+          options: dio.Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+      }
     });
   }
+
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();

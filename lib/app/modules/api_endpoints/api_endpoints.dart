@@ -19,7 +19,7 @@ class ApiEndpoints {
   static const String coupnecode = '${apibaseUrl}promo-codes';
   static const String profile_update = '${apibaseUrl}users_update/';
   static const String address_update = '${apibaseUrl}update-address';
-  static const String updateUserLocation = '${baseUrl}users/';
+  static const String updateUserLocation = '${apibaseUrl}users/';
   static const String providersList = '${baseUrl}providers/';
 }
 

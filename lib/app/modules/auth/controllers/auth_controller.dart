@@ -6,6 +6,7 @@ import '../../api_endpoints/api_provider.dart';
 import '../../cart/controller/cartcontroller.dart';
 import '../../cart/controller/cartservice.dart';
 
+import '../../profile/controller/profile_controller.dart';
 import 'login_controller.dart';
 
 class AuthController extends GetxController {
@@ -130,9 +131,10 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
+    final ProfileController profileController = Get.find<ProfileController>();
     // Clean up cart services before clearing user data
     _cleanupCartServices();
-
+    await profileController.clearUserData();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('user_phone');
@@ -143,7 +145,7 @@ class AuthController extends GetxController {
 
     isLoggedIn.value = false;
     userData.value = {};
-
+    await prefs.clear();
     Get.find<LoginController>().resetState();
     Get.offAllNamed('/auth');
   }

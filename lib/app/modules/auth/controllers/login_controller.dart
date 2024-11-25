@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../onboarding/on_boarding_view.dart';
+import '../../profile/controller/profile_controller.dart';
 import 'auth_controller.dart';
 
 class LoginController extends GetxController {
@@ -17,7 +18,27 @@ class LoginController extends GetxController {
   final otpMessage = ''.obs;
   final displayedOtp = ''.obs;
   final userId = RxnInt();
+  @override
+  void onInit() async {
+    super.onInit();
+    // Check if user is already logged in
+    await checkExistingLogin();
+  }
 
+  Future<void> checkExistingLogin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final storedUserId = prefs.getInt('user_id');
+      final storedToken = prefs.getString('token');
+
+      if (storedUserId != null && storedToken != null) {
+        // User is already logged in, initialize controllers
+        await initializeControllers(storedUserId);
+      }
+    } catch (e) {
+      print('Error checking existing login: $e');
+    }
+  }
   Future<void> requestOtp() async {
     if (phoneController.text.length != 10) {
       Get.snackbar('Error', 'Please enter a valid 10-digit phone number');
@@ -67,6 +88,31 @@ class LoginController extends GetxController {
     }
   }
 
+  Future<void> initializeControllers(int userId) async {
+    try {
+      print('Initializing controllers for userId: $userId');
+
+      // Initialize ProfileController
+      if (!Get.isRegistered<ProfileController>()) {
+        final profileController = Get.put(ProfileController());
+        await profileController.initialize(userId);
+        print('✓ ProfileController initialized');
+      } else {
+        final profileController = Get.find<ProfileController>();
+        await profileController.initialize(userId);
+        print('✓ Existing ProfileController reinitialized');
+      }
+
+      // Initialize other controllers as needed
+      await _authController.getUserData();
+      print('✓ User data fetched');
+
+    } catch (e) {
+      print('Error initializing controllers: $e');
+      throw e;
+    }
+  }
+
   Future<void> verifyOtp() async {
     if (otpController.text.length != 6) {
       Get.snackbar('Error', 'Please enter a valid 6-digit OTP');
@@ -89,13 +135,15 @@ class LoginController extends GetxController {
           await _authController.saveToken(token);
           await _authController.setUserPhone(phoneController.text);
 
-          // Save user ID
+          // Get and save user ID
+          final userIdFromResponse = responseData['user']['id'];
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('user_id', responseData['user']['id']);
+          await prefs.setInt('user_id', userIdFromResponse);
 
-          // Fetch user data and initialize cart
-          await _authController.getUserData();
+          // Initialize controllers with the new user ID
+          await initializeControllers(userIdFromResponse);
 
+          // Navigate to onboarding
           Get.off(() => const OnBoardingView());
         } else {
           Get.snackbar('Error', responseData['message'] ?? 'Invalid OTP');
