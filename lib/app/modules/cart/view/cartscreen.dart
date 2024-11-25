@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../controller/cartcontroller.dart';
+import 'cartitem.dart';
 
 class CartScreen extends GetView<CartController> {
   final bool fromBottomNav;

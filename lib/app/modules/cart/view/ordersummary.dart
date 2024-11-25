@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:genric_bharat/app/modules/cart/view/paymentselection.dart';
 import 'package:genric_bharat/app/modules/cart/view/razorpayscreen.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../../delivery/controller/deliverycontroller.dart';
 import '../controller/cartcontroller.dart';
+import 'cartitem.dart';
 
 
 class OrderSummaryScreen extends GetView<CartController> {
@@ -394,9 +396,12 @@ class OrderSummaryScreen extends GetView<CartController> {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child:
+            ElevatedButton(
               onPressed: () {
-                Get.to(() => const RazorpayCheckoutScreen());
+                Get.to(() =>
+                // const PaymentSelectionScreen());
+                 const RazorpayCheckoutScreen());
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: CustomTheme.loginGradientStart,

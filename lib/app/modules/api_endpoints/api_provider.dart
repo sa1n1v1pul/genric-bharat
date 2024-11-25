@@ -18,6 +18,23 @@ class ApiProvider extends GetxController {
     _initializeDio();
   }
 
+  Future<dio.Response> post(String path, dynamic data) async {
+    return _handleRequest(() async {
+      final token = await getToken();
+      print('POST Request Data: $data'); // For debugging
+      return await _dio.post(
+        path,
+        data: data,
+        options: dio.Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+    });
+  }
+
   Future<dio.Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
     return _handleRequest(() async {
       final token = await getToken();
@@ -72,18 +89,13 @@ class ApiProvider extends GetxController {
   Future<void> _retryRequest(
       dio.DioException err, dio.ErrorInterceptorHandler handler) async {
     dio.RequestOptions requestOptions = err.requestOptions;
-
-    // Get the retry attempt from options or default to 1
     int retryCount = (requestOptions.extra['retryCount'] ?? 0) + 1;
 
     if (retryCount <= maxRetries) {
-      // Wait before retrying
       await Future.delayed(retryDelay * retryCount);
 
       try {
         print('Retry attempt $retryCount for ${requestOptions.path}');
-
-        // Create new options with incremented retry count
         final newRequestOptions = dio.RequestOptions(
           path: requestOptions.path,
           method: requestOptions.method,
@@ -96,7 +108,6 @@ class ApiProvider extends GetxController {
         return handler.resolve(response);
       } catch (e) {
         if (retryCount == maxRetries) {
-          // Show error message on final retry
           Get.snackbar(
             'Connection Error',
             'Unable to connect to server. Please check your internet connection.',
