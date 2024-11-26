@@ -14,6 +14,9 @@ class CartScreen extends GetView<CartController> {
 
   @override
   Widget build(BuildContext context) {
+    if (fromBottomNav) {
+      Get.find<CartController>().checkAndInitializeCart();
+    }
     bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
@@ -76,12 +79,29 @@ class CartScreen extends GetView<CartController> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
-      body: Obx(
-            () =>
-        controller.cartItems.isEmpty
-            ? _buildEmptyCart()
-            : _buildCartContent(),
-      ),
+      body: Obx(() {
+        // Check if loading
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        // Check if not initialized or no user
+        if (!controller.isInitialized.value || controller.currentUserId == null) {
+          return const Center(
+            child: Text('Please login to view your cart'),
+          );
+        }
+
+        // Check if cart is empty
+        if (controller.cartItems.isEmpty) {
+          return _buildEmptyCart();
+        }
+
+        // Return cart content when everything is ready
+        return _buildCartContent();
+      }),
     );
   }
 

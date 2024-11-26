@@ -38,7 +38,6 @@ class _RazorpayCheckoutScreenState extends State<RazorpayCheckoutScreen> {
   }
 
   void _initiateRazorpayPayment() async {
-    // Use the final amount after discount instead of total
     double finalAmount = _deliveryController.finalAmount.value;
     int amountInPaisa = (finalAmount * 100).toInt();
 
@@ -52,10 +51,7 @@ class _RazorpayCheckoutScreenState extends State<RazorpayCheckoutScreen> {
       'amount': amountInPaisa,
       'name': 'Generic Bharat',
       'description': orderDescription,
-      'prefill': {
-        // 'contact': _deliveryController.selectedPhone.value,
-        // 'email': _deliveryController.selectedEmail.value,
-      },
+      'prefill': {},
       'notes': {
         'delivery_address': _deliveryController.selectedAddress.value,
         'patient_name': _deliveryController.selectedPatientName.value,
@@ -75,17 +71,37 @@ class _RazorpayCheckoutScreenState extends State<RazorpayCheckoutScreen> {
     }
   }
 
-  void _handlePaymentSuccess(razorpay.PaymentSuccessResponse response) {
-    // Use the final discounted amount for the invoice
-    double finalAmount = _deliveryController.finalAmount.value;
+  void _handlePaymentSuccess(razorpay.PaymentSuccessResponse response) async {
+    try {
+      // First, confirm the order
+      final orderResponse = await _deliveryController.confirmOrder(
+        paymentId: response.paymentId ?? 'N/A',
+        originalAmount: _cartController.total.value,
+        discountAmount: _cartController.discountAmount.value,
+        finalAmount: _deliveryController.finalAmount.value,
+        couponCode: _cartController.appliedCouponCode.value,
+      );
 
-    Get.off(() => InvoiceScreen(
-      paymentId: response.paymentId ?? 'N/A',
-      totalAmount: finalAmount,  // Pass the discounted amount
-      originalAmount: _cartController.total.value,
-      discountAmount: _cartController.discountAmount.value,
-      couponCode: _cartController.appliedCouponCode.value,
-    ));
+      print('Order confirmation successful: $orderResponse');
+
+      // Then navigate to invoice screen
+      Get.off(() => InvoiceScreen(
+        paymentId: response.paymentId ?? 'N/A',
+        totalAmount: _deliveryController.finalAmount.value,
+        originalAmount: _cartController.total.value,
+        discountAmount: _cartController.discountAmount.value,
+        couponCode: _cartController.appliedCouponCode.value,
+
+      ));
+    } catch (e) {
+      print('Error confirming order: $e');
+      Get.snackbar(
+        'Error',
+        'Payment successful but order confirmation failed. Please contact support.',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+      );
+    }
   }
 
   void _handlePaymentError(razorpay.PaymentFailureResponse response) {

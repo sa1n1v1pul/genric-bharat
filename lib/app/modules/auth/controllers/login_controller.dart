@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../onboarding/on_boarding_view.dart';
 import '../../profile/controller/profile_controller.dart';
+import '../../cart/controller/cartcontroller.dart';
+import '../../cart/controller/cartservice.dart';
 import 'auth_controller.dart';
 
 class LoginController extends GetxController {
@@ -18,6 +20,7 @@ class LoginController extends GetxController {
   final otpMessage = ''.obs;
   final displayedOtp = ''.obs;
   final userId = RxnInt();
+
   @override
   void onInit() async {
     super.onInit();
@@ -39,6 +42,7 @@ class LoginController extends GetxController {
       print('Error checking existing login: $e');
     }
   }
+
   Future<void> requestOtp() async {
     if (phoneController.text.length != 10) {
       Get.snackbar('Error', 'Please enter a valid 10-digit phone number');
@@ -92,6 +96,13 @@ class LoginController extends GetxController {
     try {
       print('Initializing controllers for userId: $userId');
 
+      // Initialize CartApiService
+      if (!Get.isRegistered<CartApiService>()) {
+        final cartService = Get.put(CartApiService());
+        await cartService.initializeService();
+        print('✓ CartApiService initialized');
+      }
+
       // Initialize ProfileController
       if (!Get.isRegistered<ProfileController>()) {
         final profileController = Get.put(ProfileController());
@@ -103,13 +114,21 @@ class LoginController extends GetxController {
         print('✓ Existing ProfileController reinitialized');
       }
 
-      // Initialize other controllers as needed
-      await _authController.getUserData();
-      print('✓ User data fetched');
+      // Initialize CartController with explicit user ID
+      if (Get.isRegistered<CartController>()) {
+        Get.delete<CartController>(force: true);
+      }
+
+      final cartController = Get.put(CartController());
+
+      // Directly set the user ID before initialization
+      cartController.currentUserId = userId;
+
+      await cartController.initializeCart(userId: userId);
+      print('✓ CartController initialized with explicit userId');
 
     } catch (e) {
       print('Error initializing controllers: $e');
-      throw e;
     }
   }
 

@@ -8,4 +8,5 @@ abstract class Routes {
   static const DELIVERY = '/delivery-details';
   static const VLOGS = '/vlogs';
   static const VLOG_DETAILS = '/vlog-details';
+  static const MY_ORDERS = '/my-orders';
 }

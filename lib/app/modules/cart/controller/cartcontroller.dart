@@ -1,10 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:genric_bharat/app/modules/cart/controller/cartservice.dart';
 import 'package:get/get.dart';
-
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../home/views/addressview.dart';
@@ -24,15 +22,81 @@ class CartController extends GetxController {
   RxBool isLoadingCoupons = false.obs;
   RxBool isCouponValid = false.obs;
   RxString couponErrorMessage = ''.obs;
+  RxBool isInitialized = false.obs;
   double get finalAmount => total.value - discountAmount.value;
+  int? currentUserId;
+
   @override
   void onInit() async {
     super.onInit();
     print('🚀 CartController initialized');
+    ever(isInitialized, (_) => print('Cart initialization status changed: $isInitialized'));
+
+    // Listen to user ID changes
+    ever(_apiService.userId, (userId) {
+      if (userId != null) {
+        print('👤 User ID changed in CartController: $userId');
+        initializeCart(userId: userId);
+      }
+    });
+
     await fetchPromoCodes();
-
+    checkAndInitializeCart();
   }
+  Future<void> checkAndInitializeCart() async {
+    try {
+      // First check if we already have a userId from the service
+      if (_apiService.userId.value != null) {
+        currentUserId = _apiService.userId.value;
+        print('✅ Using userId from service: ${currentUserId}');
+        await initializeCart(userId: currentUserId!);
+        return;
+      }
 
+      // If not, try to get it from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+
+      if (userId != null) {
+        currentUserId = userId;
+        print('✅ Retrieved userId from SharedPreferences: $userId');
+        await initializeCart(userId: userId);
+      } else {
+        print('⚠️ No userId found in SharedPreferences or service');
+        // Clear cart data when no user is logged in
+        cartItems.clear();
+        total.value = 0.0;
+        cartCount.value = 0;
+      }
+    } catch (e) {
+      print('❌ Error in checkAndInitializeCart: $e');
+    } finally {
+      isInitialized.value = true;
+    }
+  }
+  Future<void> initializeCart({int? userId}) async {
+    try {
+      if (userId != null) {
+        currentUserId = userId;
+        print('✅ Setting currentUserId to: $userId');
+      }
+
+      if (currentUserId == null) {
+        print('❌ User ID is still null during initialization');
+        return;
+      }
+
+      isLoading.value = true;
+      await fetchCart();
+      await checkAddressFromProfile(currentUserId!);
+
+    } catch (e) {
+      print('❌ Error initializing cart: $e');
+    } finally {
+      isLoading.value = false;
+      isInitialized.value = true;
+    }
+  }
   Future<void> fetchPromoCodes() async {
     try {
       isLoadingCoupons.value = true;
@@ -89,19 +153,7 @@ class CartController extends GetxController {
     isCouponValid.value = false;
     couponErrorMessage.value = '';
   }
-  Future<void> initializeCart() async {
-    try {
-      final userId = await _apiService.getUserId();
-      if (userId != null) {
-        await fetchCart();
-        await checkAddressFromProfile(userId);
-      } else {
-        print('❌ User ID is null during initialization');
-      }
-    } catch (e) {
-      print('❌ Error initializing cart: $e');
-    }
-  }
+
 
   Future<void> checkAddressFromProfile(int userId) async {
     try {
@@ -133,7 +185,7 @@ class CartController extends GetxController {
 
   Future<void> proceedToCheckout() async {
     try {
-      if (total.value < 500) {
+      if (total.value < 1) {
         Get.snackbar(
           'Error',
           'Minimum order amount should be ₹500',
@@ -201,7 +253,11 @@ class CartController extends GetxController {
       print('✅ addToCart completed');
     }
   }
-
+  void refreshCart() {
+    if (currentUserId != null) {
+      fetchCart();
+    }
+  }
   Future<void> fetchCart() async {
     try {
       print('📝 Starting fetchCart');
@@ -214,26 +270,42 @@ class CartController extends GetxController {
         final cartData = response['data']['items'] as List;
         print('🛒 Cart data type: ${cartData.runtimeType}');
 
+        // Clear and update cart items
         cartItems.clear();
-
         if (cartData.isNotEmpty) {
           cartItems.addAll(cartData.map((item) => _createCartItem(item as Map<String, dynamic>)));
         }
+        print('📦 Cart items count after update: ${cartItems.length}');
 
         total.value = double.parse(response['data']['total_amount'].toString());
         cartCount.value = response['data']['total_items'] ?? 0;
-        print('💰 Updated cart total: ${total.value}');
+
+        // Force UI update
+        update();
       }
     } catch (e, stackTrace) {
       print('❌ Error in fetchCart: $e');
       print('Stack trace: $stackTrace');
-      Get.snackbar('Error', 'Failed to fetch cart items');
     } finally {
       isLoading.value = false;
       print('✅ fetchCart completed');
     }
   }
+  CartItem _createCartItem(Map<String, dynamic> item) {
+    print('Creating cart item - Full item data: $item');
 
+    // Check for nested 'item' key which seems present in your log
+    final itemData = item['item'] ?? item;
+
+    return CartItem(
+      id: item['id']?.toString() ?? '',
+      itemId: item['item_id']?.toString() ?? '',
+      name: itemData['name'] ?? item['name'] ?? '',
+      price: _parseDouble(itemData['discount_price'] ?? item['unit_price']),
+      image: itemData['photo'] ?? item['photo'] ?? '',
+      quantity: int.parse(item['qty']?.toString() ?? '1'),
+    );
+  }
   Future<void> updateQuantity(String itemId, int quantity) async {
     try {
       print('🔄 Updating quantity - ItemID: $itemId, New Quantity: $quantity');
@@ -291,17 +363,7 @@ class CartController extends GetxController {
     }
   }
 
-  CartItem _createCartItem(Map<String, dynamic> item) {
-    print('Creating cart item from: $item');
-    return CartItem(
-      id: item['id']?.toString() ?? '',
-      itemId: item['item_id']?.toString() ?? '',
-      name: item['name'] ?? '',
-      price: _parseDouble(item['unit_price']),
-      image: item['photo'] ?? '',
-      quantity: int.parse(item['qty']?.toString() ?? '1'),
-    );
-  }
+
 
   double _parseDouble(dynamic value) {
     if (value == null) return 0.0;

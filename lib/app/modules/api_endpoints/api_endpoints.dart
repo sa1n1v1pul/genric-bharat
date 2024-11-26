@@ -2,6 +2,7 @@ class ApiEndpoints {
   static const String baseUrl = 'https://dat.babadeepsinghinfotech.com/api/';
   static const String imageBaseUrl = 'https://hayshay.gullygood.com/assets/images/';
   static const String apibaseUrl = 'https://hayshay.gullygood.com/api/';
+  static const String orders = '${apibaseUrl}orders-app';
   static const String addToCart = '${apibaseUrl}add-cart';
   static const String getCart = '${apibaseUrl}cart';
   static const String clearCart = '${apibaseUrl}clear-cart';

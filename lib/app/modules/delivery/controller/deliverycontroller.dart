@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import '../../api_endpoints/api_provider.dart';
+import '../../api_endpoints/api_endpoints.dart';
 import '../../cart/controller/cartcontroller.dart';
 import '../../cart/view/ordersummary.dart';
 import '../../routes/app_routes.dart';
@@ -10,7 +12,6 @@ class DeliveryDetailsController extends GetxController {
   final ApiProvider apiProvider = Get.find<ApiProvider>();
   final UserService userService = Get.find<UserService>();
   final CartController cartController = Get.find<CartController>();
-  // Add TextEditingController for patient name input
   final TextEditingController patientNameController = TextEditingController();
 
   final RxString selectedPatientName = ''.obs;
@@ -25,13 +26,13 @@ class DeliveryDetailsController extends GetxController {
   RxDouble discount = 0.0.obs;
   RxDouble finalAmount = 0.0.obs;
   RxString appliedCoupon = ''.obs;
+
   @override
   void onInit() {
     super.onInit();
     loadUserDetails();
     updateOrderAmounts();
 
-    // Get the order summary data from arguments
     if (Get.arguments != null) {
       final args = Get.arguments as Map<String, dynamic>;
       subtotal.value = args['subtotal'] ?? 0.0;
@@ -40,7 +41,6 @@ class DeliveryDetailsController extends GetxController {
       appliedCoupon.value = args['appliedCoupon'] ?? '';
     }
 
-    // Listen to route changes
     ever(RxString(Get.currentRoute), (String route) {
       if (route == Routes.DELIVERY) {
         loadUserDetails();
@@ -48,6 +48,7 @@ class DeliveryDetailsController extends GetxController {
       }
     });
   }
+
   void updateOrderAmounts() {
     final orderSummary = cartController.getOrderSummary();
     subtotal.value = orderSummary['subtotal'];
@@ -55,6 +56,7 @@ class DeliveryDetailsController extends GetxController {
     finalAmount.value = orderSummary['finalAmount'];
     appliedCoupon.value = orderSummary['appliedCoupon'];
   }
+
   @override
   void onClose() {
     patientNameController.dispose();
@@ -86,7 +88,6 @@ class DeliveryDetailsController extends GetxController {
       if (response.data != null) {
         final userData = response.data;
 
-        // Set patient name
         String fullName = userData['fullname'] ?? '';
         if (fullName.isEmpty) {
           String firstName = userData['first_name'] ?? '';
@@ -95,7 +96,6 @@ class DeliveryDetailsController extends GetxController {
         }
         selectedPatientName.value = fullName;
 
-        // Set street address
         final addressParts = <String>[];
         if (userData['ship_address1']?.isNotEmpty == true) {
           addressParts.add(userData['ship_address1']);
@@ -105,7 +105,6 @@ class DeliveryDetailsController extends GetxController {
         }
         selectedAddress.value = addressParts.join(', ');
 
-        // Set individual location components with null checks
         selectedLocality.value = userData['locality'] ?? userData['landmark'] ?? 'N/A';
         selectedCity.value = userData['ship_city'] ?? 'N/A';
         selectedState.value = userData['state'] ?? 'N/A';
@@ -123,6 +122,77 @@ class DeliveryDetailsController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<Map<String, dynamic>> confirmOrder({
+    required String paymentId,
+    required double originalAmount,
+    required double discountAmount,
+    required double finalAmount,
+    required String couponCode,
+  }) async {
+    try {
+      print('Preparing order confirmation data...');
+
+      // Get the user ID from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id') ?? 0;
+
+      if (userId <= 0) {
+        throw Exception('Invalid user ID');
+      }
+
+      // Format the current date and time
+      final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+
+      // Create order items array with proper format
+      final List<Map<String, dynamic>> orderItems = cartController.cartItems.map((item) {
+        return {
+          'name': item.name,
+          'quantity': item.quantity.toString(),
+          'qty': item.quantity.toString(), // Adding qty field as seen in Postman
+          'rs': (item.price * item.quantity).toStringAsFixed(2)
+        };
+      }).toList();
+
+      // Prepare the request body
+      final Map<String, dynamic> requestBody = {
+        'payment_id': paymentId,
+        'payment_date': formattedDate,
+        'user_id': userId, // Add user_id to the request body
+        if (couponCode.isNotEmpty) 'coupon_applied': couponCode,
+        'original_amount': originalAmount.toStringAsFixed(2),
+        'discount': discountAmount.toStringAsFixed(2),
+        'final_amount': finalAmount.toStringAsFixed(2),
+        'patient_name': selectedPatientName.value,
+        'delivery_address': selectedAddress.value,
+        'area': selectedLocality.value,
+        'city': selectedCity.value,
+        'state': selectedState.value,
+        'pincode': selectedPincode.value,
+        'items': orderItems, // Send items as a direct array
+      };
+
+      print('Order confirmation request body: $requestBody');
+
+      // Make the API call
+      final response = await apiProvider.postOrderConfirmation(
+        ApiEndpoints.orders,
+        requestBody,
+      );
+
+      print('Order confirmation API response: ${response.data}');
+
+      if (response.data['status'] == 'success') {
+        print('Order confirmed successfully! Order ID: ${response.data['data']['order_id']}');
+        return response.data['data'];
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to confirm order');
+      }
+    } catch (e) {
+      print('Error confirming order: $e');
+      throw e;
     }
   }
 
@@ -174,7 +244,6 @@ class DeliveryDetailsController extends GetxController {
         return;
       }
 
-      // If patient name is empty, update it first
       if (selectedPatientName.isEmpty) {
         if (patientNameController.text.trim().isEmpty) {
           Get.snackbar(
@@ -188,7 +257,6 @@ class DeliveryDetailsController extends GetxController {
         await updatePatientName();
       }
 
-      // Navigate to OrderSummaryScreen with the current amounts
       Get.to(() => OrderSummaryScreen(), arguments: {
         'subtotal': subtotal.value,
         'discount': discount.value,

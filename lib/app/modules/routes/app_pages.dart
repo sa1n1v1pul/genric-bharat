@@ -3,6 +3,8 @@ import 'package:genric_bharat/app/modules/delivery/views/deliveryviews.dart';
 import 'package:get/get.dart';
 
 import '../Message/binding/messagebindings.dart';
+import '../MyOrders/bindings/myorderbinding.dart';
+import '../MyOrders/views/myorderview.dart';
 import '../auth/bindings/auth_binding.dart';
 import '../auth/views/loginview.dart';
 
@@ -26,6 +28,12 @@ class AppPages {
       name: Routes.AUTH,
       page: () => LoginView(),
       binding: AuthBinding(),
+      transition: Transition.fade,
+    ),
+    GetPage(
+      name: Routes.MY_ORDERS,
+      page: () => const MyOrdersView(),
+      binding: MyOrdersBinding(),
       transition: Transition.fade,
     ),
     GetPage(

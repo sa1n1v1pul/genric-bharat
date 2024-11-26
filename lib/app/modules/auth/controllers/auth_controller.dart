@@ -23,7 +23,6 @@ class AuthController extends GetxController {
     super.onInit();
     checkLoginStatus();
     loadUserPhone();
-    // Listen to login status changes
     ever(isLoggedIn, _handleAuthStateChange);
   }
 

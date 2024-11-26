@@ -11,31 +11,42 @@ class CartApiService extends GetxService {
   void onInit() async {
     super.onInit();
     await initializeService();
+    // Listen to SharedPreferences changes
+    ever(userId, (id) {
+      if (id != null) {
+        print('🔄 CartApiService userId updated: $id');
+        isInitialized.value = true;
+      }
+    });
   }
 
   Future<void> initializeService() async {
     try {
-      // Add a retry mechanism
-      int maxRetries = 3;
-      for (int attempt = 1; attempt <= maxRetries; attempt++) {
-        final retrievedUserId = await getUserId();
-        if (retrievedUserId != null) {
-          userId.value = retrievedUserId;
-          isInitialized.value = true;
-          print('🔍 CartApiService initialized with userId: $retrievedUserId');
-          return;
-        }
+      final prefs = await SharedPreferences.getInstance();
+      final storedUserId = prefs.getInt('user_id');
 
-        // Wait a bit before retrying
-        await Future.delayed(Duration(milliseconds: 500 * attempt));
+      if (storedUserId != null) {
+        userId.value = storedUserId;
+        isInitialized.value = true;
+        print('✅ CartApiService initialized with userId: $storedUserId');
+      } else {
+        print('⚠️ No userId found during CartApiService initialization');
+        // Don't set isInitialized to true here
       }
-
-      print('⚠️ CartApiService could not retrieve userId after $maxRetries attempts');
     } catch (e) {
       print('❌ Error initializing CartApiService: $e');
     }
   }
 
+  Future<void> initializeWithUserId(int newUserId) async {
+    try {
+      userId.value = newUserId;
+      isInitialized.value = true;
+      print('✅ CartApiService initialized with new userId: $newUserId');
+    } catch (e) {
+      print('❌ Error initializing CartApiService with userId: $e');
+    }
+  }
   Future<int?> getUserId() async {
     try {
       final prefs = await SharedPreferences.getInstance();

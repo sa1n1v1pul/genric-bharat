@@ -12,6 +12,7 @@ import 'package:genric_bharat/app/modules/profile/views/profile_view.dart';
 
 import '../Message/view/messageview.dart';
 
+import '../MyOrders/views/myorderview.dart';
 import '../home/views/homepage.dart';
 import '../offers/views/offers.dart';
 import 'bottombar.dart';
@@ -30,7 +31,7 @@ class _MainLayoutState extends State<MainLayout> {
     const CartScreen(fromBottomNav: true),
     const OffersViews(),
     const HomePage(),
-    Messageview(),
+    MyOrdersView(),
      ProfileView(),
   ];
 
