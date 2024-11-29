@@ -40,7 +40,12 @@ class _RazorpayCheckoutScreenState extends State<RazorpayCheckoutScreen> {
   void _initiateRazorpayPayment() async {
     double finalAmount = _deliveryController.finalAmount.value;
     int amountInPaisa = (finalAmount * 100).toInt();
+    final Map<String, dynamic> args = Get.arguments ?? {};
+    final Map<String, dynamic>? addressData = args['address'];
 
+    final String formattedAddress = addressData != null
+        ? '${addressData['address1']}, ${addressData['address2']}, ${addressData['city']}, ${addressData['state']} - ${addressData['pinCode']}'
+        : '';
     String orderDescription = 'Order Payment';
     if (_cartController.appliedCouponCode.value.isNotEmpty) {
       orderDescription += ' (Coupon: ${_cartController.appliedCouponCode.value})';
@@ -53,7 +58,7 @@ class _RazorpayCheckoutScreenState extends State<RazorpayCheckoutScreen> {
       'description': orderDescription,
       'prefill': {},
       'notes': {
-        'delivery_address': _deliveryController.selectedAddress.value,
+        'delivery_address': formattedAddress,
         'patient_name': _deliveryController.selectedPatientName.value,
         'original_amount': _cartController.total.value.toString(),
         'discount_amount': _cartController.discountAmount.value.toString(),

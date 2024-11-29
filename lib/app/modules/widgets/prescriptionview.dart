@@ -8,7 +8,7 @@ import '../prescription/controller/prescriptioncontroller.dart';
 
 class UploadPrescriptionScreen extends StatefulWidget {
   const UploadPrescriptionScreen({Key? key}) : super(key: key);
-
+  static String get route => '/upload-prescription';
   @override
   State<UploadPrescriptionScreen> createState() => _UploadPrescriptionScreenState();
 }

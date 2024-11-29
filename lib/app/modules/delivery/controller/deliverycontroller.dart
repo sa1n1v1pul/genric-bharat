@@ -141,6 +141,25 @@ class DeliveryDetailsController extends GetxController {
         throw Exception('Invalid user ID');
       }
 
+      // Validate that address details are not empty
+      if (selectedAddress.value == null) {
+        throw Exception('No address selected');
+      }
+
+      // Ensure area, city, state, and pincode are not empty
+      if (selectedLocality.value.isEmpty) {
+        selectedLocality.value = selectedAddress.value!.area;
+      }
+      if (selectedCity.value.isEmpty) {
+        selectedCity.value = selectedAddress.value!.city;
+      }
+      if (selectedState.value.isEmpty) {
+        selectedState.value = selectedAddress.value!.state;
+      }
+      if (selectedPincode.value.isEmpty) {
+        selectedPincode.value = selectedAddress.value!.pinCode;
+      }
+
       // Format the current date and time
       final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
@@ -158,18 +177,18 @@ class DeliveryDetailsController extends GetxController {
       final Map<String, dynamic> requestBody = {
         'payment_id': paymentId,
         'payment_date': formattedDate,
-        'user_id': userId, // Add user_id to the request body
+        'user_id': userId,
         if (couponCode.isNotEmpty) 'coupon_applied': couponCode,
         'original_amount': originalAmount.toStringAsFixed(2),
         'discount': discountAmount.toStringAsFixed(2),
         'final_amount': finalAmount.toStringAsFixed(2),
         'patient_name': selectedPatientName.value,
-        'delivery_address': selectedAddress.value,
+        'delivery_address': selectedAddress.value!.formattedAddress,
         'area': selectedLocality.value,
         'city': selectedCity.value,
         'state': selectedState.value,
         'pincode': selectedPincode.value,
-        'items': orderItems, // Send items as a direct array
+        'items': orderItems,
       };
 
       print('Order confirmation request body: $requestBody');
@@ -193,6 +212,118 @@ class DeliveryDetailsController extends GetxController {
       throw e;
     }
   }
+
+  Future<Map<String, dynamic>> confirmCODOrder({
+    required double originalAmount,
+    required double discountAmount,
+    required double finalAmount,
+    required String couponCode,
+  }) async {
+    try {
+      print('Preparing COD order confirmation data...');
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id') ?? 0;
+
+      if (userId <= 0) {
+        throw Exception('Invalid user ID');
+      }
+
+      if (selectedAddress.value == null) {
+        throw Exception('Delivery address is required');
+      }
+
+      // Create order items array
+      final List<Map<String, dynamic>> orderItems = cartController.cartItems.map((item) {
+        return {
+          'name': item.name,
+          'quantity': item.quantity.toString(),
+          'qty': item.quantity.toString(),
+          'rs': (item.price * item.quantity).toStringAsFixed(2)
+        };
+      }).toList();
+
+      // Prepare request body with all required fields
+      final Map<String, dynamic> requestBody = {
+        if (couponCode.isNotEmpty) 'coupon_applied': couponCode,
+        'original_amount': originalAmount.toStringAsFixed(2),
+        'discount': discountAmount.toStringAsFixed(2),
+        'final_amount': finalAmount.toStringAsFixed(2),
+        'patient_name': selectedPatientName.value,
+        // Use complete address from selected address
+        'delivery_address': selectedAddress.value!.formattedAddress,
+        'area': selectedAddress.value!.area,
+        'city': selectedAddress.value!.city,  // Ensure city is included
+        'state': selectedAddress.value!.state, // Ensure state is included
+        'pincode': selectedAddress.value!.pinCode, // Ensure pincode is included
+        'order_items': orderItems.map((item) => {
+          'name': item['name'],
+          'quantity': item['quantity'],
+          'qty': item['qty'],
+          'rs': item['rs'],
+        }).toList(),
+      };
+
+      print('COD order request body: $requestBody');
+
+      // Validate required fields before making the API call
+      if (requestBody['city']?.isEmpty ?? true) {
+        throw Exception('City is required');
+      }
+      if (requestBody['state']?.isEmpty ?? true) {
+        throw Exception('State is required');
+      }
+      if (requestBody['pincode']?.isEmpty ?? true) {
+        throw Exception('Pincode is required');
+      }
+
+      final response = await apiProvider.postOrderCODConfirmation(
+        ApiEndpoints.ordersCOD,
+        requestBody,
+      );
+
+      print('COD order API response: ${response.data}');
+
+      if (response.data['status'] == 'success') {
+        print('COD Order confirmed! Order ID: ${response.data['data']['order_id']}');
+        // Clear cart after successful order
+        cartController.clearAllCart();
+        return response.data['data'];
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to confirm COD order');
+      }
+    } catch (e) {
+      print('Error confirming COD order: $e');
+      throw e;
+    }
+  }
+
+  // Add this helper method to validate address before placing order
+  bool validateDeliveryAddress() {
+    if (selectedAddress.value == null) {
+      Get.snackbar(
+        'Error',
+        'Please select a delivery address',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+      );
+      return false;
+    }
+
+    final address = selectedAddress.value!;
+    if (address.city.isEmpty || address.state.isEmpty || address.pinCode.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please provide complete address with city, state and pincode',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
 
   void onAddAddressPressed() {
     Get.to(() => AddressScreen())?.then((_) => loadUserDetails());

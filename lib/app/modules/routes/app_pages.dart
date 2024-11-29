@@ -21,6 +21,7 @@ import '../profile/binding/vlogsbindings.dart';
 import '../profile/views/vlogsitem.dart';
 import '../widgets/mainlayout.dart';
 import '../widgets/myprescriptionview.dart';
+import '../widgets/prescriptionview.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -57,6 +58,12 @@ class AppPages {
     GetPage(
       name: PrescriptionListScreen.route,
       page: () => const PrescriptionListScreen(),
+      binding: PrescriptionBinding(),
+      transition: Transition.fade,
+    ),
+    GetPage(
+      name: UploadPrescriptionScreen.route, // Add a static route to the screen
+      page: () => const UploadPrescriptionScreen(),
       binding: PrescriptionBinding(),
       transition: Transition.fade,
     ),

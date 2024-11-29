@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../../cart/controller/cartcontroller.dart';
 import '../../location/controller/location_controller.dart';
+import '../../prescription/controller/prescriptioncontroller.dart';
 import '../../wallet/views/walletscreen.dart';
 import '../../widgets/allvitamins.dart';
 import '../../widgets/bestoffers.dart';
@@ -735,12 +736,10 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const UploadPrescriptionScreen(),
-                          ),
-                        );
+                        if (!Get.isRegistered<PrescriptionController>()) {
+                          Get.put(PrescriptionController());
+                        }
+                        Get.to(() => const UploadPrescriptionScreen());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: CustomTheme.loginGradientStart,
@@ -2391,7 +2390,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               color: const Color(0xffeff8ff),
               child: Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, top: 5, bottom: 11),
+                padding: const EdgeInsets.only(left: 12, right: 12, top: 5, bottom: 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

@@ -18,7 +18,23 @@ class ApiProvider extends GetxController {
     _initializeDio();
   }
 
+  Future<dio.Response> postOrderCODConfirmation(String endpoint, Map<String, dynamic> data) async {
+    return _handleRequest(() async {
+      final token = await getToken();
+      print('Sending order data to API: $data');
 
+      return await _dio.post(
+        endpoint,
+        data: data,
+        options: dio.Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+    });
+  }
 
   Future<dio.Response> postOrderConfirmation(String endpoint, Map<String, dynamic> data) async {
     return _handleRequest(() async {

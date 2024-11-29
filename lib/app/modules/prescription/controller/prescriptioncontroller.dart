@@ -16,7 +16,6 @@ class PrescriptionController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    // Try to get userId from SharedPreferences during initialization
     await loadUserId();
   }
 

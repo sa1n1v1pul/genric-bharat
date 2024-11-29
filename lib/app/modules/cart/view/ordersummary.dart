@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:genric_bharat/app/modules/cart/view/razorpayscreen.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../../delivery/controller/deliverycontroller.dart';
+import '../../routes/app_routes.dart';
 import '../controller/cartcontroller.dart';
 
 
@@ -99,7 +101,35 @@ class OrderSummaryScreen extends GetView<CartController> {
       ),
     );
   }
-
+  Widget _buildOrderTotalSummary(DeliveryDetailsController deliveryController) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Total Amount:'),
+            Text(
+              '₹${deliveryController.finalAmount.value.toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        if (deliveryController.discount.value > 0) ...[
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Savings:'),
+              Text(
+                '₹${deliveryController.discount.value.toStringAsFixed(2)}',
+                style: TextStyle(color: Colors.green[700]),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
   Widget _buildOrderItem(CartItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -274,6 +304,129 @@ class OrderSummaryScreen extends GetView<CartController> {
       );
     });
   }
+  void _showPaymentOptions(BuildContext context, DeliveryDetailsController deliveryController) {
+    if (!deliveryController.validateDeliveryAddress()) {
+      return;
+    }
+
+    // Create a serializable map of the address data
+    final addressData = deliveryController.selectedAddress.value != null
+        ? {
+      'address1': deliveryController.selectedAddress.value!.address1,
+      'address2': deliveryController.selectedAddress.value!.address2,
+      'area': deliveryController.selectedAddress.value!.area,
+      'landmark': deliveryController.selectedAddress.value!.landmark,
+      'city': deliveryController.selectedAddress.value!.city,
+      'state': deliveryController.selectedAddress.value!.state,
+      'pinCode': deliveryController.selectedAddress.value!.pinCode,
+    }
+        : null;
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Select Payment Method',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            _buildOrderTotalSummary(deliveryController),
+            const SizedBox(height: 20),
+            // COD Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  Get.back();
+                  try {
+                    EasyLoading.show(status: 'Placing order...');
+                    final result = await deliveryController.confirmCODOrder(
+                      originalAmount: deliveryController.subtotal.value,
+                      discountAmount: deliveryController.discount.value,
+                      finalAmount: deliveryController.finalAmount.value,
+                      couponCode: deliveryController.appliedCoupon.value,
+                    );
+
+                    EasyLoading.dismiss();
+                    Get.snackbar(
+                      'Success',
+                      'Order placed successfully!\nOrder ID: ${result['transaction_number']}',
+                      backgroundColor: Colors.green[100],
+                      colorText: Colors.black,
+                      duration: const Duration(seconds: 3),
+                    );
+
+                    Get.offAllNamed(Routes.HOME);
+                  } catch (e) {
+                    EasyLoading.dismiss();
+                    Get.snackbar(
+                      'Error',
+                      'Failed to place COD order: ${e.toString()}',
+                      backgroundColor: Colors.red[100],
+                      colorText: Colors.black,
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: CustomTheme.loginGradientStart,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Cash on Delivery',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Online Payment Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    Get.to(
+                          () => const RazorpayCheckoutScreen(),
+                      arguments: {
+                        'subtotal': deliveryController.subtotal.value,
+                        'discount': deliveryController.discount.value,
+                        'finalAmount': deliveryController.finalAmount.value,
+                        'appliedCoupon': deliveryController.appliedCoupon.value,
+                        'patientName': deliveryController.selectedPatientName.value,
+                        'address': addressData, // Pass the formatted address data
+                      },
+                    );
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: CustomTheme.loginGradientStart),
+                ),
+                child: Text(
+                  'Online Payment',
+                  style: TextStyle(
+                    color: CustomTheme.loginGradientStart,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+    );
+  }
 
   Widget _buildOrderSummary(DeliveryDetailsController deliveryController) {
     return Container(
@@ -354,9 +507,7 @@ class OrderSummaryScreen extends GetView<CartController> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                Get.to(() => const RazorpayCheckoutScreen());
-              },
+              onPressed: () => _showPaymentOptions(Get.context!, deliveryController),
               style: ElevatedButton.styleFrom(
                 backgroundColor: CustomTheme.loginGradientStart,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -365,7 +516,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                 ),
               ),
               child: const Text(
-                'Select payment mode',
+                'Choose payment method',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
