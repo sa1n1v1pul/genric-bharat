@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
@@ -29,14 +30,88 @@ class InvoiceScreen extends StatelessWidget {
     required this.discountAmount,
     required this.couponCode,
   }) : super(key: key);
+  Future<bool> _requestStoragePermission(BuildContext context) async {
+    // Get device info
+    final deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
 
+    // For Android 11 (API 30) and above
+    if (androidInfo.version.sdkInt >= 30) {
+      if (await Permission.manageExternalStorage.isDenied) {
+        final status = await Permission.manageExternalStorage.request();
+        if (!status.isGranted) {
+          // Show dialog to guide user
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Storage Permission Required'),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Please follow these steps:'),
+                  SizedBox(height: 8),
+                  Text('1. Go to Settings > Apps'),
+                  Text('2. Find "Genric Bharat"'),
+                  Text('3. Tap Permissions'),
+                  Text('4. Enable "Files and media"'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => openAppSettings(),
+                  child: const Text('Open Settings'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            ),
+          );
+          return false;
+        }
+      }
+      return true;
+    }
+    // For Android 10 and below
+    else {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) {
+        // Show dialog to guide user
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Storage Permission Required'),
+            content: const Text('Storage permission is required to download invoices. Please enable it in app settings.'),
+            actions: [
+              TextButton(
+                onPressed: () => openAppSettings(),
+                child: const Text('Open Settings'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+        return false;
+      }
+      return true;
+    }
+  }
   Future<void> _generateAndDownloadPdf(
       CartController cartController,
       DeliveryDetailsController deliveryController,
       BuildContext context) async {
     try {
       print('Starting PDF generation process...');
-
+      // Request permission first
+      bool hasPermission = await _requestStoragePermission(context);
+      if (!hasPermission) {
+        return;
+      }
       var status = await Permission.storage.request();
       if (!status.isGranted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -165,19 +240,16 @@ class InvoiceScreen extends StatelessWidget {
                     _buildPdfRow('Patient Name',
                         deliveryController.selectedPatientName.value,
                         font: ttfRegular),
-                    _buildPdfRow('Delivery Address',
-                        deliveryController.selectedAddress.value,
-                        font: ttfRegular),
-                    _buildPdfRow(
-                        'Area', deliveryController.selectedLocality.value,
-                        font: ttfRegular),
-                    _buildPdfRow('City', deliveryController.selectedCity.value,
-                        font: ttfRegular),
-                    _buildPdfRow('State', deliveryController.selectedState.value,
-                        font: ttfRegular),
-                    _buildPdfRow('Pincode',
-                        deliveryController.selectedPincode.value,
-                        font: ttfRegular),
+                    _buildPdfRow('Patient Name', deliveryController.selectedPatientName.value, font: ttfRegular),
+                    _buildPdfRow('Address Line 1', deliveryController.selectedAddress.value?.address1 ?? '', font: ttfRegular),
+                    if (deliveryController.selectedAddress.value?.address2.isNotEmpty ?? false)
+                      _buildPdfRow('Address Line 2', deliveryController.selectedAddress.value?.address2 ?? '', font: ttfRegular),
+                    if (deliveryController.selectedAddress.value?.landmark.isNotEmpty ?? false)
+                      _buildPdfRow('Landmark', deliveryController.selectedAddress.value?.landmark ?? '', font: ttfRegular),
+                    _buildPdfRow('Area', deliveryController.selectedLocality.value, font: ttfRegular),
+                    _buildPdfRow('City', deliveryController.selectedCity.value, font: ttfRegular),
+                    _buildPdfRow('State', deliveryController.selectedState.value, font: ttfRegular),
+                    _buildPdfRow('PIN Code', deliveryController.selectedPincode.value, font: ttfRegular),
                   ],
                 ),
               ),
@@ -433,12 +505,17 @@ class InvoiceScreen extends StatelessWidget {
     _buildSectionHeader('Delivery Information'),
     _buildDetailRow('Patient Name',
     deliveryController.selectedPatientName.value),
-    _buildDetailRow('Delivery Address',
-    deliveryController.selectedAddress.value),
-    _buildDetailRow('Area', deliveryController.selectedLocality.value),
-    _buildDetailRow('City', deliveryController.selectedCity.value),
-    _buildDetailRow('State', deliveryController.selectedState.value),
-    _buildDetailRow('Pincode', deliveryController.selectedPincode.value),
+                _buildSectionHeader('Delivery Information'),
+                _buildDetailRow('Patient Name', deliveryController.selectedPatientName.value),
+                _buildDetailRow('Address Line 1', deliveryController.selectedAddress.value?.address1 ?? ''),
+                if (deliveryController.selectedAddress.value?.address2.isNotEmpty ?? false)
+                  _buildDetailRow('Address Line 2', deliveryController.selectedAddress.value?.address2 ?? ''),
+                if (deliveryController.selectedAddress.value?.landmark.isNotEmpty ?? false)
+                  _buildDetailRow('Landmark', deliveryController.selectedAddress.value?.landmark ?? ''),
+                _buildDetailRow('Area', deliveryController.selectedLocality.value),
+                _buildDetailRow('City', deliveryController.selectedCity.value),
+                _buildDetailRow('State', deliveryController.selectedState.value),
+                _buildDetailRow('PIN Code', deliveryController.selectedPincode.value),
 
     const SizedBox(height: 20),
 

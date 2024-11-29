@@ -89,9 +89,7 @@ class CartScreen extends GetView<CartController> {
 
         // Check if not initialized or no user
         if (!controller.isInitialized.value || controller.currentUserId == null) {
-          return const Center(
-            child: Text('Please login to view your cart'),
-          );
+          return  _buildLoadingState();
         }
 
         // Check if cart is empty
@@ -128,6 +126,36 @@ class CartScreen extends GetView<CartController> {
           ],
         );
       },
+    );
+  }
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.hourglass_empty,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Loading data...',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '⏳ Please wait',
+            style: TextStyle(
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

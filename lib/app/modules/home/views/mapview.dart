@@ -1,21 +1,17 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
 import 'package:geocoder2/geocoder2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../core/theme/constantfile.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_provider.dart';

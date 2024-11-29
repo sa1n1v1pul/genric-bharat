@@ -17,10 +17,13 @@ class ApiProvider extends GetxController {
     super.onInit();
     _initializeDio();
   }
+
+
+
   Future<dio.Response> postOrderConfirmation(String endpoint, Map<String, dynamic> data) async {
     return _handleRequest(() async {
       final token = await getToken();
-      print('Sending order data to API: $data'); // Debug print
+      print('Sending order data to API: $data');
 
       return await _dio.post(
         endpoint,

@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
+
+import '../../delivery/views/addressmodel.dart';
 import '../controller/addresscontroller.dart';
 
 class AddressScreen extends StatelessWidget {
-  AddressScreen({Key? key}) : super(key: key);
+  final AddressModel? addressToEdit;
+
+  const AddressScreen({
+    Key? key,
+    this.addressToEdit,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GetX<AddressController>(
-      init: AddressController(),
+      init: AddressController(addressToEdit: addressToEdit),
       builder: (controller) {
         return Scaffold(
           backgroundColor: Colors.white,
@@ -194,8 +201,6 @@ class AddressScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-
-
         _buildLabel('Area, Colony'),
         const SizedBox(height: 8),
         _buildTextField(
@@ -213,40 +218,24 @@ class AddressScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildLabel('City'),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    controller: controller.cityController,
-                    hintText: 'City',
-                    validator: (value) => value?.isEmpty ?? true ? 'Please enter city' : null,
-                    enabled: !controller.isPincodeValid.value,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildLabel('State'),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    controller: controller.stateController,
-                    hintText: 'State',
-                    validator: (value) => value?.isEmpty ?? true ? 'Please enter state' : null,
-                    enabled: !controller.isPincodeValid.value,
-                  ),
-                ],
-              ),
-            ),
-          ],
+        // Show City and State in column
+        _buildLabel('City'),
+        const SizedBox(height: 8),
+        _buildTextField(
+          controller: controller.cityController,
+          hintText: 'City',
+          validator: (value) => value?.isEmpty ?? true ? 'Please enter city' : null,
+          enabled: !controller.isPincodeValid.value,
+        ),
+        const SizedBox(height: 16),
+
+        _buildLabel('State'),
+        const SizedBox(height: 8),
+        _buildTextField(
+          controller: controller.stateController,
+          hintText: 'State',
+          validator: (value) => value?.isEmpty ?? true ? 'Please enter state' : null,
+          enabled: !controller.isPincodeValid.value,
         ),
       ],
     );

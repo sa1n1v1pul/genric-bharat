@@ -92,7 +92,7 @@ class AllVitaminsScreen extends StatelessWidget {
           )
               : const Text(
             'Vitamins & Supplements',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ),
         actions: [

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
@@ -19,6 +21,9 @@ class HomeController extends GetxController {
   final RxList<Map<String, dynamic>> categoryItems =
       <Map<String, dynamic>>[].obs;
   final RxBool isCategoryItemsLoading = true.obs;
+  final RxString pageContent = RxString('');
+  final RxBool isPageLoading = RxBool(false);
+
 
   @override
   void onInit() {
@@ -26,8 +31,31 @@ class HomeController extends GetxController {
     fetchCategoryItems();
     fetchCategories();
     fetchSliders();
-  }
 
+  }
+  Future<void> fetchPageContent(String slug) async {
+    try {
+      isPageLoading.value = true;
+      final response = await _dio.get(
+        '${ApiEndpoints.pagesGet}?slug=$slug',
+      );
+
+      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+        // Assuming the first item contains the page details
+        final pageData = response.data[0];
+        pageContent.value = pageData['details'] ?? 'No content available.';
+        print('Fetched page content for $slug successfully');
+      } else {
+        pageContent.value = 'Unable to fetch page content.';
+        print('No content found for slug: $slug');
+      }
+    } catch (e) {
+      print('Error fetching page content: $e');
+      pageContent.value = 'Error loading content.';
+    } finally {
+      isPageLoading.value = false;
+    }
+  }
   Future<void> fetchCategoryItems() async {
     try {
       isCategoryItemsLoading.value = true;

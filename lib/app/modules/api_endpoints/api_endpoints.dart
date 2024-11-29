@@ -1,7 +1,12 @@
 class ApiEndpoints {
-  static const String baseUrl = 'https://dat.babadeepsinghinfotech.com/api/';
   static const String imageBaseUrl = 'https://hayshay.gullygood.com/assets/images/';
   static const String apibaseUrl = 'https://hayshay.gullygood.com/api/';
+  static const String prescription = '${apibaseUrl}prescript';
+  static const String pagesGet = '${apibaseUrl}pages-get';
+  static String getUserPrescriptions(int userId) => '${apibaseUrl}prescriptions/user/$userId';
+  static const String addAddress = '${apibaseUrl}addresses';
+  static const String getAddresses = '${apibaseUrl}address-get';
+  static const String updateAddress = '${apibaseUrl}addresses';
   static const String orders = '${apibaseUrl}orders-app';
   static const String addToCart = '${apibaseUrl}add-cart';
   static const String getCart = '${apibaseUrl}cart';
@@ -22,6 +27,9 @@ class ApiEndpoints {
   static const String address_update = '${apibaseUrl}update-address';
   static const String updateUserLocation = '${apibaseUrl}users/';
   static const String vlogs = '${apibaseUrl}posts-app';
+  static const String baseUrl = 'https://dat.babadeepsinghinfotech.com/api/';
   static const String providersList = '${baseUrl}providers/';
+
+  static String getAddressesForUser(int userId) => '$getAddresses/$userId';
 }
 

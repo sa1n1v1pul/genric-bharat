@@ -31,7 +31,7 @@ class _MainLayoutState extends State<MainLayout> {
     const CartScreen(fromBottomNav: true),
     const OffersViews(),
     const HomePage(),
-    MyOrdersView(),
+    MyOrdersView(fromBottomNav: true),
      ProfileView(),
   ];
 

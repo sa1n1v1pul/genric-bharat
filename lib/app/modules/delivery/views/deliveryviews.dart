@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
+
+import '../../home/views/addressview.dart';
 import '../controller/deliverycontroller.dart';
+import 'addressmodel.dart';
 
 class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
   const DeliveryDetailsScreen({Key? key}) : super(key: key);
@@ -44,10 +47,9 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                 ),
                 const SizedBox(height: 12),
                 _buildPatientNameWidget(),
-                const SizedBox(height: 24),
-                _buildSectionHeader('Delivery Address'),
                 const SizedBox(height: 12),
-                _buildAddressCard(),
+
+                _buildAddressSection(),
                 const SizedBox(height: 40),
                 _buildProceedButton(),
               ],
@@ -64,6 +66,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
       )),
     );
   }
+
 
   Widget _buildPatientNameWidget() {
     return Obx(() {
@@ -127,107 +130,126 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
     );
   }
 
-  Widget _buildAddressCard() {
-    // Existing address card code remains the same
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildAddressCard(Address address) {
+    return Obx(() {
+      final isSelected = controller.selectedAddress.value?.id == address.id;
+
+      return GestureDetector(
+        onTap: () => controller.selectAddress(address),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? Colors.blue : Colors.grey[300]!,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Delivery Address',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                children: [
+                  Radio<int>(
+                    value: address.id,
+                    groupValue: controller.selectedAddress.value?.id,
+                    onChanged: (_) => controller.selectAddress(address),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${address.address1}, ${address.address2}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    onPressed: () {
+                      final addressModel = AddressModel(
+                        id: address.id,
+                        userId: address.id,
+                        pinCode: address.pinCode,
+                        shipAddress1: address.address1,
+                        shipAddress2: address.address2,
+                        area: address.area,
+                        landmark: address.landmark ?? '',
+                        city: address.city,
+                        state: address.state,
+                      );
+                      Get.to(() => AddressScreen(addressToEdit: addressModel));
+                    },
+                  ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                onPressed: controller.onAddAddressPressed,
+              Padding(
+                padding: const EdgeInsets.only(left: 48),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Area: ${address.area}',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    Text(
+                      'Landmark: ${address.landmark}',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    Text(
+                      '${address.city}, ${address.state}',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    Text(
+                      'PIN: ${address.pinCode}',
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            controller.selectedAddress.value,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 4),
-          RichText(
-            text: TextSpan(
+        ),
+      );
+    });
+  }
+
+  Widget _buildAddressSection() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Select Delivery Address',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
-              children: [
-                const TextSpan(
-                  text: 'Area: ',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                TextSpan(text: controller.selectedLocality.value),
-              ],
             ),
-          ),
-          const SizedBox(height: 4),
-          RichText(
-            text: TextSpan(
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-              children: [
-                const TextSpan(
-                  text: 'City: ',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                TextSpan(text: controller.selectedCity.value),
-              ],
+            TextButton(
+              onPressed: () => Get.to(() => AddressScreen()),
+              child: const Text('Add New Address'),
             ),
-          ),
-          const SizedBox(height: 4),
-          RichText(
-            text: TextSpan(
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-              children: [
-                const TextSpan(
-                  text: 'State: ',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                TextSpan(text: controller.selectedState.value),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          RichText(
-            text: TextSpan(
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-              ),
-              children: [
-                const TextSpan(
-                  text: 'PIN: ',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                TextSpan(text: controller.selectedPincode.value),
-              ],
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Obx(() {
+          if (controller.addresses.isEmpty) {
+            return const Center(
+              child: Text('No addresses found'),
+            );
+          }
+
+          return Column(
+            children: [
+              ...controller.addresses.map((address) => _buildAddressCard(address)),
+            ],
+          );
+        }),
+      ],
     );
   }
 

@@ -208,15 +208,10 @@ class OrderSummaryScreen extends GetView<CartController> {
               children: [
                 const Text(
                   'Deliver to:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 TextButton(
-                  onPressed: () {
-                    deliveryController.onAddAddressPressed();
-                  },
+                  onPressed: deliveryController.onAddAddressPressed,
                   child: const Text('Change'),
                 ),
               ],
@@ -224,83 +219,47 @@ class OrderSummaryScreen extends GetView<CartController> {
             const SizedBox(height: 8),
             Text(
               deliveryController.selectedPatientName.value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 12),
-            Text(
-              deliveryController.selectedAddress.value,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+            if (deliveryController.selectedAddress.value != null) ...[
+              Text(
+                deliveryController.selectedAddress.value?.address1 ?? '',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-            ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+              if (deliveryController.selectedAddress.value?.address2.isNotEmpty ?? false)
+                Text(
+                  deliveryController.selectedAddress.value?.address2 ?? '',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'Locality: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: deliveryController.selectedLocality.value),
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+              const SizedBox(height: 4),
+              if (deliveryController.selectedAddress.value?.landmark.isNotEmpty ?? false)
+                Text(
+                  'Landmark: ${deliveryController.selectedAddress.value?.landmark}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-                children: [
-                  TextSpan(
-                    text: 'City: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: deliveryController.selectedCity.value),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                'Area: ${deliveryController.selectedLocality.value}',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-            ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-                children: [
-                  TextSpan(
-                    text: 'State: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: deliveryController.selectedState.value),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                'City: ${deliveryController.selectedCity.value}',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-            ),
-            const SizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                ),
-                children: [
-                  TextSpan(
-                    text: 'PIN: ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: deliveryController.selectedPincode.value),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                'State: ${deliveryController.selectedState.value}',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-            ),
+              const SizedBox(height: 4),
+              Text(
+                'PIN: ${deliveryController.selectedPincode.value}',
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
+            ] else
+              const Text('No address selected'),
             const SizedBox(height: 12),
             Text(
               'Delivery by 22nd - 24th Nov',

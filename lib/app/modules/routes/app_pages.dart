@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../Message/binding/messagebindings.dart';
 import '../MyOrders/bindings/myorderbinding.dart';
+import '../MyOrders/controllers/myordercontroller.dart';
 import '../MyOrders/views/myorderview.dart';
 import '../auth/bindings/auth_binding.dart';
 import '../auth/views/loginview.dart';
@@ -13,11 +14,13 @@ import '../home/binding/homebindings.dart';
 import '../location/binding/location_binding.dart';
 import '../location/views/locationservices.dart';
 import '../offers/bindings/offersbinding.dart';
+import '../prescription/binding/prescriptionbinding.dart';
 import '../profile/binding/profile_binding.dart';
 
 import '../profile/binding/vlogsbindings.dart';
 import '../profile/views/vlogsitem.dart';
 import '../widgets/mainlayout.dart';
+import '../widgets/myprescriptionview.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -30,11 +33,14 @@ class AppPages {
       binding: AuthBinding(),
       transition: Transition.fade,
     ),
+    // In your route definitions
     GetPage(
       name: Routes.MY_ORDERS,
       page: () => const MyOrdersView(),
-      binding: MyOrdersBinding(),
-      transition: Transition.fade,
+      transition: Transition.fadeIn,
+      binding: BindingsBuilder(() {
+        Get.put(MyOrdersController());
+      }),
     ),
     GetPage(
       name: Routes.VLOGS,
@@ -47,6 +53,12 @@ class AppPages {
       page: () => const VlogDetailsScreen(),
       binding: VlogsBinding(),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: PrescriptionListScreen.route,
+      page: () => const PrescriptionListScreen(),
+      binding: PrescriptionBinding(),
+      transition: Transition.fade,
     ),
     GetPage(
       name: Routes.LOCATION,

@@ -6,7 +6,9 @@ import '../../api_endpoints/api_provider.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../../cart/controller/cartcontroller.dart';
 import '../../cart/view/ordersummary.dart';
+import '../../home/views/addressview.dart';
 import '../../routes/app_routes.dart';
+import '../views/addressmodel.dart';
 
 class DeliveryDetailsController extends GetxController {
   final ApiProvider apiProvider = Get.find<ApiProvider>();
@@ -15,7 +17,9 @@ class DeliveryDetailsController extends GetxController {
   final TextEditingController patientNameController = TextEditingController();
 
   final RxString selectedPatientName = ''.obs;
-  final RxString selectedAddress = ''.obs;
+  final RxList<Address> addresses = <Address>[].obs;
+  final Rx<Address?> selectedAddress = Rx<Address?>(null);
+
   final RxString selectedLocality = ''.obs;
   final RxString selectedCity = ''.obs;
   final RxString selectedState = ''.obs;
@@ -40,6 +44,7 @@ class DeliveryDetailsController extends GetxController {
       finalAmount.value = args['finalAmount'] ?? 0.0;
       appliedCoupon.value = args['appliedCoupon'] ?? '';
     }
+
 
     ever(RxString(Get.currentRoute), (String route) {
       if (route == Routes.DELIVERY) {
@@ -66,28 +71,18 @@ class DeliveryDetailsController extends GetxController {
   Future<void> loadUserDetails() async {
     try {
       isLoading.value = true;
-
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id') ?? 0;
 
       if (userId <= 0) {
-        print('Invalid User ID: $userId');
-        Get.snackbar(
-          'Error',
-          'Please log in again',
-          backgroundColor: Colors.red[100],
-          colorText: Colors.black,
-        );
+        Get.snackbar('Error', 'Please log in again');
         return;
       }
 
-      print('Fetching user profile for ID: $userId');
-      final response = await apiProvider.getUserProfile(userId);
-      print('API Response: ${response.data}');
-
-      if (response.data != null) {
-        final userData = response.data;
-
+      // Fetch user profile for patient name
+      final userResponse = await apiProvider.getUserProfile(userId);
+      if (userResponse.data != null) {
+        final userData = userResponse.data;
         String fullName = userData['fullname'] ?? '';
         if (fullName.isEmpty) {
           String firstName = userData['first_name'] ?? '';
@@ -95,34 +90,37 @@ class DeliveryDetailsController extends GetxController {
           fullName = '$firstName ${lastName}'.trim();
         }
         selectedPatientName.value = fullName;
+      }
 
-        final addressParts = <String>[];
-        if (userData['ship_address1']?.isNotEmpty == true) {
-          addressParts.add(userData['ship_address1']);
+      // Fetch addresses using CartController's endpoint
+      final addressResponse = await apiProvider.get(
+          ApiEndpoints.getAddressesForUser(userId)
+      );
+
+      if (addressResponse.statusCode == 200) {
+        final List<dynamic> addressData = addressResponse.data['data'];
+        addresses.value = addressData.map((data) => Address.fromJson(data)).toList();
+
+        // Select the first address by default if available
+        if (addresses.isNotEmpty) {
+          selectedAddress.value = addresses.first;
         }
-        if (userData['ship_address2']?.isNotEmpty == true) {
-          addressParts.add(userData['ship_address2']);
-        }
-        selectedAddress.value = addressParts.join(', ');
-
-        selectedLocality.value = userData['locality'] ?? userData['landmark'] ?? 'N/A';
-        selectedCity.value = userData['ship_city'] ?? 'N/A';
-        selectedState.value = userData['state'] ?? 'N/A';
-        selectedPincode.value = userData['ship_zip']?.isEmpty == true ? 'N/A' : userData['ship_zip'];
-
-        hasData.value = selectedAddress.value.isNotEmpty;
       }
     } catch (e) {
       print('Error loading user details: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to load user details',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.black,
-      );
+      Get.snackbar('Error', 'Failed to load user details');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void selectAddress(Address address) {
+    selectedAddress.value = address;
+    // Update individual fields when address is selected
+    selectedLocality.value = address.area;
+    selectedCity.value = address.city;
+    selectedState.value = address.state;
+    selectedPincode.value = address.pinCode;
   }
 
   Future<Map<String, dynamic>> confirmOrder({
@@ -197,11 +195,12 @@ class DeliveryDetailsController extends GetxController {
   }
 
   void onAddAddressPressed() {
-    Get.toNamed('/add-address')?.then((_) {
-      loadUserDetails();
-    });
+    Get.to(() => AddressScreen())?.then((_) => loadUserDetails());
   }
 
+  void onEditAddressPressed(AddressModel address) {
+    Get.to(() => AddressScreen(addressToEdit: address))?.then((_) => loadUserDetails());
+  }
   Future<void> updatePatientName() async {
     try {
       isLoading.value = true;
@@ -234,10 +233,10 @@ class DeliveryDetailsController extends GetxController {
 
   Future<void> onProceedToCheckout() async {
     try {
-      if (selectedAddress.isEmpty) {
+      if (selectedAddress.value == null) {
         Get.snackbar(
           'Error',
-          'Please add an address to proceed',
+          'Please select a delivery address',
           backgroundColor: Colors.red[100],
           colorText: Colors.black,
         );
@@ -264,12 +263,65 @@ class DeliveryDetailsController extends GetxController {
         'appliedCoupon': appliedCoupon.value,
       });
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString(),
-        backgroundColor: Colors.red[100],
-        colorText: Colors.black,
-      );
+      Get.snackbar('Error', e.toString());
     }
+  }
+}
+class Address {
+  final int id;
+  final String pinCode;
+  final String address1;
+  final String address2;
+  final String area;
+  final String landmark;
+  final String city;
+  final String state;
+  String get formattedAddress {
+    final List<String> parts = [
+      address1,
+      if (address2.isNotEmpty) address2,
+      if (landmark.isNotEmpty) 'Landmark: $landmark',
+      'Area: $area',
+      '$city, $state',
+      'PIN: $pinCode'
+    ];
+    return parts.join(', ');
+  }
+
+  String get fullAddress {
+    final List<String> parts = [
+      address1,
+      if (address2.isNotEmpty) address2,
+      if (landmark.isNotEmpty) 'Landmark: $landmark',
+      'Area: $area',
+      '$city',
+      state,
+      'PIN: $pinCode'
+    ];
+    return parts.where((part) => part.isNotEmpty).join('\n');
+  }
+
+  Address({
+    required this.id,
+    required this.pinCode,
+    required this.address1,
+    required this.address2,
+    required this.area,
+    required this.landmark,
+    required this.city,
+    required this.state,
+  });
+
+  factory Address.fromJson(Map<String, dynamic> json) {
+    return Address(
+      id: json['id'],
+      pinCode: json['pin_code'] ?? '',
+      address1: json['ship_address1'] ?? '',
+      address2: json['ship_address2'] ?? '',
+      area: json['area'] ?? '',
+      landmark: json['landmark'] ?? '',
+      city: json['city'] ?? '',
+      state: json['state'] ?? '',
+    );
   }
 }

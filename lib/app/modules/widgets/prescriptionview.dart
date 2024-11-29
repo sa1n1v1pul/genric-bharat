@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:get/get.dart';
 import 'dart:io';
-
 import '../../core/theme/theme.dart';
+import '../home/controller/homecontroller.dart';
+import '../prescription/controller/prescriptioncontroller.dart';
 
 class UploadPrescriptionScreen extends StatefulWidget {
   const UploadPrescriptionScreen({Key? key}) : super(key: key);
@@ -15,6 +17,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
   File? _selectedFile;
   String? _fileName;
   bool _isUploading = false;
+  final PrescriptionController _prescriptionController = Get.find<PrescriptionController>();
 
   Future<void> _pickFile() async {
     try {
@@ -28,7 +31,6 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
           _selectedFile = File(result.files.single.path!);
           _fileName = result.files.single.name;
         });
-        // Upload file ka function call kare
         _uploadFile();
       }
     } catch (e) {
@@ -49,12 +51,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
     });
 
     try {
-      // TODO: Yahan par actual API call add karni hai file upload ke liye
-      // Example:
-      // final response = await uploadFileToServer(_selectedFile);
-
-      // Simulating API call with delay
-      await Future.delayed(const Duration(seconds: 2));
+      await _prescriptionController.uploadPrescription(_selectedFile!);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

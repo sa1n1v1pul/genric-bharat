@@ -25,6 +25,8 @@ class CartController extends GetxController {
   RxBool isInitialized = false.obs;
   double get finalAmount => total.value - discountAmount.value;
   int? currentUserId;
+  RxList<Address> userAddresses = <Address>[].obs;
+  final Map<String, bool> _updatingQuantities = {};
 
   @override
   void onInit() async {
@@ -32,7 +34,6 @@ class CartController extends GetxController {
     print('🚀 CartController initialized');
     ever(isInitialized, (_) => print('Cart initialization status changed: $isInitialized'));
 
-    // Listen to user ID changes
     ever(_apiService.userId, (userId) {
       if (userId != null) {
         print('👤 User ID changed in CartController: $userId');
@@ -45,7 +46,6 @@ class CartController extends GetxController {
   }
   Future<void> checkAndInitializeCart() async {
     try {
-      // First check if we already have a userId from the service
       if (_apiService.userId.value != null) {
         currentUserId = _apiService.userId.value;
         print('✅ Using userId from service: ${currentUserId}');
@@ -53,7 +53,6 @@ class CartController extends GetxController {
         return;
       }
 
-      // If not, try to get it from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id');
 
@@ -63,7 +62,6 @@ class CartController extends GetxController {
         await initializeCart(userId: userId);
       } else {
         print('⚠️ No userId found in SharedPreferences or service');
-        // Clear cart data when no user is logged in
         cartItems.clear();
         total.value = 0.0;
         cartCount.value = 0;
@@ -74,6 +72,7 @@ class CartController extends GetxController {
       isInitialized.value = true;
     }
   }
+
   Future<void> initializeCart({int? userId}) async {
     try {
       if (userId != null) {
@@ -88,13 +87,37 @@ class CartController extends GetxController {
 
       isLoading.value = true;
       await fetchCart();
-      await checkAddressFromProfile(currentUserId!);
-
+      await fetchAddresses(); // New method to fetch addresses
     } catch (e) {
       print('❌ Error initializing cart: $e');
     } finally {
       isLoading.value = false;
       isInitialized.value = true;
+    }
+  }
+
+  // New method to fetch addresses
+  Future<void> fetchAddresses() async {
+    try {
+      if (currentUserId == null) {
+        print('❌ Cannot fetch addresses: currentUserId is null');
+        return;
+      }
+
+      print('📍 Fetching addresses for user $currentUserId');
+      final response = await _apiProvider.get(
+          ApiEndpoints.getAddressesForUser(currentUserId!)
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> addressData = response.data['data'];
+        userAddresses.value = addressData.map((data) => Address.fromJson(data)).toList();
+        hasAddress.value = userAddresses.isNotEmpty;
+        print('📍 Found ${userAddresses.length} addresses');
+      }
+    } catch (e) {
+      print('❌ Error fetching addresses: $e');
+      hasAddress.value = false;
     }
   }
   Future<void> fetchPromoCodes() async {
@@ -185,7 +208,7 @@ class CartController extends GetxController {
 
   Future<void> proceedToCheckout() async {
     try {
-      if (total.value < 1) {
+      if (total.value < 500) {
         Get.snackbar(
           'Error',
           'Minimum order amount should be ₹500',
@@ -200,7 +223,6 @@ class CartController extends GetxController {
         return;
       }
 
-      // Pass order summary data through Get.arguments
       Get.toNamed(Routes.DELIVERY, arguments: getOrderSummary());
     } catch (e) {
       print('Error proceeding to checkout: $e');
@@ -307,22 +329,44 @@ class CartController extends GetxController {
     );
   }
   Future<void> updateQuantity(String itemId, int quantity) async {
+    // If an update is already in progress for this item, skip
+    if (_updatingQuantities[itemId] == true) return;
+
     try {
       print('🔄 Updating quantity - ItemID: $itemId, New Quantity: $quantity');
-      isLoading.value = true;
+      _updatingQuantities[itemId] = true;
+
+      // Update local state immediately
+      final itemIndex = cartItems.indexWhere((item) => item.id == itemId);
+      if (itemIndex != -1) {
+        final item = cartItems[itemIndex];
+        final updatedItem = CartItem(
+          id: item.id,
+          itemId: item.itemId,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: quantity,
+        );
+
+        // Update the item in the list
+        cartItems[itemIndex] = updatedItem;
+
+        // Update total
+        _updateLocalTotal();
+      }
 
       // Find the cart item to get its item_id
-      final cartItem = cartItems.firstWhere((item) => item.id == itemId);
+      final cartItem = cartItems[itemIndex];
 
+      // Make API call in background
       final response = await _apiService.addToCart(cartItem.itemId, quantity);
       print('📦 Update quantity response: $response');
 
-      if (response['status'] == true) {
-        await fetchCart(); // Refresh cart to get updated data
-        print('✅ Quantity updated successfully');
-      } else {
+      if (response['status'] != true) {
         print('❌ Failed to update quantity: ${response['message']}');
         Get.snackbar('Error', response['message'] ?? 'Failed to update quantity');
+        // Only fetch cart if the API call fails
         await fetchCart();
       }
     } catch (e, stackTrace) {
@@ -331,35 +375,46 @@ class CartController extends GetxController {
       Get.snackbar('Error', 'Failed to update quantity');
       await fetchCart();
     } finally {
-      isLoading.value = false;
+      _updatingQuantities[itemId] = false;
     }
   }
-
+  void _updateLocalTotal() {
+    double newTotal = 0.0;
+    for (var item in cartItems) {
+      newTotal += item.price * item.quantity;
+    }
+    total.value = newTotal;
+    cartCount.value = cartItems.length;
+  }
   Future<void> incrementQuantity(String id) async {
     try {
-      final item = cartItems.firstWhere((item) => item.id == id);
-      final newQuantity = item.quantity + 1;
-      print('🔼 Incrementing quantity for item $id from ${item.quantity} to $newQuantity');
-      await updateQuantity(id, newQuantity);
+      final itemIndex = cartItems.indexWhere((item) => item.id == id);
+      if (itemIndex != -1) {
+        final item = cartItems[itemIndex];
+        final newQuantity = item.quantity + 1;
+        print('🔼 Incrementing quantity for item $id from ${item.quantity} to $newQuantity');
+        await updateQuantity(id, newQuantity);
+      }
     } catch (e) {
       print('❌ Error in incrementQuantity: $e');
-      await fetchCart();
     }
   }
 
   Future<void> decrementQuantity(String id) async {
     try {
-      final item = cartItems.firstWhere((item) => item.id == id);
-      if (item.quantity > 1) {
-        final newQuantity = item.quantity - 1;
-        print('🔽 Decrementing quantity for item $id from ${item.quantity} to $newQuantity');
-        await updateQuantity(id, newQuantity);
-      } else {
-        await removeFromCart(id);
+      final itemIndex = cartItems.indexWhere((item) => item.id == id);
+      if (itemIndex != -1) {
+        final item = cartItems[itemIndex];
+        if (item.quantity > 1) {
+          final newQuantity = item.quantity - 1;
+          print('🔽 Decrementing quantity for item $id from ${item.quantity} to $newQuantity');
+          await updateQuantity(id, newQuantity);
+        } else {
+          await removeFromCart(id);
+        }
       }
     } catch (e) {
       print('❌ Error in decrementQuantity: $e');
-      await fetchCart();
     }
   }
 
@@ -467,6 +522,77 @@ class PromoCode {
       discount: double.parse(json['discount'].toString()),
       type: json['type'],
       status: json['status'] == 1,
+    );
+  }
+}
+class Address {
+  final int id;
+  final int userId;
+  final String pinCode;
+  final String shipAddress1;
+  final String shipAddress2;
+  final String area;
+  final String landmark;
+  final String city;
+  final String state;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final User user;
+
+  Address({
+    required this.id,
+    required this.userId,
+    required this.pinCode,
+    required this.shipAddress1,
+    required this.shipAddress2,
+    required this.area,
+    required this.landmark,
+    required this.city,
+    required this.state,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.user,
+  });
+
+  factory Address.fromJson(Map<String, dynamic> json) {
+    return Address(
+      id: json['id'],
+      userId: json['user_id'],
+      pinCode: json['pin_code'],
+      shipAddress1: json['ship_address1'],
+      shipAddress2: json['ship_address2'],
+      area: json['area'],
+      landmark: json['landmark'],
+      city: json['city'],
+      state: json['state'],
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
+      user: User.fromJson(json['user']),
+    );
+  }
+
+
+}
+
+class User {
+  final int id;
+  final String fullname;
+  final String mobileNumber;
+  final String email;
+
+  User({
+    required this.id,
+    required this.fullname,
+    required this.mobileNumber,
+    required this.email,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      fullname: json['fullname'],
+      mobileNumber: json['mobile_number'],
+      email: json['email'],
     );
   }
 }

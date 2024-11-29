@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../onboarding/on_boarding_view.dart';
+import '../../prescription/controller/prescriptioncontroller.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../../cart/controller/cartcontroller.dart';
 import '../../cart/controller/cartservice.dart';
@@ -114,16 +115,24 @@ class LoginController extends GetxController {
         print('✓ Existing ProfileController reinitialized');
       }
 
+      // Initialize PrescriptionController
+      if (!Get.isRegistered<PrescriptionController>()) {
+        final prescriptionController = Get.put(PrescriptionController());
+        await prescriptionController.initialize(userId);
+        print('✓ PrescriptionController initialized');
+      } else {
+        final prescriptionController = Get.find<PrescriptionController>();
+        await prescriptionController.initialize(userId);
+        print('✓ Existing PrescriptionController reinitialized');
+      }
+
       // Initialize CartController with explicit user ID
       if (Get.isRegistered<CartController>()) {
         Get.delete<CartController>(force: true);
       }
 
       final cartController = Get.put(CartController());
-
-      // Directly set the user ID before initialization
       cartController.currentUserId = userId;
-
       await cartController.initializeCart(userId: userId);
       print('✓ CartController initialized with explicit userId');
 

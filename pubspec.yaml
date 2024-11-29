@@ -69,6 +69,8 @@ dependencies:
   media_scanner: ^2.1.0
   http:
   open_file: ^3.5.10
+  auto_size_text: ^3.0.0
+  flutter_html:
   
   
   
