@@ -240,10 +240,10 @@ class OrderSummaryScreen extends GetView<CartController> {
                   'Deliver to:',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                TextButton(
-                  onPressed: deliveryController.onAddAddressPressed,
-                  child: const Text('Change'),
-                ),
+                // TextButton(
+                //   onPressed: deliveryController.onAddAddressPressed,
+                //   child: const Text('Change'),
+                // ),
               ],
             ),
             const SizedBox(height: 8),

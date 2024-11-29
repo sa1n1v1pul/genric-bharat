@@ -57,7 +57,7 @@ class BottomNavBar extends StatelessWidget {
             Icon(
               icon,
               color: color,
-              size: 20,
+              size: 18,
             ).animate(target: isSelected ? 1 : 0).custom(
               duration: 300.ms,
               builder: (context, value, child) => Transform.translate(
@@ -74,7 +74,7 @@ class BottomNavBar extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: color,
-                  fontSize: 12 / textScaleFactor,
+                  fontSize: 10 / textScaleFactor,
                 ),
               ),
             ),

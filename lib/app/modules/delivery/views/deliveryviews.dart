@@ -142,7 +142,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? Colors.blue : Colors.grey[300]!,
+              color: isSelected ? CustomTheme.loginGradientStart : Colors.grey[300]!,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -271,9 +271,10 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
       child: ElevatedButton(
         onPressed: controller.onProceedToCheckout,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
+          backgroundColor: CustomTheme.loginGradientStart,
+          padding: const EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),

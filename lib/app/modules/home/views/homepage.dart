@@ -695,9 +695,9 @@ class _HomePageState extends State<HomePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-        final adjustedTitleFontSize = 24 / textScaleFactor;
-        final adjustedSubtitleFontSize = 16 / textScaleFactor;
-        final buttonFontSize = 16 / textScaleFactor;
+        final adjustedTitleFontSize = 18 / textScaleFactor;
+        final adjustedSubtitleFontSize = 14 / textScaleFactor;
+        final buttonFontSize = 14 / textScaleFactor;
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -810,7 +810,7 @@ class _HomePageState extends State<HomePage> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-                final adjustedFontSize = 18 / textScaleFactor;
+                final adjustedFontSize = 15 / textScaleFactor;
 
                 return Padding(
                   padding: const EdgeInsets.only(left: 16,top: 12),
@@ -1011,7 +1011,7 @@ class _HomePageState extends State<HomePage> {
           final textScaleFactor = MediaQuery.of(context).textScaleFactor;
 
           // Responsive font sizes
-          final titleFontSize = width * 0.045; // 4.5% of width
+          final titleFontSize = 15 / textScaleFactor;
           final subtitleFontSize = titleFontSize * 0.8;
 
           return Container(
@@ -1262,7 +1262,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(
               'Best Offers',
               style: TextStyle(
-                fontSize: 18 / textScaleFactor,
+                fontSize: 16 / textScaleFactor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1444,7 +1444,7 @@ class _HomePageState extends State<HomePage> {
               title: Text(
                 'Beauty & Personal Care',
                 style: TextStyle(
-                  fontSize: 18 / textScaleFactor,
+                  fontSize: 16 / textScaleFactor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1683,7 +1683,7 @@ class _HomePageState extends State<HomePage> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-                final adjustedFontSize = 18 / textScaleFactor;
+                final adjustedFontSize = 16 / textScaleFactor;
 
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1928,7 +1928,7 @@ class _HomePageState extends State<HomePage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final HomeController controller = Get.find<HomeController>();
     final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-    final adjustedFontSize = 18 / textScaleFactor;
+    final adjustedFontSize = 16 / textScaleFactor;
 
     return Obx(() {
       final diabetesItems = controller.getItemsForCategory("SUGAR AND ANTI DIABETES MEDICINES");
@@ -2168,7 +2168,7 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   'Need help with buying?',
                   style: TextStyle(
-                    fontSize: 24 / textScaleFactor,
+                    fontSize: 20 / textScaleFactor,
                     fontWeight: FontWeight.w600,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
@@ -2177,7 +2177,7 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   'Call us between 9 AM and 9 PM to help you find your medicines',
                   style: TextStyle(
-                    fontSize: 16 / textScaleFactor,
+                    fontSize: 14 / textScaleFactor,
                     color: isDarkMode ? Colors.white70 : Colors.grey[600],
                   ),
                 ),
@@ -2204,7 +2204,7 @@ class _HomePageState extends State<HomePage> {
                             color: isDarkMode
                                 ? Colors.white
                                 : CustomTheme.loginGradientStart,
-                            size: 20 / textScaleFactor,
+                            size: 18 / textScaleFactor,
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -2241,7 +2241,7 @@ class _HomePageState extends State<HomePage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final HomeController controller = Get.find<HomeController>();
     final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-    final adjustedFontSize = 18 / textScaleFactor;
+    final adjustedFontSize = 16 / textScaleFactor;
 
     return Obx(() {
       final devices = controller.getItemsForCategory("MEDICAL DEVICES");
@@ -2390,14 +2390,14 @@ class _HomePageState extends State<HomePage> {
             Container(
               color: const Color(0xffeff8ff),
               child: Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, top: 5, bottom: 5),
+                padding: const EdgeInsets.only(left: 12, right: 12, top: 5,bottom: 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 16 / textScaleFactor,
+                        fontSize: 14 / textScaleFactor,
                         fontWeight: FontWeight.w500,
                         color: isDarkMode ? Colors.white : Colors.black,
                       ),
@@ -2419,7 +2419,7 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       price,
                       style: TextStyle(
-                        fontSize: 16 / textScaleFactor,
+                        fontSize: 14 / textScaleFactor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -2444,7 +2444,7 @@ class _HomePageState extends State<HomePage> {
       return LayoutBuilder(
         builder: (context, constraints) {
           final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-          final adjustedTitleFontSize = 18 / textScaleFactor;
+          final adjustedTitleFontSize = 16 / textScaleFactor;
           final adjustedSubtitleFontSize = 12 / textScaleFactor;
 
           return Column(
@@ -2535,7 +2535,7 @@ class _HomePageState extends State<HomePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-        final adjustedTitleFontSize = 14 / textScaleFactor;
+        final adjustedTitleFontSize = 13 / textScaleFactor;
         final imageSize = constraints.maxWidth > 150 ? 100.0 : constraints.maxWidth * 0.7;
 
         return Padding(
