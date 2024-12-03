@@ -27,10 +27,7 @@ class CartScreen extends GetView<CartController> {
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         centerTitle: true,
         scrolledUnderElevation: 0,
-        // Modify this part
-        automaticallyImplyLeading:
-        !fromBottomNav,
-        // This will automatically handle back button visibility
+        automaticallyImplyLeading: !fromBottomNav,
         leading: !fromBottomNav
             ? Container(
           padding: const EdgeInsets.only(left: 4),
@@ -76,28 +73,24 @@ class CartScreen extends GetView<CartController> {
         toolbarHeight: 60,
         title: const Text(
           'Cart',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
       body: Obx(() {
-        // Check if loading
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // Check if not initialized or no user
         if (!controller.isInitialized.value || controller.currentUserId == null) {
-          return  _buildLoadingState();
+          return _buildLoadingState();
         }
 
-        // Check if cart is empty
         if (controller.cartItems.isEmpty) {
           return _buildEmptyCart();
         }
 
-        // Return cart content when everything is ready
         return _buildCartContent();
       }),
     );
@@ -108,26 +101,29 @@ class CartScreen extends GetView<CartController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Clear Cart'),
+          title: const Text('Clear Cart', style: TextStyle(fontSize: 16)),
           content: const Text(
-              'Are you sure you want to clear all items from your cart?'),
+              'Are you sure you want to clear all items from your cart?',
+              style: TextStyle(fontSize: 14)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 14)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 controller.clearAllCart();
               },
-              child: const Text('Clear', style: TextStyle(color: Colors.red)),
+              child: const Text('Clear',
+                  style: TextStyle(color: Colors.red, fontSize: 14)),
             ),
           ],
         );
       },
     );
   }
+
   Widget _buildLoadingState() {
     return Center(
       child: Column(
@@ -142,7 +138,7 @@ class CartScreen extends GetView<CartController> {
           Text(
             'Loading data...',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
@@ -151,6 +147,7 @@ class CartScreen extends GetView<CartController> {
           Text(
             '⏳ Please wait',
             style: TextStyle(
+              fontSize: 14,
               color: Colors.grey[500],
             ),
           ),
@@ -173,7 +170,7 @@ class CartScreen extends GetView<CartController> {
           Text(
             'Your cart is empty',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               color: Colors.grey[600],
               fontWeight: FontWeight.w500,
             ),
@@ -182,6 +179,7 @@ class CartScreen extends GetView<CartController> {
           Text(
             'Add items to get started',
             style: TextStyle(
+              fontSize: 14,
               color: Colors.grey[500],
             ),
           ),
@@ -200,9 +198,7 @@ class CartScreen extends GetView<CartController> {
             itemBuilder: (context, index) {
               final item = controller.cartItems[index];
               return Dismissible(
-                key:
-                UniqueKey(),
-                // Use UniqueKey instead of item.id to ensure unique keys
+                key: UniqueKey(),
                 direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: Alignment.centerRight,
@@ -218,20 +214,22 @@ class CartScreen extends GetView<CartController> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: const Text('Remove Item'),
+                        title: const Text('Remove Item',
+                            style: TextStyle(fontSize: 16)),
                         content: Text(
-                            'Are you sure you want to remove ${item
-                                .name} from your cart?'),
+                            'Are you sure you want to remove ${item.name} from your cart?',
+                            style: const TextStyle(fontSize: 14)),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Cancel'),
+                            child: const Text('Cancel',
+                                style: TextStyle(fontSize: 14)),
                           ),
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(true),
                             child: const Text(
                               'Remove',
-                              style: TextStyle(color: Colors.red),
+                              style: TextStyle(color: Colors.red, fontSize: 14),
                             ),
                           ),
                         ],
@@ -240,13 +238,11 @@ class CartScreen extends GetView<CartController> {
                   );
 
                   if (result == true) {
-                    // Remove item from local list first
                     controller.cartItems.removeAt(index);
-                    // Then call API to remove from backend
                     await controller.removeFromCart(item.id);
                   }
 
-                  return false; // Always return false to let us handle the dismissal
+                  return false;
                 },
                 child: _buildCartItemCard(item),
               );
@@ -315,7 +311,7 @@ class CartScreen extends GetView<CartController> {
                   Text(
                     item.name,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 2,
@@ -325,7 +321,7 @@ class CartScreen extends GetView<CartController> {
                   Text(
                     '₹${item.price.toStringAsFixed(2)}',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: CustomTheme.loginGradientStart,
                       fontWeight: FontWeight.w600,
                     ),
@@ -371,7 +367,7 @@ class CartScreen extends GetView<CartController> {
             child: Text(
               '${item.quantity}',
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -444,14 +440,14 @@ class CartScreen extends GetView<CartController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (controller.cartItems.isNotEmpty) ...[
-            // Coupon Section with Dropdown/Dialog approach
             Row(
               children: [
                 Expanded(
                   child: Obx(() => controller.appliedCouponCode.isEmpty
                       ? OutlinedButton.icon(
                     icon: const Icon(Icons.local_offer_outlined, size: 16),
-                    label: const Text('Apply Coupon'),
+                    label: const Text('Apply Coupon',
+                        style: TextStyle(fontSize: 14)),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
@@ -462,17 +458,15 @@ class CartScreen extends GetView<CartController> {
                       'Applied Coupon: ${controller.appliedCouponCode.value}',
                       style: const TextStyle(fontSize: 12),
                     ),
-                    deleteIcon: const Icon(Icons.close, size: 16,color: Colors.red,),
+                    deleteIcon: const Icon(Icons.close, size: 16, color: Colors.red,),
                     onDeleted: () => controller.removeCoupon(),
                   )),
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
           ],
 
-          // Order Summary Section
           _buildSummaryRow('Subtotal:', controller.total.value),
           if (controller.discountAmount.value > 0) ...[
             const SizedBox(height: 8),
@@ -484,7 +478,6 @@ class CartScreen extends GetView<CartController> {
           ],
           const SizedBox(height: 16),
 
-          // Total Amount Container
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -505,7 +498,7 @@ class CartScreen extends GetView<CartController> {
                 const Text(
                   'Total Amount:',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -514,7 +507,7 @@ class CartScreen extends GetView<CartController> {
                       '₹${(controller.total.value -
                           controller.discountAmount.value).toStringAsFixed(2)}',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         foreground: Paint()
                           ..shader = LinearGradient(

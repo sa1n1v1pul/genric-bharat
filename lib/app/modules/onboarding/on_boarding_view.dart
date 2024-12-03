@@ -216,26 +216,34 @@ class _OnBoardingViewState extends State<OnBoardingView> {
 
   Widget buildInfoSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            pageArr[selectPage]["title"].toString(),
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 33,
-              fontFamily: 'WorkSansBold',
-              fontWeight: FontWeight.w500,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              pageArr[selectPage]["title"].toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 22, // Changed from 33 to 22
+                fontFamily: 'WorkSansBold',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          Text(
-            pageArr[selectPage]["subtitle"].toString(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.black54,
-              fontSize: 18,
-              fontFamily: 'WorkSansBold',
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              pageArr[selectPage]["subtitle"].toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 16, // Changed from 18 to 16
+                fontFamily: 'WorkSansBold',
+              ),
             ),
           ),
         ],
@@ -265,7 +273,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
 
   Widget buildNavigationButton() {
     return Container(
-      margin: EdgeInsets.only(bottom: 15,left: 15,right: 15),
+      margin: const EdgeInsets.only(bottom: 15, left: 15, right: 15),
       padding: const EdgeInsets.all(20),
       child: SizedBox(
         height: 45,
@@ -308,7 +316,7 @@ class _OnBoardingViewState extends State<OnBoardingView> {
               selectPage >= 2 ? "Get Started" : "Next",
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18.0,
+                fontSize: 17, // Changed from 18 to 17
                 fontFamily: 'WorkSansBold',
               ),
             ),

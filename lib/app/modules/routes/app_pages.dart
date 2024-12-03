@@ -21,7 +21,7 @@ import '../profile/binding/vlogsbindings.dart';
 import '../profile/views/vlogsitem.dart';
 import '../widgets/mainlayout.dart';
 import '../widgets/myprescriptionview.dart';
-import '../widgets/prescriptionview.dart';
+import '../prescription/views/prescriptionview.dart';
 import 'app_routes.dart';
 
 class AppPages {

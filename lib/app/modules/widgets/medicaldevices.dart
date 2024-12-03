@@ -24,7 +24,7 @@ class MedicalDevicesScreen extends StatelessWidget {
     final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-
+    final textScaleFactor = MediaQuery.textScaleFactorOf(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -53,7 +53,7 @@ class MedicalDevicesScreen extends StatelessWidget {
               child: IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios,
-                  size: 18,
+                  size: 18 / textScaleFactor,
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
                 onPressed: () => Navigator.of(context).pop(),
@@ -62,20 +62,20 @@ class MedicalDevicesScreen extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'Medical Devices',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18 / textScaleFactor, fontWeight: FontWeight.bold),
         ),
-        toolbarHeight: 60,
+        toolbarHeight: 60 * textScaleFactor,
       ),
       body: Obx(() {
         final devices = controller.getItemsForCategory("MEDICAL DEVICES");
 
         return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          padding: EdgeInsets.all(16 * textScaleFactor),
+          gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.7,
+            childAspectRatio: 0.65 / textScaleFactor,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -94,7 +94,7 @@ class MedicalDevicesScreen extends StatelessWidget {
               device: device,
               discount: discount,
               isDarkMode: isDarkMode,
-              cartController: cartController,
+              cartController: cartController, textScaleFactor: textScaleFactor,
             );
           },
         );
@@ -107,7 +107,7 @@ class MedicalDevicesScreen extends StatelessWidget {
         required Map<String, dynamic> device,
         required String discount,
         required bool isDarkMode,
-        required CartController cartController,
+        required CartController cartController,   required double textScaleFactor,
       }) {
     return Container(
       decoration: BoxDecoration(
@@ -147,32 +147,34 @@ class MedicalDevicesScreen extends StatelessWidget {
                   const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.network(
                     getCompleteImageUrl(device['photo']),
-                    height: 100,
+                    height: 100* textScaleFactor,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        height: 180,
+                        height: 180 * textScaleFactor,
                         color: Colors.grey[300],
-                        child: const Icon(Icons.error),
+                        child:  Icon(Icons.error,size: 24 * textScaleFactor),
                       );
                     },
                   ),
                 ),
                 if (discount != '0')
                   Container(
-                    margin: const EdgeInsets.all(8),
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    margin:  EdgeInsets.all(8* textScaleFactor),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8 * textScaleFactor,
+                      vertical: 4 * textScaleFactor,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       '$discount% OFF',
-                      style: const TextStyle(
+                      style:  TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 12 / textScaleFactor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -180,20 +182,20 @@ class MedicalDevicesScreen extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding:  EdgeInsets.all(12 * textScaleFactor),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     device['name'],
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style:  TextStyle(
+                      fontSize: 14 / textScaleFactor,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4 * textScaleFactor),
                   Row(
                     children: [
                       if (device['previous_price'] > 0) ...[
@@ -203,21 +205,21 @@ class MedicalDevicesScreen extends StatelessWidget {
                             decoration: TextDecoration.lineThrough,
                             color:
                             isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                            fontSize: 12,
+                            fontSize: 11 / textScaleFactor,
                           ),
                         ),
                         const SizedBox(width: 4),
                       ],
                       Text(
                         '₹${device['discount_price'].toStringAsFixed(2)}',
-                        style: const TextStyle(
+                        style:  TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 12 / textScaleFactor,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                 SizedBox(height: 8* textScaleFactor),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -229,9 +231,9 @@ class MedicalDevicesScreen extends StatelessWidget {
                         foregroundColor: CustomTheme.loginGradientStart,
                         backgroundColor: Colors.white,
                         side:  BorderSide(color: CustomTheme.loginGradientStart,),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding:  EdgeInsets.symmetric(vertical: 8 * textScaleFactor),
                       ),
-                      child: const Text('Add'),
+                      child:  Text('Add',  style: TextStyle(fontSize: 14 / textScaleFactor),),
                     ),
                   ),
                 ],

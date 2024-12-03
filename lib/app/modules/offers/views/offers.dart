@@ -25,7 +25,7 @@ class OffersViews extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Text("Under Working Now")
+        child: Center(child: Text("Upcoming Soon",style: TextStyle(fontSize: 16),))
       ),
     );
   }

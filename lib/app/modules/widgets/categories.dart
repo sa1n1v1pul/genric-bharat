@@ -79,7 +79,7 @@ class AllCategories extends StatelessWidget {
             crossAxisCount: 3,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 0.65,
+            childAspectRatio: 0.60,
           ),
           padding: const EdgeInsets.all(16),
           itemCount: homeController.categories.length,
@@ -115,39 +115,46 @@ class AllCategories extends StatelessWidget {
           shadowColor: Colors.grey.withOpacity(0.5),
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.all(12),
+
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
             width: 120,
-            height: 100,
+height: 80,
             child: imagePath.isNotEmpty
-                ? Image.network(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  'assets/images/temp1.png',
-                  fit: BoxFit.cover,
-                );
-              },
+                ? ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/medicine3.jpg',
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
             )
-                : Image.asset(
-              'assets/images/temp1.png',
-              fit: BoxFit.cover,
+                : ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                'assets/images/medicine3.jpg',
+                fit: BoxFit.cover,
+              ),
             ),
+
           ),
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 40,
+          height: 60,
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 12),
-            maxLines: 2,
+            maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
         ),

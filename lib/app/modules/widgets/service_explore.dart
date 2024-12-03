@@ -261,6 +261,26 @@ class _ServiceExploreState extends State<ServiceExplore> {
               if (homeController.isServicesLoading.value) {
                 return const Center(child: CircularProgressIndicator());
               }
+              if (homeController.errorMessage.value.isNotEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        homeController.errorMessage.value,
+                        textAlign: TextAlign.center,
+                      ),
+                      ElevatedButton(
+                        onPressed: () => homeController.fetchItems(
+                          widget.categoryId,
+                          subcategoryId: _selectedSubcategory,
+                        ),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
               final services = homeController.services;
               if (services.isEmpty) {

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:genric_bharat/app/modules/api_endpoints/api_endpoints.dart';
-import 'package:genric_bharat/app/modules/home/controller/homecontroller.dart';
-import 'package:genric_bharat/app/modules/widgets/medicinedetailsheet.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/theme.dart';
+import '../api_endpoints/api_endpoints.dart';
+import '../cart/controller/cartcontroller.dart';
+import '../cart/view/cartscreen.dart';
+import '../home/controller/homecontroller.dart';
+import '../widgets/medicinedetailsheet.dart';
 
 class DiabetesCareProductsScreen extends StatelessWidget {
   const DiabetesCareProductsScreen({Key? key}) : super(key: key);
@@ -16,167 +18,246 @@ class DiabetesCareProductsScreen extends StatelessWidget {
     return '${ApiEndpoints.imageBaseUrl}$photoPath';
   }
 
-  Widget _buildDiabetesCard({
-    required String title,
-    required String discount,
-    required String imageUrl,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  discount,
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ClipRRect(
-              borderRadius:
-              const BorderRadius.vertical(bottom: Radius.circular(12)),
-              child: Image.network(
-                getCompleteImageUrl(imageUrl),
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.error),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final HomeController controller = Get.find<HomeController>();
+    final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final textScaleFactor = MediaQuery.textScaleFactorOf(context);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
+        backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         centerTitle: true,
         scrolledUnderElevation: 0,
-        leading: Container(
-          padding: const EdgeInsets.only(left: 4),
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isDarkMode ? Colors.grey[800] : Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: (isDarkMode ? Colors.black : Colors.white).withOpacity(0.3),
-                spreadRadius: 5,
-                blurRadius: 3,
-                offset: const Offset(0, 1),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return Container(
+              padding: const EdgeInsets.only(left: 4),
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDarkMode ? Colors.grey[800] : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: (isDarkMode ? Colors.black : Colors.grey).withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios,
-              size: 18,
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-            onPressed: () => Navigator.pop(context),
-            padding: EdgeInsets.zero,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  size: 18 / textScaleFactor,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+                padding: EdgeInsets.zero,
+              ),
+            );
+          },
+        ),
+        title: Text(
+          'Diabetes Care',
+          style: TextStyle(
+            fontSize: 18 / textScaleFactor,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        toolbarHeight: 80,
-        title: const Text(
-          'Diabetes Care Products',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        toolbarHeight: 60 * textScaleFactor,
       ),
-
       body: Obx(() {
-        final diabetesItems =
-        controller.getItemsForCategory("SUGAR AND ANTI DIABETES MEDICINES");
+        final diabetesItems = controller.getItemsForCategory("SUGAR AND ANTI DIABETES MEDICINES");
 
         if (diabetesItems.isEmpty) {
-          return const Center(
-            child: Text('No products available'),
+          return Center(
+            child: Text(
+              'No products available',
+              style: TextStyle(fontSize: 16 / textScaleFactor),
+            ),
           );
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          padding: EdgeInsets.all(16 * textScaleFactor),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
+            childAspectRatio: 0.65 / textScaleFactor,
             crossAxisSpacing: 16,
-            childAspectRatio: 0.85,
+            mainAxisSpacing: 16,
           ),
           itemCount: diabetesItems.length,
           itemBuilder: (context, index) {
-            final item = diabetesItems[index];
-            return GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => DraggableScrollableSheet(
-                    initialChildSize: 0.8,
-                    minChildSize: 0.6,
-                    maxChildSize: 0.8,
-                    builder: (context, scrollController) =>
-                        MedicineDetailsSheet(
-                          service: item,
-                        ),
-                  ),
-                );
-              },
-              child: _buildDiabetesCard(
-                title: item['name'],
-                discount: item['previous_price'] != 0
-                    ? 'Save ₹${(item['previous_price'] - item['discount_price']).toStringAsFixed(0)}'
-                    : 'Up to 20% off',
-                imageUrl: item['photo'],
-              ),
+            final product = diabetesItems[index];
+            final discount = product['previous_price'] != 0
+                ? ((product['previous_price'] - product['discount_price']) /
+                product['previous_price'] *
+                100)
+                .toStringAsFixed(0)
+                : '0';
+
+            return _buildDiabetesCard(
+              context,
+              product: product,
+              discount: discount,
+              isDarkMode: isDarkMode,
+              cartController: cartController,
+              textScaleFactor: textScaleFactor,
             );
           },
         );
       }),
+    );
+  }
+
+  Widget _buildDiabetesCard(
+      BuildContext context, {
+        required Map<String, dynamic> product,
+        required String discount,
+        required bool isDarkMode,
+        required CartController cartController,
+        required double textScaleFactor,
+      }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.blueGrey : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              minChildSize: 0.6,
+              maxChildSize: 0.8,
+              builder: (context, scrollController) => MedicineDetailsSheet(
+                service: product,
+              ),
+            ),
+          );
+        },
+        child: Column(
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Image.network(
+                    getCompleteImageUrl(product['photo']),
+                    height: 110 * textScaleFactor,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 180 * textScaleFactor,
+                        color: Colors.grey[300],
+                        child: Icon(Icons.error, size: 24 * textScaleFactor),
+                      );
+                    },
+                  ),
+                ),
+                if (discount != '0')
+                  Container(
+                    margin: EdgeInsets.all(8 * textScaleFactor),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8 * textScaleFactor,
+                      vertical: 4 * textScaleFactor,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '$discount% OFF',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12 / textScaleFactor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(left: 12, right: 12, top: 12 * textScaleFactor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product['name'],
+                      style: TextStyle(
+                        fontSize: 14 / textScaleFactor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4 * textScaleFactor),
+                    Row(
+                      children: [
+                        if (product['previous_price'] > 0) ...[
+                          Text(
+                            '₹${product['previous_price'].toStringAsFixed(2)}',
+                            style: TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              fontSize: 12 / textScaleFactor,
+                            ),
+                          ),
+                          SizedBox(width: 4 * textScaleFactor),
+                        ],
+                        Text(
+                          '₹${product['discount_price'].toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14 / textScaleFactor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          cartController.addToCart(product);
+                          Get.to(() => const CartScreen());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: CustomTheme.loginGradientStart,
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: CustomTheme.loginGradientStart),
+                          padding: EdgeInsets.symmetric(vertical: 8 * textScaleFactor),
+                        ),
+                        child: Text(
+                          'Add',
+                          style: TextStyle(fontSize: 14 / textScaleFactor),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

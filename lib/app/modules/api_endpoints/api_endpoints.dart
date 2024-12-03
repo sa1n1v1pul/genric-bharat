@@ -28,8 +28,7 @@ class ApiEndpoints {
   static const String address_update = '${apibaseUrl}update-address';
   static const String updateUserLocation = '${apibaseUrl}users/';
   static const String vlogs = '${apibaseUrl}posts-app';
-  static const String baseUrl = 'https://dat.babadeepsinghinfotech.com/api/';
-  static const String providersList = '${baseUrl}providers/';
+
 
   static String getAddressesForUser(int userId) => '$getAddresses/$userId';
 }

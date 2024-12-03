@@ -34,6 +34,12 @@ class AllVitaminsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+
+    // Adjust text sizes based on scale factor
+    final titleSize = (14 / textScaleFactor).clamp(12.0, 14.0);
+    final priceSize = (16 / textScaleFactor).clamp(14.0, 16.0);
+    final discountSize = (10 / textScaleFactor).clamp(8.0, 10.0);
 
     // Initialize filtered items
     if (filteredItems.isEmpty) {
@@ -83,21 +89,26 @@ class AllVitaminsScreen extends StatelessWidget {
               border: InputBorder.none,
               hintStyle: TextStyle(
                 color: isDarkMode ? Colors.white70 : Colors.black54,
+                fontSize: titleSize,
               ),
             ),
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
+              fontSize: titleSize,
             ),
             onChanged: filterItems,
           )
-              : const Text(
+              : Text(
             'Vitamins & Supplements',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: titleSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(isSearching.value ? Icons.close : Icons.search,color: Colors.black,),
+            icon: Icon(isSearching.value ? Icons.search : Icons.search,color: Colors.black54,),
             onPressed: () {
               isSearching.toggle();
               if (!isSearching.value) {
@@ -108,8 +119,7 @@ class AllVitaminsScreen extends StatelessWidget {
           ),
         ],
       ),
-
-        body: Obx(() {
+      body: Obx(() {
         if (controller.isCategoryItemsLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -128,7 +138,7 @@ class AllVitaminsScreen extends StatelessWidget {
                 Text(
                   'No items found',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: titleSize,
                     color: isDarkMode ? Colors.white54 : Colors.black54,
                   ),
                 ),
@@ -144,16 +154,16 @@ class AllVitaminsScreen extends StatelessWidget {
           },
           child: GridView.builder(
             padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.80 * (1 / textScaleFactor).clamp(0.8, 0.9),
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
             itemCount: filteredItems.length,
             itemBuilder: (context, index) {
               final item = filteredItems[index];
-              return _buildItemCard(context, item, isDarkMode);
+              return _buildItemCard(context, item, isDarkMode, titleSize, priceSize, discountSize);
             },
           ),
         );
@@ -161,7 +171,8 @@ class AllVitaminsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildItemCard(BuildContext context, Map<String, dynamic> item, bool isDarkMode) {
+  Widget _buildItemCard(BuildContext context, Map<String, dynamic> item, bool isDarkMode,
+      double titleSize, double priceSize, double discountSize) {
     return GestureDetector(
       onTap: () {
         showModalBottomSheet(
@@ -193,25 +204,52 @@ class AllVitaminsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  getCompleteImageUrl(item['photo'] ?? ''),
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.image_not_supported),
-                    );
-                  },
-                ),
+              flex: 2,
+              child: Stack(
+                children: [
+                  // Image
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Image.network(
+                      getCompleteImageUrl(item['photo'] ?? ''),
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported),
+                        );
+                      },
+                    ),
+                  ),
+                  // Discount Tag
+                  if (item['discount_percentage'] != null)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDarkMode ? Colors.amber[700] : Colors.green[700],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${item['discount_percentage']}% OFF',
+                          style: TextStyle(
+                            fontSize: discountSize,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            // Details
             Expanded(
               flex: 2,
               child: Padding(
@@ -219,61 +257,41 @@ class AllVitaminsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Product Name
                     Text(
                       item['name'] ?? 'Unknown Product',
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: titleSize,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Row(
+                    const Spacer(), // This will push the price to the bottom
+                    // Price Section
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '₹${item['discount_price']}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.green[300] : Colors.green[700],
-                          ),
-                        ),
                         if (item['previous_price'] != null &&
-                            item['previous_price'] != 0) ...[
-                          const SizedBox(width: 8),
+                            item['previous_price'] != 0)
                           Text(
                             '₹${item['previous_price']}',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: titleSize * 0.85,
                               decoration: TextDecoration.lineThrough,
                               color: isDarkMode ? Colors.white54 : Colors.black54,
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                    if (item['discount_percentage'] != null) ...[
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.amber[700] : Colors.green[50],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${item['discount_percentage']}% OFF',
+                        Text(
+                          '₹${item['discount_price']}',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: priceSize,
                             fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.white : Colors.green[700],
+                            color: isDarkMode ? Colors.green[300] : Colors.green[700],
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ],
                 ),
               ),

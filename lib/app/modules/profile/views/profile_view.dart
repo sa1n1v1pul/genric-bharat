@@ -35,6 +35,7 @@ class ProfileView extends GetView<ProfileController> {
 
   void _showImageSourceActionSheet(BuildContext context) {
     bool isDarkMode = Get.isDarkMode;
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
 
     showModalBottomSheet(
       backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
@@ -48,11 +49,13 @@ class ProfileView extends GetView<ProfileController> {
                   leading: Icon(
                     Icons.delete,
                     color: isDarkMode ? Colors.white : Colors.red,
+                    size: 24 * textScaleFactor,
                   ),
                   title: Text(
                     'Remove photo',
                     style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.red,
+                      fontSize: 16 * textScaleFactor,
                     ),
                   ),
                   onTap: () {
@@ -64,11 +67,13 @@ class ProfileView extends GetView<ProfileController> {
                 leading: Icon(
                   Icons.camera_alt,
                   color: isDarkMode ? Colors.white : Colors.black,
+                  size: 24 * textScaleFactor,
                 ),
                 title: Text(
                   'Take a picture',
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 16 * textScaleFactor,
                   ),
                 ),
                 onTap: () {
@@ -80,11 +85,13 @@ class ProfileView extends GetView<ProfileController> {
                 leading: Icon(
                   Icons.photo_library,
                   color: isDarkMode ? Colors.white : Colors.black,
+                  size: 24 * textScaleFactor,
                 ),
                 title: Text(
                   'Choose from gallery',
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 16 * textScaleFactor,
                   ),
                 ),
                 onTap: () {
@@ -106,14 +113,19 @@ class ProfileView extends GetView<ProfileController> {
 
       if (localPath.isNotEmpty) {
         if (localPath.startsWith('http')) {
-          return NetworkImage(localPath);
+          // For network paths, use CachedNetworkImageProvider for better caching
+          return NetworkImage(localPath, headers: const {
+            'Cache-Control': 'max-age=3600',
+          });
         } else if (File(localPath).existsSync()) {
           return FileImage(File(localPath));
         }
       }
 
       if (networkUrl != null && networkUrl.isNotEmpty) {
-        return NetworkImage(networkUrl);
+        return NetworkImage(networkUrl, headers: const {
+          'Cache-Control': 'max-age=3600',
+        });
       }
 
       return null;
@@ -123,7 +135,6 @@ class ProfileView extends GetView<ProfileController> {
     }
   }
 
-  // New method to handle dynamic page navigation
   void _navigateToDynamicPage(String title, String slug) {
     Get.to(() => DynamicPageScreen(
       title: title,
@@ -134,19 +145,25 @@ class ProfileView extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = Get.isDarkMode;
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Calculate responsive sizes
+    final avatarRadius = (50 * textScaleFactor).clamp(40.0, 70.0);
+    final iconSize = (24 * textScaleFactor).clamp(20.0, 32.0);
+    final smallIconSize = (20 * textScaleFactor).clamp(16.0, 28.0);
+    final paddingSize = (16 * textScaleFactor).clamp(12.0, 24.0);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Obx(() {
-          // Debug prints
           print('Building ProfileView');
           print('IsLoading: ${controller.isLoading.value}');
           print('UserData: ${controller.userData.value}');
 
           final userData = controller.userData.value;
 
-          // Show loading only during initial load
           if (controller.isLoading.value && userData.isEmpty) {
             print('Showing loading indicator');
             return const Center(child: CircularProgressIndicator());
@@ -159,7 +176,7 @@ class ProfileView extends GetView<ProfileController> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(paddingSize),
                 child: Column(
                   children: [
                     Row(
@@ -170,7 +187,7 @@ class ProfileView extends GetView<ProfileController> {
                           child: Stack(
                             children: [
                               CircleAvatar(
-                                radius: 50,
+                                radius: avatarRadius,
                                 backgroundColor: Colors.grey[300],
                                 child: Obx(() {
                                   if (controller.isImageLoading.value) {
@@ -181,14 +198,14 @@ class ProfileView extends GetView<ProfileController> {
                                   if (profileImage == null) {
                                     return Icon(
                                       Icons.person,
-                                      size: 50,
+                                      size: avatarRadius,
                                       color: Colors.grey[600],
                                     );
                                   }
 
                                   return Container(
-                                    width: 100,
-                                    height: 100,
+                                    width: avatarRadius * 2,
+                                    height: avatarRadius * 2,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       image: DecorationImage(
@@ -206,15 +223,15 @@ class ProfileView extends GetView<ProfileController> {
                                 bottom: 0,
                                 right: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.all(4),
+                                  padding: EdgeInsets.all(4 * textScaleFactor),
                                   decoration: BoxDecoration(
                                     color: CustomTheme.loginGradientStart,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.camera_alt,
                                     color: Colors.white,
-                                    size: 20,
+                                    size: smallIconSize,
                                   ),
                                 ),
                               ),
@@ -227,8 +244,8 @@ class ProfileView extends GetView<ProfileController> {
                           children: [
                             Text(
                               fullName,
-                              style: const TextStyle(
-                                fontSize: 20,
+                              style: TextStyle(
+                                fontSize: (17 * textScaleFactor).clamp(14.0, 24.0),
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
@@ -237,31 +254,41 @@ class ProfileView extends GetView<ProfileController> {
                               Text(
                                 mobileNumber,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: (15 * textScaleFactor).clamp(12.0, 20.0),
                                   color: Colors.grey[600],
                                 ),
                               ),
-                            Text(
-                              email,
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[600],
+                            Container(
+                              width: screenWidth * 0.5,
+                              child: RichText(
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                text: TextSpan(
+                                  text: email,
+                                  style: TextStyle(
+                                    fontSize: (16 * textScaleFactor).clamp(14.0, 22.0),
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
                               ),
                             ),
                           ],
-                        ),
+                        )
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: paddingSize),
                     TextButton(
                       onPressed: () async {
                         await Get.to(() => const EditProfile());
                         controller.getUserData();
                       },
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20 * textScaleFactor,
+                          vertical: 8 * textScaleFactor,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20 * textScaleFactor),
                           side: BorderSide(
                             color: CustomTheme.loginGradientStart,
                             width: 1.5,
@@ -275,14 +302,14 @@ class ProfileView extends GetView<ProfileController> {
                             'Edit Profile',
                             style: TextStyle(
                               color: CustomTheme.loginGradientStart,
-                              fontSize: 16,
+                              fontSize: (14 * textScaleFactor).clamp(14.0, 20.0),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8 * textScaleFactor),
                           Icon(
                             Icons.arrow_forward,
                             color: CustomTheme.loginGradientStart,
-                            size: 20,
+                            size: smallIconSize,
                           ),
                         ],
                       ),
@@ -292,12 +319,12 @@ class ProfileView extends GetView<ProfileController> {
               ),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(paddingSize),
                   decoration: BoxDecoration(
                     color: isDarkMode ? Colors.grey[900] : CustomTheme.backgroundColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30 * textScaleFactor),
+                      topRight: Radius.circular(30 * textScaleFactor),
                     ),
                   ),
                   child: ListView(
@@ -306,64 +333,75 @@ class ProfileView extends GetView<ProfileController> {
                         Icons.location_on_outlined,
                         'Manage Addresses',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => Get.toNamed(Routes.DELIVERY),
                       ),
                       _buildProfileItem(
                         Icons.list_alt,
                         'My Orders',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => Get.toNamed(Routes.MY_ORDERS),
                       ),
                       _buildProfileItem(
                         Icons.medical_services_outlined,
                         'My Prescriptions',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => Get.toNamed(PrescriptionListScreen.route),
                       ),
                       _buildProfileItem(
                         Icons.book_outlined,
                         'Blogs',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => controller.navigateToVlogsList(),
                       ),
                       _buildProfileItem(
                         Icons.thumb_up_outlined,
                         'Rate Us',
                         isDarkMode,
+                        textScaleFactor,
                       ),
                       _buildProfileItem(
                         Icons.star_border,
                         'My Rating',
                         isDarkMode,
+                        textScaleFactor,
                       ),
                       _buildProfileItem(
                         Icons.privacy_tip_outlined,
                         'Privacy Policy',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => _navigateToDynamicPage('Privacy Policy', 'privacy-policy'),
                       ),
                       _buildProfileItem(
                         Icons.help_outline,
                         'Return Policy',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => _navigateToDynamicPage('Return Policy', 'return-policy'),
                       ),
                       _buildProfileItem(
                         Icons.language,
                         'About Us',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => _navigateToDynamicPage('About Us', 'about-us'),
                       ),
                       _buildProfileItem(
                         Icons.description_outlined,
                         'Terms and Conditions',
                         isDarkMode,
+                        textScaleFactor,
                         onTap: () => _navigateToDynamicPage('Terms and Conditions', 'terms-and-service'),
                       ),
                       _buildProfileItem(
                         Icons.logout,
                         'Logout',
                         isDarkMode,
+                        textScaleFactor,
                         color: Colors.red,
                         onTap: _handleLogout,
                       ),
@@ -382,9 +420,12 @@ class ProfileView extends GetView<ProfileController> {
       IconData icon,
       String title,
       bool isDarkMode,
+      double textScaleFactor,
       {Color? color,
         VoidCallback? onTap}
       ) {
+    final iconSize = (22 * textScaleFactor).clamp(20.0, 24.0);
+
     return Card(
       elevation: 0,
       color: Colors.transparent,
@@ -392,16 +433,19 @@ class ProfileView extends GetView<ProfileController> {
         leading: Icon(
           icon,
           color: color ?? (isDarkMode ? Colors.white : Colors.black),
+          size: iconSize,
         ),
         title: Text(
           title,
           style: TextStyle(
             color: color ?? (isDarkMode ? Colors.white : Colors.black),
+            fontSize: (15 * textScaleFactor).clamp(16.0, 22.0),
           ),
         ),
         trailing: Icon(
           Icons.chevron_right,
           color: isDarkMode ? Colors.white70 : Colors.black54,
+          size: iconSize,
         ),
         onTap: onTap,
       ),
@@ -409,8 +453,15 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   void _handleLogout() {
+    final textScaleFactor = Get.context != null
+        ? MediaQuery.of(Get.context!).textScaleFactor
+        : 1.0;
+
     Get.defaultDialog(
       title: 'Logout',
+      titleStyle: TextStyle(
+        fontSize: (15 * textScaleFactor).clamp(16.0, 22.0),
+      ),
       middleText: 'Are you sure you want to logout?',
       textConfirm: 'Yes',
       textCancel: 'No',

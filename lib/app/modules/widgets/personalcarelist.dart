@@ -19,6 +19,13 @@ class PersonalCareListScreen extends StatelessWidget {
     final HomeController controller = Get.find<HomeController>();
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+
+    // Adjust text sizes based on scale factor
+    final titleSize = (20 / textScaleFactor).clamp(16.0, 20.0);
+    final itemTitleSize = (14 / textScaleFactor).clamp(12.0, 14.0);
+    final priceSize = (14 / textScaleFactor).clamp(12.0, 14.0);
+    final discountSize = (12 / textScaleFactor).clamp(10.0, 12.0);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -57,9 +64,12 @@ class PersonalCareListScreen extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'Beauty & Personal Care',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: titleSize,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         toolbarHeight: 80,
       ),
@@ -68,23 +78,37 @@ class PersonalCareListScreen extends StatelessWidget {
 
         return GridView.builder(
           padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75,
+            childAspectRatio: 0.75 * (1 / textScaleFactor).clamp(0.8, 1.0),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
-            return _buildGridItem(context, item, isDarkMode);
+            return _buildGridItem(
+              context,
+              item,
+              isDarkMode,
+              itemTitleSize,
+              priceSize,
+              discountSize,
+            );
           },
         );
       }),
     );
   }
 
-  Widget _buildGridItem(BuildContext context, Map<String, dynamic> item, bool isDarkMode) {
+  Widget _buildGridItem(
+      BuildContext context,
+      Map<String, dynamic> item,
+      bool isDarkMode,
+      double titleSize,
+      double priceSize,
+      double discountSize,
+      ) {
     return Container(
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey[800] : Colors.white,
@@ -139,8 +163,8 @@ class PersonalCareListScreen extends StatelessWidget {
                 children: [
                   Text(
                     item['name'],
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: titleSize,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 2,
@@ -149,8 +173,8 @@ class PersonalCareListScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '₹${item['discount_price']}',
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: priceSize,
                       color: Colors.green,
                       fontWeight: FontWeight.w600,
                     ),
@@ -161,7 +185,7 @@ class PersonalCareListScreen extends StatelessWidget {
                         Text(
                           '₹${item['original_price']}',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: discountSize,
                             color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                             decoration: TextDecoration.lineThrough,
                           ),
@@ -170,7 +194,7 @@ class PersonalCareListScreen extends StatelessWidget {
                         Text(
                           '${calculateDiscount(item['original_price'], item['discount_price'])}% off',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: discountSize,
                             color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                           ),
                         ),

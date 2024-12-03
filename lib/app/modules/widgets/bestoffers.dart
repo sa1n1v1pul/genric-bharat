@@ -6,7 +6,6 @@ import '../api_endpoints/api_endpoints.dart';
 import '../home/controller/homecontroller.dart';
 import 'medicinedetailsheet.dart';
 
-
 class BestOffers extends StatelessWidget {
   const BestOffers({super.key});
   String getCompleteImageUrl(String photoPath) {
@@ -15,11 +14,18 @@ class BestOffers extends StatelessWidget {
     }
     return '${ApiEndpoints.imageBaseUrl}$photoPath';
   }
+
   @override
   Widget build(BuildContext context) {
     final HomeController controller = Get.find<HomeController>();
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+
+    // Adjust text sizes based on scale factor
+    final titleSize = (20 / textScaleFactor).clamp(16.0, 20.0);
+    final itemTitleSize = (14 / textScaleFactor).clamp(12.0, 14.0);
+    final priceSize = (16 / textScaleFactor).clamp(14.0, 16.0);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -58,44 +64,61 @@ class BestOffers extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'Best Offers',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: titleSize,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         toolbarHeight: 80,
       ),
       body: Obx(() {
-        final bestDealProducts = controller.getItemsForCategory("BEST DEAL PRODUCTS");
+        final bestDealProducts =
+            controller.getItemsForCategory("BEST DEAL PRODUCTS");
 
         if (controller.isCategoryItemsLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
         if (bestDealProducts.isEmpty) {
-          return const Center(
-            child: Text('No offers available at the moment'),
+          return Center(
+            child: Text(
+              'No offers available at the moment',
+              style: TextStyle(fontSize: itemTitleSize),
+            ),
           );
         }
 
         return GridView.builder(
           padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75,
+            childAspectRatio: 0.75 * (1 / textScaleFactor).clamp(0.8, 1.0),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
           itemCount: bestDealProducts.length,
           itemBuilder: (context, index) {
             final product = bestDealProducts[index];
-            return _buildOfferCard(context, product);
+            return _buildOfferCard(
+              context,
+              product,
+              itemTitleSize,
+              priceSize,
+            );
           },
         );
       }),
     );
   }
 
-  Widget _buildOfferCard(BuildContext context, Map<String, dynamic> product) {
+  Widget _buildOfferCard(
+    BuildContext context,
+    Map<String, dynamic> product,
+    double titleSize,
+    double priceSize,
+  ) {
     return GestureDetector(
       onTap: () {
         showModalBottomSheet(
@@ -123,7 +146,8 @@ class BestOffers extends StatelessWidget {
             Expanded(
               flex: 3,
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(15)),
                 child: Image.network(
                   getCompleteImageUrl(product['photo']),
                   width: double.infinity,
@@ -140,14 +164,14 @@ class BestOffers extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(left: 8, right: 8, top: 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       product['name'],
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: titleSize,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 2,
@@ -156,8 +180,8 @@ class BestOffers extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '₹${product['discount_price']}',
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: priceSize,
                         fontWeight: FontWeight.bold,
                         color: Colors.green,
                       ),
@@ -165,8 +189,8 @@ class BestOffers extends StatelessWidget {
                     if (product['previous_price'] != 0)
                       Text(
                         '₹${product['previous_price']}',
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: titleSize * 0.85,
                           decoration: TextDecoration.lineThrough,
                           color: Colors.grey,
                         ),

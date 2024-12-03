@@ -22,25 +22,27 @@ class SocialMediaSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScaleFactor = MediaQuery.textScaleFactorOf(context);
+
     return Container(
-      padding: const EdgeInsets.only(bottom: 50),
+      padding: EdgeInsets.only(bottom: 50 * textScaleFactor),
       child: Column(
         children: [
           // Logo and Text
           Padding(
-            padding: const EdgeInsets.only(bottom: 24),
+            padding: EdgeInsets.only(bottom: 24 * textScaleFactor),
             child: Column(
               children: [
                 Icon(
                   Icons.favorite_border,
-                  size: 48,
+                  size: 40 * textScaleFactor,
                   color: Colors.blue[200],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16 * textScaleFactor),
                 Text(
                   'Affordable healthcare',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 30 / textScaleFactor,
                     color: Colors.blue[200],
                     fontWeight: FontWeight.w500,
                   ),
@@ -48,7 +50,7 @@ class SocialMediaSection extends StatelessWidget {
                 Text(
                   'for every Indian',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 30 / textScaleFactor,
                     color: Colors.blue[200],
                     fontWeight: FontWeight.w500,
                   ),
@@ -65,20 +67,23 @@ class SocialMediaSection extends StatelessWidget {
                 FontAwesomeIcons.facebookF,
                 'https://www.facebook.com/profile.php?id=61566317623633',
                 Colors.blue,
+                textScaleFactor,
               ),
-              const SizedBox(width: 32),
+              SizedBox(width: 32 * textScaleFactor),
               // YouTube
               _buildSocialIcon(
                 FontAwesomeIcons.youtube,
                 'https://www.youtube.com/demo',
                 Colors.red,
+                textScaleFactor,
               ),
-              const SizedBox(width: 32),
+              SizedBox(width: 32 * textScaleFactor),
               // Instagram
               _buildSocialIcon(
                 FontAwesomeIcons.instagram,
                 'https://www.instagram.com/demo',
                 Colors.purple,
+                textScaleFactor,
               ),
             ],
           ),
@@ -87,19 +92,19 @@ class SocialMediaSection extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialIcon(IconData icon, String url, Color color) {
+  Widget _buildSocialIcon(IconData icon, String url, Color color, double textScaleFactor) {
     return InkWell(
       onTap: () => _launchURL(url),
       child: Container(
-        width: 60,
-        height: 60,
+        width: 50 * textScaleFactor,
+        height: 50 * textScaleFactor,
         decoration: BoxDecoration(
           color: color.withOpacity(0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          size: 30,
+          size: 30 * textScaleFactor,
           color: color,
         ),
       ),

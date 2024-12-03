@@ -12,12 +12,10 @@ class MyOrdersView extends GetView<MyOrdersController> {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure controller is initialized
     if (!Get.isRegistered<MyOrdersController>()) {
       Get.put(MyOrdersController());
     }
 
-    // Safely get isDarkMode
     final bool isDarkMode = Get.isDarkMode ?? false;
 
     return Scaffold(
@@ -27,18 +25,24 @@ class MyOrdersView extends GetView<MyOrdersController> {
         backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         centerTitle: true,
-        automaticallyImplyLeading: false, // Changed this to false
+        automaticallyImplyLeading: false,
         scrolledUnderElevation: 0,
         leading: fromBottomNav
-            ? null  // Don't show back button if from bottom nav
+            ? null
             : IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 18),
+          icon: const Icon(Icons.arrow_back_ios, size: 16),
           color: Colors.black,
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'My Orders',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        title: const FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'My Orders',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
       body: GetBuilder<MyOrdersController>(
@@ -48,7 +52,15 @@ class MyOrdersView extends GetView<MyOrdersController> {
                 () => controller.isLoading.value
                 ? const Center(child: CircularProgressIndicator())
                 : controller.orders.isEmpty
-                ? const Center(child: Text('No orders found'))
+                ? const Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'No orders found',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+            )
                 : ListView.builder(
               itemCount: controller.orders.length,
               padding: const EdgeInsets.all(16),
@@ -79,50 +91,73 @@ class MyOrdersView extends GetView<MyOrdersController> {
                             mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Order id: ${order.id}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                              Expanded(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Order id: ${order.id}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              Text(
-                                DateFormat('dd MMM yyyy')
-                                    .format(order.createdAt),
-                                style: TextStyle(
-                                  color: Colors.grey[600],
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  DateFormat('dd MMM yyyy')
+                                      .format(order.createdAt),
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            'Medicine: ${order.cart.map((item) => item.name).join(", ")}',
-                            style: const TextStyle(fontSize: 14),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Items: ${order.cart.length}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Status: ${order.orderStatus}',
-                            style: TextStyle(
-                              color: order.orderStatus == 'Delivered'
-                                  ? Colors.green
-                                  : Colors.orange,
-                              fontWeight: FontWeight.w500,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Medicine: ${order.cart.map((item) => item.name).join(", ")}',
+                              style: const TextStyle(fontSize: 13),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Amount: ${order.currencySign}${order.finalPrice}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                            'Items: ${order.cart.length}',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Status: ${order.orderStatus}',
+                              style: TextStyle(
+                                color: order.orderStatus == 'Delivered'
+                                    ? Colors.green
+                                    : Colors.orange,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Amount: ${order.currencySign}${order.finalPrice}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ],

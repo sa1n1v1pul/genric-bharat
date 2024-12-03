@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'dart:io';
-import '../../core/theme/theme.dart';
-import '../home/controller/homecontroller.dart';
-import '../prescription/controller/prescriptioncontroller.dart';
+import '../../../core/theme/theme.dart';
+import '../../home/controller/homecontroller.dart';
+import '../../widgets/myprescriptionview.dart';
+import '../controller/prescriptioncontroller.dart';
 
 class UploadPrescriptionScreen extends StatefulWidget {
   const UploadPrescriptionScreen({Key? key}) : super(key: key);
@@ -114,13 +115,12 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
         title: const Text(
           'Upload Prescription',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
       ),
-
-        body: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -129,7 +129,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
               const Text(
                 'Upload your prescription to start ordering',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -137,7 +137,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
               Text(
                 'Please ensure that the prescription is valid and contains doctor, patient and medicine details.',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Colors.grey[600],
                 ),
               ),
@@ -148,7 +148,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border.all( color: CustomTheme.loginGradientStart,),
+                    border: Border.all(color: CustomTheme.loginGradientStart,),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -169,7 +169,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                                 : 'Upload prescription',
                             style: TextStyle(
                               color: CustomTheme.loginGradientStart,
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -193,84 +193,45 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text(
-                'Next Steps',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              if (_selectedFile != null && !_selectedFile!.path.toLowerCase().endsWith('.pdf')) ...[
+                const SizedBox(height: 24),
+                Container(
+                  width: double.infinity,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      _selectedFile!,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ],const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: CustomTheme.loginGradientStart,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () {
+                  Get.to(const PrescriptionListScreen());
+                },
+                child: const Center(
+                  child: Text(
+                    "My Old Prescriptions",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: CustomTheme.loginGradientStart.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child:  Icon(
-                        Icons.phone,
-                          color: CustomTheme.loginGradientStart,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Pharmacist call',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[50],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  'Free',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Our pharmacist will call to confirm the medicines in your prescription',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
             ],
           ),
         ),

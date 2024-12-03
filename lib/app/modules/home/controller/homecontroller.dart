@@ -23,8 +23,43 @@ class HomeController extends GetxController {
   final RxBool isCategoryItemsLoading = true.obs;
   final RxString pageContent = RxString('');
   final RxBool isPageLoading = RxBool(false);
+  final RxString errorMessage = ''.obs;
+  HomeController() {
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _dio.options.headers = {
+      'Accept': 'application/json',
+    };
 
-
+    // Add interceptor for retry logic
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (DioException error, ErrorInterceptorHandler handler) async {
+          if (error.type == DioExceptionType.connectionError) {
+            // Retry the request up to 3 times
+            for (int i = 0; i < 3; i++) {
+              try {
+                print('Retrying request attempt ${i + 1}');
+                final response = await _dio.request(
+                  error.requestOptions.path,
+                  options: Options(
+                    method: error.requestOptions.method,
+                    headers: error.requestOptions.headers,
+                  ),
+                  data: error.requestOptions.data,
+                  queryParameters: error.requestOptions.queryParameters,
+                );
+                return handler.resolve(response);
+              } catch (e) {
+                if (i == 2) handler.next(error);
+              }
+            }
+          }
+          return handler.next(error);
+        },
+      ),
+    );
+  }
   @override
   void onInit() {
     super.onInit();
@@ -188,47 +223,64 @@ class HomeController extends GetxController {
   Future<void> fetchItems(String categoryId, {String? subcategoryId}) async {
     try {
       isServicesLoading.value = true;
+      errorMessage.value = '';
+
       String url = '${ApiEndpoints.services}?category_id=$categoryId';
       if (subcategoryId != null && subcategoryId != 'All') {
         url += '&subcategory_id=$subcategoryId';
       }
 
-      final response = await _dio.get(url);
-      if (response.statusCode == 200 && response.data['data'] is List) {
-        services.value = List<Map<String, dynamic>>.from(response.data['data']);
-        print("Fetching services successfully: ${response.data}");
+      print('Fetching services from: $url');
+
+      final response = await _dio.get(
+        url,
+        options: Options(
+          validateStatus: (status) => status! < 500,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        if (response.data['data'] is List) {
+          services.value = List<Map<String, dynamic>>.from(response.data['data']);
+          print("Successfully fetched ${services.length} services");
+        } else {
+          throw Exception('Invalid response format: expected a list');
+        }
       } else {
-        print('Unexpected response structure: ${response.data}');
-        services.value = [];
+        throw Exception('Server returned status code: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      String errorMsg = 'Network error occurred';
+
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+          errorMsg = 'Connection timed out';
+          break;
+        case DioExceptionType.receiveTimeout:
+          errorMsg = 'Server is not responding';
+          break;
+        case DioExceptionType.connectionError:
+          errorMsg = 'Cannot connect to the server';
+          break;
+        default:
+          errorMsg = e.message ?? 'An unexpected error occurred';
+      }
+
+      print('DioException while fetching services: $errorMsg');
+      print('Error details: ${e.error}');
+      errorMessage.value = errorMsg;
+      services.value = [];
+
     } catch (e) {
-      print('Error fetching services: $e');
+      print('Unexpected error while fetching services: $e');
+      errorMessage.value = 'An unexpected error occurred';
       services.value = [];
     } finally {
       isServicesLoading.value = false;
     }
   }
 
-  Future<void> fetchProviders(String serviceId, String userId) async {
-    try {
-      isProvidersLoading.value = true;
-      final url =
-          '${ApiEndpoints.providersList}?service_id=$serviceId&id=$userId';
-      final response = await _dio.get(url);
-      if (response.statusCode == 200 && response.data is List) {
-        providers.value = List<Map<String, dynamic>>.from(response.data);
-        print("Fetching providers successfully: ${response.data}");
-      } else {
-        print('Unexpected response structure: ${response.data}');
-        providers.value = [];
-      }
-    } catch (e) {
-      print('Error fetching providers: $e');
-      providers.value = [];
-    } finally {
-      isProvidersLoading.value = false;
-    }
-  }
+
 }
 
 class SliderModel {

@@ -183,7 +183,7 @@ class ProfileController extends GetxController {
           final relativePath = updatedData['profile'] as String;
           updatedData['profile'] = relativePath.startsWith('http')
               ? relativePath
-              : ApiEndpoints.baseUrl + relativePath;
+              : ApiEndpoints.apibaseUrl + relativePath;
         }
 
         // Update state

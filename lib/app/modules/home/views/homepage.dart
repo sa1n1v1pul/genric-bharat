@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:carousel_indicator/carousel_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:genric_bharat/app/core/theme/theme.dart';
 import 'package:genric_bharat/app/modules/cart/view/cartscreen.dart';
@@ -29,7 +30,7 @@ import '../../widgets/medicaldevices.dart';
 import '../../widgets/medicinedetailsheet.dart';
 import '../../widgets/personalcarelist.dart';
 import '../../widgets/popularitem.dart';
-import '../../widgets/prescriptionview.dart';
+import '../../prescription/views/prescriptionview.dart';
 import '../../widgets/service_explore.dart';
 import '../../widgets/categories.dart';
 import '../controller/homecontroller.dart';
@@ -50,6 +51,9 @@ class _HomePageState extends State<HomePage> {
   late LocationController locationController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOnRight = true;
+  double getScaledFontSize(double originalSize) {
+    return originalSize / MediaQuery.of(context).textScaleFactor;
+  }
   String getCompleteImageUrl(String photoPath) {
     if (photoPath.startsWith('http')) {
       return photoPath;
@@ -199,37 +203,40 @@ class _HomePageState extends State<HomePage> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content: Text(
-                                              'Location not available. Please try again.')),
+                                              'Location not available. Please try again.',style: TextStyle(color: Colors.white),)),
                                     );
                                   }
                                 },
                                 child: Obx(() {
                                   if (locationController.isLoading.value) {
-                                    return const Text('Loading...',
+                                    return  Text('Loading...',
                                         style: TextStyle(
-                                            fontSize: 16, color: Colors.white));
+                                            fontSize: 16 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
                                   } else if (locationController
                                       .isPermissionDenied.value) {
-                                    return const Text('Permissions denied',
+                                    return  Text('Permissions denied',
                                         style: TextStyle(
-                                            fontSize: 16, color: Colors.white));
+                                            fontSize: 16 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
                                   } else if (locationController
                                           .isLocationSkipped.value &&
                                       !locationController
                                           .currentAddress.value.isNotEmpty) {
-                                    return const Text('Location Skipped',
+                                    return  Text('Location Skipped',
                                         style: TextStyle(
-                                            fontSize: 16, color: Colors.white));
+                                            fontSize: 14 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
                                   } else if (locationController
                                       .cityName.value.isNotEmpty) {
                                     return Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Current Location',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.white)),
+                                        Text(
+                                          'Current Location',
+                                          style: TextStyle(
+                                              fontSize: getScaledFontSize(14),
+                                              color: Colors.white
+                                          ),
+                                        ),
                                         Text(
                                           locationController.cityName.value,
                                           style: const TextStyle(
@@ -239,9 +246,9 @@ class _HomePageState extends State<HomePage> {
                                       ],
                                     );
                                   } else {
-                                    return const Text('Location Unavailable',
+                                    return  Text('Location Unavailable',
                                         style: TextStyle(
-                                            fontSize: 16, color: Colors.white));
+                                            fontSize: 16 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
                                   }
                                 }),
                               ),
@@ -274,7 +281,10 @@ class _HomePageState extends State<HomePage> {
                                     child: TextField(
                                       decoration: InputDecoration(
                                         hintText: 'Search medicines, categories...',
-                                        hintStyle: TextStyle(color: Colors.black54),
+                                        hintStyle: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 16 / MediaQuery.of(context).textScaleFactor,
+                                        ),
                                         prefixIcon: const Icon(Icons.search),
                                         prefixIconColor: Colors.black54,
                                         border: OutlineInputBorder(
@@ -283,11 +293,14 @@ class _HomePageState extends State<HomePage> {
                                         filled: true,
                                         fillColor: Colors.white,
                                       ),
+                                      style: TextStyle(
+                                        fontSize: 16 / MediaQuery.of(context).textScaleFactor,
+                                      ),
                                       onTap: () {
                                         Get.to(() => SearchScreen());
                                       },
                                       readOnly: true,
-                                    ),
+                                    )
 
                                   ),
                                 ),
@@ -784,7 +797,7 @@ class _HomePageState extends State<HomePage> {
     final isDarkMode = theme.brightness == Brightness.dark;
     final HomeController homeController = Get.find<HomeController>();
     final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-    final adjustedFontSize = 18 / textScaleFactor;
+    final adjustedFontSize = 16 / textScaleFactor;
 
     return Obx(() {
       if (homeController.isLoading.value) {
@@ -953,13 +966,13 @@ class _HomePageState extends State<HomePage> {
                 child: Image.network(
                   category['photo'] != null
                       ? '${ApiEndpoints.imageBaseUrl}${category['photo']}'
-                      : 'assets/images/temp1.png',
+                      : 'assets/images/medicine3.jpg',
                   width: 100,
                   height: 60,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Image.asset(
-                      'assets/images/temp1.png',
+                      'assets/images/medicine3.jpg',
                       width: 100,
                       height: 60,
                     );
@@ -1232,7 +1245,7 @@ class _HomePageState extends State<HomePage> {
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return Image.asset(
-                      'assets/images/temp1.png',
+                      'assets/images/medicine3.jpg',
                       width: double.infinity,
                       fit: BoxFit.contain,
                     );
@@ -1490,6 +1503,7 @@ class _HomePageState extends State<HomePage> {
                     screenSize,
                     textScaleFactor,
                     index == items.length - 1,
+                    item, // Pass the entire item object
                   );
                 },
               ),
@@ -1508,57 +1522,75 @@ class _HomePageState extends State<HomePage> {
       Size screenSize,
       double textScaleFactor,
       bool isLast,
+      Map<String, dynamic> item, // Add item parameter
       ) {
     final itemWidth = screenSize.width * 0.4;
 
-    return Container(
-      width: itemWidth,
-      margin: EdgeInsets.only(
-        right: isLast ? 0 : screenSize.width * 0.02,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            flex: 3,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                getCompleteImageUrl(photoPath),
-                width: double.infinity,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: Icon(
-                      Icons.error,
-                      size: 24 / textScaleFactor,
-                    ),
-                  );
-                },
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.8,
+            minChildSize: 0.6,
+            maxChildSize: 0.8,
+            builder: (context, scrollController) => MedicineDetailsSheet(
+              service: item,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: itemWidth,
+        margin: EdgeInsets.only(
+          right: isLast ? 0 : screenSize.width * 0.02,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  getCompleteImageUrl(photoPath),
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Icon(
+                        Icons.error,
+                        size: 24 / textScaleFactor,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          SizedBox(height: screenSize.height * 0.01),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14 / textScaleFactor,
-              fontWeight: FontWeight.bold,
+            SizedBox(height: screenSize.height * 0.01),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14 / textScaleFactor,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            '₹$price',
-            style: TextStyle(
-              fontSize: 12 / textScaleFactor,
-              color: Colors.green,
-              fontWeight: FontWeight.w500,
+            Text(
+              '₹$price',
+              style: TextStyle(
+                fontSize: 12 / textScaleFactor,
+                color: Colors.green,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

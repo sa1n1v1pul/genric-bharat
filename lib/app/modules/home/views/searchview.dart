@@ -94,10 +94,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   onChanged: _performSearch,
                 ),
                 const SizedBox(height: 8),
-                Row(
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Obx(() => ChoiceChip(
-                      label: const Text('Name Search'),
+                      label: const Text('Name'),
                       selected: !searchController.isCompositionSearch.value,
                       onSelected: (selected) {
                         if (selected) {
@@ -110,7 +110,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     )),
                     const SizedBox(width: 8),
                     Obx(() => ChoiceChip(
-                      label: const Text('Composition Search'),
+                      label: const Text('Composition'),
                       selected: searchController.isCompositionSearch.value,
                       onSelected: (selected) {
                         if (selected) {

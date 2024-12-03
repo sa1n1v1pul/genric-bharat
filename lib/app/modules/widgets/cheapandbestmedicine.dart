@@ -25,9 +25,11 @@ class CheapMedicinesScreen extends StatelessWidget {
     final CartController cartController = Get.find<CartController>();
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-
+    final textScaleFactor = MediaQuery.textScaleFactorOf(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme
+          .of(context)
+          .scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
@@ -54,7 +56,7 @@ class CheapMedicinesScreen extends StatelessWidget {
               child: IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios,
-                  size: 18,
+                  size: 18 / textScaleFactor,
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
                 onPressed: () => Navigator.of(context).pop(),
@@ -63,11 +65,12 @@ class CheapMedicinesScreen extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'Cheap & Best Medicines',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 18 / textScaleFactor, fontWeight: FontWeight.bold),
         ),
-        toolbarHeight: 60,
+        toolbarHeight: 60 * textScaleFactor,
       ),
       body: Obx(() {
         final medicines =
@@ -75,9 +78,9 @@ class CheapMedicinesScreen extends StatelessWidget {
 
         return GridView.builder(
           padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.7,
+            childAspectRatio: 0.63 / textScaleFactor,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -97,6 +100,7 @@ class CheapMedicinesScreen extends StatelessWidget {
               discount: discount,
               isDarkMode: isDarkMode,
               cartController: cartController,
+              textScaleFactor: textScaleFactor,
             );
           },
         );
@@ -104,13 +108,13 @@ class CheapMedicinesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMedicineCard(
-      BuildContext context, {
-        required Map<String, dynamic> medicine,
-        required String discount,
-        required bool isDarkMode,
-        required CartController cartController,
-      }) {
+  Widget _buildMedicineCard(BuildContext context, {
+    required Map<String, dynamic> medicine,
+    required String discount,
+    required bool isDarkMode,
+    required CartController cartController,
+    required double textScaleFactor,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.blueGrey : Colors.white,
@@ -129,14 +133,16 @@ class CheapMedicinesScreen extends StatelessWidget {
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (context) => DraggableScrollableSheet(
-              initialChildSize: 0.8,
-              minChildSize: 0.6,
-              maxChildSize: 0.8,
-              builder: (context, scrollController) => MedicineDetailsSheet(
-                service: medicine,
-              ),
-            ),
+            builder: (context) =>
+                DraggableScrollableSheet(
+                  initialChildSize: 0.8,
+                  minChildSize: 0.6,
+                  maxChildSize: 0.8,
+                  builder: (context, scrollController) =>
+                      MedicineDetailsSheet(
+                        service: medicine,
+                      ),
+                ),
           );
         },
         child: Column(
@@ -145,10 +151,11 @@ class CheapMedicinesScreen extends StatelessWidget {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12)),
                   child: Image.network(
                     getCompleteImageUrl(medicine['photo']),
-                    height: 120,
+                    height: 118 * textScaleFactor,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
@@ -162,82 +169,96 @@ class CheapMedicinesScreen extends StatelessWidget {
                 ),
                 if (discount != '0')
                   Container(
-                    margin: const EdgeInsets.all(8),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    margin: EdgeInsets.all(8 * textScaleFactor),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8 * textScaleFactor,
+                      vertical: 4 * textScaleFactor,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       '$discount% OFF',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 12 / textScaleFactor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    medicine['name'],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                    left: 12, right: 12, top: 12 * textScaleFactor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      medicine['name'],
+                      style: TextStyle(
+                        fontSize: 14 / textScaleFactor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (medicine['previous_price'] > 0) ...[
+                    SizedBox(height: 4 * textScaleFactor),
+                    Row(
+                      children: [
+                        if (medicine['previous_price'] > 0) ...[
+                          Text(
+                            '₹${medicine['previous_price'].toStringAsFixed(2)}',
+                            style: TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              color: isDarkMode ? Colors.grey[400] : Colors
+                                  .grey[600],
+                              fontSize: 12 / textScaleFactor,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
                         Text(
-                          '₹${medicine['previous_price'].toStringAsFixed(2)}',
+                          '₹${medicine['discount_price'].toStringAsFixed(2)}',
                           style: TextStyle(
-                            decoration: TextDecoration.lineThrough,
-                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14 / textScaleFactor,
                           ),
                         ),
-                        const SizedBox(width: 4),
                       ],
-                      Text(
-                        '₹${medicine['discount_price'].toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        cartController.addToCart(medicine);
-                        Get.to(() => const CartScreen());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: CustomTheme.loginGradientStart,
-                        backgroundColor: Colors.white,
-                        side:  BorderSide(color: CustomTheme.loginGradientStart),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      child: const Text('Add'),
                     ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(12),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    cartController.addToCart(medicine);
+                    Get.to(() => const CartScreen());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: CustomTheme.loginGradientStart,
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: CustomTheme.loginGradientStart),
+                    padding: EdgeInsets.symmetric(
+                        vertical: 8 * textScaleFactor),
                   ),
-                ],
+                  child: Text(
+                    'Add',
+                    style: TextStyle(fontSize: 14 / textScaleFactor),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
-  }}
+  }
+}
