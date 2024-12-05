@@ -23,69 +23,51 @@ class MyOrdersController extends GetxController {
       isLoading.value = true;
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      dynamic userId = prefs.getInt('user_id') ??
+          int.tryParse(prefs.getString('user_id') ?? '');
 
-      // Debugging: Print out all saved preferences
-      prefs.getKeys().forEach((key) {
-        print('Preference Key: $key, Value: ${prefs.get(key)}');
-      });
-
-      // Try multiple ways to get user ID
-      dynamic userId;
-
-      // Try getting as int first
-      userId = prefs.getInt('user_id');
-
-      // If int is null, try getting as string and converting
       if (userId == null) {
-        String? userIdString = prefs.getString('user_id');
-        if (userIdString != null) {
-          userId = int.tryParse(userIdString);
-        }
+        throw Exception('User ID not found');
       }
-
-      // If still null, throw an error with more context
-      if (userId == null) {
-        throw Exception('User ID not found. Please check SharedPreferences setup.');
-      }
-
-      print('Fetching orders for User ID: $userId (Type: ${userId.runtimeType})');
 
       final response = await _dio.get(
         '${ApiEndpoints.apibaseUrl}orders-get',
         queryParameters: {'user_id': userId},
+        options: Options(
+          // Don't throw error for 404 status
+          validateStatus: (status) => status! < 500,
+        ),
       );
 
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Data: ${response.data}');
+      // Clear existing orders
+      orders.clear();
 
-      if (response.statusCode == 200) {
-        final responseData = response.data;
-        if (responseData['status'] == 'success') {
-          // Add more detailed error checking
-          if (responseData['data'] is! List) {
-            throw Exception('Invalid data format: expected a list');
-          }
+      // Handle 404 case (no orders) silently
+      if (response.statusCode == 404) {
+        return;
+      }
 
-          orders.value = (responseData['data'] as List)
-              .map((order) {
-            print('Processing order: $order');
-            return OrderModel.fromJson(order);
-          })
+      if (response.statusCode == 200 && response.data['status'] == 'success') {
+        if (response.data['data'] is List) {
+          orders.value = (response.data['data'] as List)
+              .map((order) => OrderModel.fromJson(order))
               .toList();
-
-          print('Processed Orders Count: ${orders.length}');
-        } else {
-          throw Exception('API returned non-success status');
         }
       }
-    } catch (e, stackTrace) {
-      print('Error fetching orders: $e');
-      print('Stacktrace: $stackTrace');
+    } catch (e) {
+      // Show a user-friendly error message
+      String errorMessage = 'Unable to fetch orders';
+      if (e is DioException && e.type == DioExceptionType.connectionTimeout) {
+        errorMessage = 'Connection timeout. Please check your internet connection.';
+      }
+
       Get.snackbar(
-        'Error',
-        'Failed to fetch orders: $e',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.black,
+        'Notice',
+        errorMessage,
+        backgroundColor: Colors.orange[100],
+        colorText: Colors.black87,
+        duration: const Duration(seconds: 3),
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       isLoading.value = false;

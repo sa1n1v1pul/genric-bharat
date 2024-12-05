@@ -5,9 +5,9 @@ class AddressModel {
   final int userId;
   final String pinCode;
   final String shipAddress1;
-  final String shipAddress2;
-  final String area;
-  final String landmark;
+  final String? shipAddress2;
+  final String? area;
+  final String? landmark;
   final String city;
   final String state;
 
@@ -16,9 +16,9 @@ class AddressModel {
     required this.userId,
     required this.pinCode,
     required this.shipAddress1,
-    required this.shipAddress2,
-    required this.area,
-    required this.landmark,
+     this.shipAddress2,
+    this.area,
+     this.landmark,
     required this.city,
     required this.state,
   });
@@ -36,13 +36,13 @@ class AddressModel {
       state: address.state,
     );
   }
-    String get fullAddress => [
-      shipAddress1,
-      shipAddress2,
-      area,
-      landmark,
-      city,
-      state,
-      pinCode
-    ].where((part) => part.isNotEmpty).join(', ');
+  String get fullAddress => [
+    shipAddress1,
+    if (shipAddress2?.isNotEmpty == true) shipAddress2!,
+    if (area?.isNotEmpty == true) area!,
+    if (landmark?.isNotEmpty == true) landmark!,
+    city,
+    state,
+    pinCode
+  ].join(', ');
   }

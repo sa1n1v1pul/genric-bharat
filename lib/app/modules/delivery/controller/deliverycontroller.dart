@@ -213,6 +213,8 @@ class DeliveryDetailsController extends GetxController {
     }
   }
 
+ 
+
   Future<Map<String, dynamic>> confirmCODOrder({
     required double originalAmount,
     required double discountAmount,
@@ -233,7 +235,10 @@ class DeliveryDetailsController extends GetxController {
         throw Exception('Delivery address is required');
       }
 
-      // Create order items array
+      // Format the current date and time
+      final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+
+      // Create order items array - Fixed to match confirmOrder format
       final List<Map<String, dynamic>> orderItems = cartController.cartItems.map((item) {
         return {
           'name': item.name,
@@ -243,25 +248,21 @@ class DeliveryDetailsController extends GetxController {
         };
       }).toList();
 
-      // Prepare request body with all required fields
+      // Prepare request body with all required fields - Matched with confirmOrder
       final Map<String, dynamic> requestBody = {
+        'payment_date': formattedDate,
+        'user_id': userId,
         if (couponCode.isNotEmpty) 'coupon_applied': couponCode,
         'original_amount': originalAmount.toStringAsFixed(2),
         'discount': discountAmount.toStringAsFixed(2),
         'final_amount': finalAmount.toStringAsFixed(2),
         'patient_name': selectedPatientName.value,
-        // Use complete address from selected address
         'delivery_address': selectedAddress.value!.formattedAddress,
         'area': selectedAddress.value!.area,
-        'city': selectedAddress.value!.city,  // Ensure city is included
-        'state': selectedAddress.value!.state, // Ensure state is included
-        'pincode': selectedAddress.value!.pinCode, // Ensure pincode is included
-        'order_items': orderItems.map((item) => {
-          'name': item['name'],
-          'quantity': item['quantity'],
-          'qty': item['qty'],
-          'rs': item['rs'],
-        }).toList(),
+        'city': selectedAddress.value!.city,
+        'state': selectedAddress.value!.state,
+        'pincode': selectedAddress.value!.pinCode,
+        'items': orderItems,
       };
 
       print('COD order request body: $requestBody');

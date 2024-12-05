@@ -10,7 +10,11 @@ import '../auth/bindings/auth_binding.dart';
 import '../auth/views/loginview.dart';
 
 import '../cart/binding/Addtocart.dart';
+import '../cart/binding/CartMiddleware.dart';
+import '../cart/view/cartscreen.dart';
+import '../home/binding/addressbindings.dart';
 import '../home/binding/homebindings.dart';
+import '../home/views/addressview.dart';
 import '../location/binding/location_binding.dart';
 import '../location/views/locationservices.dart';
 import '../offers/bindings/offersbinding.dart';
@@ -42,6 +46,18 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.put(MyOrdersController());
       }),
+    ),
+    GetPage(
+      name: Routes.CART,
+      page: () => CartScreen(),
+      binding: CartBindings(),
+      middlewares: [CartMiddleware()],
+    ),
+    GetPage(
+      name: Routes.ADDRESS,
+      page: () => AddressScreen(),
+      binding: AddressBindings(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: Routes.VLOGS,

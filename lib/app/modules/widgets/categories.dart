@@ -69,11 +69,9 @@ class AllCategories extends StatelessWidget {
         if (homeController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (homeController.categories.isEmpty) {
           return const Center(child: Text('No Categories available'));
         }
-
         return GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
@@ -122,7 +120,7 @@ class AllCategories extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             width: 120,
-height: 80,
+            height: 80,
             child: imagePath.isNotEmpty
                 ? ClipRRect(
               borderRadius: BorderRadius.circular(10),

@@ -1,17 +1,11 @@
 // ignore_for_file: library_private_types_in_public_api, use_super_parameters
 
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:genric_bharat/app/modules/cart/view/cartscreen.dart';
 import 'package:genric_bharat/app/modules/profile/views/profile_view.dart';
-
-
-import '../Message/view/messageview.dart';
-
 import '../MyOrders/views/myorderview.dart';
 import '../home/views/homepage.dart';
 import '../offers/views/offers.dart';

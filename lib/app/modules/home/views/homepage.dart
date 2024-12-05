@@ -1361,13 +1361,15 @@ class _HomePageState extends State<HomePage> {
               width: itemWidth,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: itemHeight,
-                  width: itemWidth,
-                  color: Colors.grey[300],
-                  child: Icon(
-                    Icons.error,
-                    size: 24 / textScaleFactor,
+                return Center(
+                  child: Container(
+                    height: itemHeight,
+                    width: itemWidth,
+                    color: Colors.grey[300],
+                    child: Icon(
+                      Icons.error,
+                      size: 24 / textScaleFactor,
+                    ),
                   ),
                 );
               },
@@ -1560,11 +1562,13 @@ class _HomePageState extends State<HomePage> {
                   width: double.infinity,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: Icon(
-                        Icons.error,
-                        size: 24 / textScaleFactor,
+                    return Center(
+                      child: Container(
+                        color: Colors.grey[300],
+                        child: Icon(
+                          Icons.error,
+                          size: 24 / textScaleFactor,
+                        ),
                       ),
                     );
                   },
@@ -1854,9 +1858,11 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.error),
+                          return Center(
+                            child: Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.error),
+                            ),
                           );
                         },
                       )
@@ -2094,9 +2100,11 @@ class _HomePageState extends State<HomePage> {
                   height: double.infinity,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.error),
+                    return Center(
+                      child: Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.error),
+                      ),
                     );
                   },
                 ),
@@ -2586,11 +2594,13 @@ class _HomePageState extends State<HomePage> {
                     width: imageSize,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: imageSize,
-                        width: imageSize,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
+                      return Center(
+                        child: Container(
+                          height: imageSize,
+                          width: imageSize,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.error),
+                        ),
                       );
                     },
                   )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
+import '../../routes/app_routes.dart';
 import '../controller/cartcontroller.dart';
 
 class CartScreen extends GetView<CartController> {
@@ -14,6 +15,12 @@ class CartScreen extends GetView<CartController> {
 
   @override
   Widget build(BuildContext context) {
+    if (!fromBottomNav) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.fetchAddresses();
+      });
+    }
+
     if (fromBottomNav) {
       Get.find<CartController>().checkAndInitializeCart();
     }
@@ -663,12 +670,6 @@ class CartScreen extends GetView<CartController> {
     }
     return controller.hasAddress.value ? 'Proceed to Checkout' : 'Add Delivery Address';
   }
-
-  VoidCallback? _getButtonAction() {
-    if (controller.cartItems.isEmpty) return null;
-    return () => controller.proceedToCheckout();
-  }
-
   Color _getButtonColor() {
     if (controller.cartItems.isEmpty) {
       return Colors.grey[300]!;
@@ -681,4 +682,21 @@ class CartScreen extends GetView<CartController> {
     }
     return 'Please add delivery address to continue';
   }
-}
+  VoidCallback? _getButtonAction() {
+    if (controller.cartItems.isEmpty) {
+      return null;
+    }
+
+
+    return () {
+      if (controller.hasAddress.value) {
+
+        controller.proceedToCheckout();
+      } else {
+
+        Get.toNamed(Routes.ADDRESS);
+      }};}}
+
+
+
+
