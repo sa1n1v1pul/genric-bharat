@@ -66,8 +66,8 @@ class AddressController extends GetxController {
       // Pre-fill the form with existing address data
       pincodeController.text = addressToEdit!.pinCode;
        addressLine1Controller.text = addressToEdit!.shipAddress1;
-       addressLine2Controller.text = addressToEdit!.shipAddress2;
-      localityController.text = addressToEdit!.area;
+       addressLine2Controller.text = addressToEdit!.shipAddress2?? '';
+      localityController.text = addressToEdit!.area?? '';
       landmarkController.text = addressToEdit!.landmark ?? '';
       cityController.text = addressToEdit!.city;
       stateController.text = addressToEdit!.state;

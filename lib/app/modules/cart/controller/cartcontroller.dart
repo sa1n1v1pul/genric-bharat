@@ -27,7 +27,15 @@ class CartController extends GetxController {
   int? currentUserId;
   RxList<Address> userAddresses = <Address>[].obs;
   final Map<String, bool> _updatingQuantities = {};
-
+  void onReady() {
+    super.onReady();
+    ever(cartItems, (_) {
+      // Whenever cart items change, check address status
+      if (currentUserId != null) {
+        fetchAddresses();
+      }
+    });
+  }
   @override
   void onInit() async {
     super.onInit();
@@ -110,15 +118,34 @@ class CartController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> addressData = response.data['data'];
-        userAddresses.value = addressData.map((data) => Address.fromJson(data)).toList();
-        hasAddress.value = userAddresses.isNotEmpty;
-        print('📍 Found ${userAddresses.length} addresses');
+        final List<dynamic> addressData = response.data['data'] ?? [];
+        try {
+          userAddresses.value = addressData.map((data) {
+            try {
+              return Address.fromJson(data);
+            } catch (e) {
+              print('Error parsing individual address: $e');
+              print('Address data: $data');
+              return null;
+            }
+          }).whereType<Address>().toList();
+
+          hasAddress.value = userAddresses.isNotEmpty;
+          print('📍 Found ${userAddresses.length} addresses, hasAddress: ${hasAddress.value}');
+        } catch (e) {
+          print('Error processing address list: $e');
+          hasAddress.value = false;
+        }
       }
     } catch (e) {
       print('❌ Error fetching addresses: $e');
+      print('Stack trace: ${StackTrace.current}');
       hasAddress.value = false;
     }
+  }
+
+  Future<void> refreshAddressStatus() async {
+    await fetchAddresses();
   }
   Future<void> fetchPromoCodes() async {
     try {
@@ -208,7 +235,7 @@ class CartController extends GetxController {
 
   Future<void> proceedToCheckout() async {
     try {
-      if (total.value < 500) {
+      if (total.value < 1) {
         Get.snackbar(
           'Error',
           'Minimum order amount should be ₹500',
@@ -216,12 +243,14 @@ class CartController extends GetxController {
           colorText: Colors.black,
         );
         return;
-
-
       }
 
       if (!hasAddress.value) {
-        Get.to(() => AddressScreen());
+        // When returning from AddressScreen, refresh the address status
+        final result = await Get.to(() => AddressScreen());
+        if (result == true) {  // Add this check
+          await fetchAddresses();  // Refresh address status
+        }
         return;
       }
 
@@ -532,9 +561,9 @@ class Address {
   final int userId;
   final String pinCode;
   final String shipAddress1;
-  final String shipAddress2;
-  final String area;
-  final String landmark;
+  final String? shipAddress2;  // Made optional
+  final String? area;         // Made optional
+  final String? landmark;     // Made optional
   final String city;
   final String state;
   final DateTime createdAt;
@@ -546,9 +575,9 @@ class Address {
     required this.userId,
     required this.pinCode,
     required this.shipAddress1,
-    required this.shipAddress2,
-    required this.area,
-    required this.landmark,
+    this.shipAddress2,    // Optional
+    this.area,           // Optional
+    this.landmark,       // Optional
     required this.city,
     required this.state,
     required this.createdAt,
@@ -557,23 +586,27 @@ class Address {
   });
 
   factory Address.fromJson(Map<String, dynamic> json) {
-    return Address(
-      id: json['id'],
-      userId: json['user_id'],
-      pinCode: json['pin_code'],
-      shipAddress1: json['ship_address1'],
-      shipAddress2: json['ship_address2'],
-      area: json['area'],
-      landmark: json['landmark'],
-      city: json['city'],
-      state: json['state'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      user: User.fromJson(json['user']),
-    );
+    try {
+      return Address(
+        id: json['id'] ?? 0,
+        userId: json['user_id'] ?? 0,
+        pinCode: json['pin_code']?.toString() ?? '',
+        shipAddress1: json['ship_address1']?.toString() ?? '',
+        shipAddress2: json['ship_address2']?.toString(),
+        area: json['area']?.toString(),
+        landmark: json['landmark']?.toString(),
+        city: json['city']?.toString() ?? '',
+        state: json['state']?.toString() ?? '',
+        createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+        updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+        user: User.fromJson(json['user'] ?? {}),
+      );
+    } catch (e) {
+      print('Error parsing Address: $e');
+      print('JSON data: $json');
+      rethrow;
+    }
   }
-
-
 }
 
 class User {
@@ -591,10 +624,10 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      fullname: json['fullname'],
-      mobileNumber: json['mobile_number'],
-      email: json['email'],
+      id: json['id'] ?? 0,
+      fullname: json['fullname']?.toString() ?? '',
+      mobileNumber: json['mobile_number']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
     );
   }
 }

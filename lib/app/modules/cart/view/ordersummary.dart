@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
 import '../../delivery/controller/deliverycontroller.dart';
+import '../../delivery/views/addressmodel.dart';
+import '../../home/views/addressview.dart';
 import '../../routes/app_routes.dart';
 import '../controller/cartcontroller.dart';
 
@@ -223,6 +225,11 @@ class OrderSummaryScreen extends GetView<CartController> {
         return const Center(child: CircularProgressIndicator());
       }
 
+      final selectedAddress = deliveryController.selectedAddress.value;
+      if (selectedAddress == null) {
+        return const Center(child: Text('No address selected'));
+      }
+
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
@@ -241,8 +248,21 @@ class OrderSummaryScreen extends GetView<CartController> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 // TextButton(
-                //   onPressed: deliveryController.onAddAddressPressed,
-                //   child: const Text('Change'),
+                //   onPressed: () {
+                //     final addressModel = AddressModel(
+                //       id: selectedAddress.id,
+                //       userId: selectedAddress.id,
+                //       pinCode: selectedAddress.pinCode,
+                //       shipAddress1: selectedAddress.address1,
+                //       shipAddress2: selectedAddress.address2,
+                //       area: selectedAddress.area,
+                //       landmark: selectedAddress.landmark ?? '',
+                //       city: selectedAddress.city,
+                //       state: selectedAddress.state,
+                //     );
+                //     Get.to(() => AddressScreen(addressToEdit: addressModel));
+                //   },
+                //   child: const Text('Edit Address'),
                 // ),
               ],
             ),
@@ -252,44 +272,41 @@ class OrderSummaryScreen extends GetView<CartController> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 12),
-            if (deliveryController.selectedAddress.value != null) ...[
+            Text(
+              selectedAddress.address1,
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            if (selectedAddress.address2.isNotEmpty)
               Text(
-                deliveryController.selectedAddress.value?.address1 ?? '',
+                selectedAddress.address2,
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-              if (deliveryController.selectedAddress.value?.address2.isNotEmpty ?? false)
-                Text(
-                  deliveryController.selectedAddress.value?.address2 ?? '',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                ),
-              const SizedBox(height: 4),
-              if (deliveryController.selectedAddress.value?.landmark.isNotEmpty ?? false)
-                Text(
-                  'Landmark: ${deliveryController.selectedAddress.value?.landmark}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                ),
-              const SizedBox(height: 4),
+            const SizedBox(height: 4),
+            if (selectedAddress.landmark.isNotEmpty)
               Text(
-                'Area: ${deliveryController.selectedLocality.value}',
+                'Landmark: ${selectedAddress.landmark}',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'City: ${deliveryController.selectedCity.value}',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'State: ${deliveryController.selectedState.value}',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'PIN: ${deliveryController.selectedPincode.value}',
-                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-              ),
-            ] else
-              const Text('No address selected'),
+            const SizedBox(height: 4),
+            Text(
+              'Area: ${selectedAddress.area}',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'City: ${selectedAddress.city}',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'State: ${selectedAddress.state}',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'PIN: ${selectedAddress.pinCode}',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            ),
             const SizedBox(height: 12),
             Text(
               'Delivery by 22nd - 24th Nov',
@@ -304,6 +321,9 @@ class OrderSummaryScreen extends GetView<CartController> {
       );
     });
   }
+
+
+
   void _showPaymentOptions(BuildContext context, DeliveryDetailsController deliveryController) {
     if (!deliveryController.validateDeliveryAddress()) {
       return;
@@ -481,6 +501,7 @@ class OrderSummaryScreen extends GetView<CartController> {
                   ),
                 ),
               ],
+
             ),
             const SizedBox(height: 8),
           ],

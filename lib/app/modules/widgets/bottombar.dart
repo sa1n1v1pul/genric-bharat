@@ -31,7 +31,7 @@ class BottomNavBar extends StatelessWidget {
           children: [
             Expanded(child: _buildNavItem(context, FontAwesome.cart_plus, 'Cart', 0, primaryColor)),
             Expanded(child: _buildNavItem(context, FontAwesome.rupee, 'Refer & Earn', 1, primaryColor)),
-            const SizedBox(width: 30), // Space for FAB
+            const SizedBox(width: 30),
             Expanded(child: _buildNavItem(context, FontAwesome.gift, 'Orders', 3, primaryColor)),
             Expanded(child: _buildNavItem(context, FontAwesome.user, 'Account', 4, primaryColor)),
           ],
@@ -39,7 +39,6 @@ class BottomNavBar extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildNavItem(BuildContext context, IconData icon, String label, int index, Color primaryColor) {
     final bool isSelected = selectedIndex == index;
     final Color color = isSelected ? primaryColor : Colors.grey;
@@ -74,7 +73,7 @@ class BottomNavBar extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: color,
-                  fontSize: 10 / textScaleFactor,
+                  fontSize: 11 / textScaleFactor,
                 ),
               ),
             ),
