@@ -1098,6 +1098,7 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     children: [
                       GridView.builder(
+                        padding: EdgeInsets.only(top: 15),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -2021,6 +2022,7 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: GridView.count(
+                padding: EdgeInsets.only(top: 15),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
