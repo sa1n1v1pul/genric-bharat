@@ -10,7 +10,6 @@ import '../../home/views/addressview.dart';
 import '../../routes/app_routes.dart';
 import '../controller/cartcontroller.dart';
 
-
 class OrderSummaryScreen extends GetView<CartController> {
   const OrderSummaryScreen({Key? key}) : super(key: key);
 
@@ -27,7 +26,8 @@ class OrderSummaryScreen extends GetView<CartController> {
         centerTitle: true,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 18),color: Colors.black,
+          icon: const Icon(Icons.arrow_back_ios, size: 18),
+          color: Colors.black,
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -36,102 +36,104 @@ class OrderSummaryScreen extends GetView<CartController> {
         ),
       ),
       body: Obx(
-            () => controller.cartItems.isEmpty
+        () => controller.cartItems.isEmpty
             ? const Center(
-          child: Text('No items in cart'),
-        )
+                child: Text('No items in cart'),
+              )
             : Column(
-          children: [
-            // Free delivery banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 16,
-              ),
-              color: Colors.blue.shade50,
-              child: Row(
                 children: [
-                  const Icon(
-                    Icons.local_shipping_outlined,
-                    color: Colors.blue,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Yay! You get Free delivery on this order!',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w500,
+                  // Free delivery banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    color: Colors.blue.shade50,
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.local_shipping_outlined,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Yay! You get Free delivery on this order!',
+                          style: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  // Items count
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${controller.cartItems.length} Items in your cart',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Items list
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: controller.cartItems.length,
+                      itemBuilder: (context, index) {
+                        final item = controller.cartItems[index];
+                        return _buildOrderItem(item);
+                      },
+                    ),
+                  ),
+
+                  // Delivery details
+                  _buildDeliveryDetails(deliveryController),
+                  // Bottom summary
+                  _buildOrderSummary(deliveryController),
                 ],
               ),
-            ),
-            // Items count
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '${controller.cartItems.length} Items in your cart',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            // Items list
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: controller.cartItems.length,
-                itemBuilder: (context, index) {
-                  final item = controller.cartItems[index];
-                  return _buildOrderItem(item);
-                },
-              ),
-            ),
-
-            // Delivery details
-            _buildDeliveryDetails(deliveryController),
-            // Bottom summary
-            _buildOrderSummary(deliveryController),
-          ],
-        ),
       ),
     );
   }
+
   Widget _buildOrderTotalSummary(DeliveryDetailsController deliveryController) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Obx(() => Column(
           children: [
-            const Text('Total Amount:'),
-            Text(
-              '₹${deliveryController.finalAmount.value.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total Amount:'),
+                Text(
+                  '₹${deliveryController.finalAmount.value.toStringAsFixed(2)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          ],
-        ),
-        if (deliveryController.discount.value > 0) ...[
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Savings:'),
-              Text(
-                '₹${deliveryController.discount.value.toStringAsFixed(2)}',
-                style: TextStyle(color: Colors.green[700]),
+            if (deliveryController.discount.value > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Savings:'),
+                  Text(
+                    '₹${deliveryController.discount.value.toStringAsFixed(2)}',
+                    style: TextStyle(color: Colors.green[700]),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
-      ],
-    );
+          ],
+        ));
   }
+
   Widget _buildOrderItem(CartItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -216,8 +218,6 @@ class OrderSummaryScreen extends GetView<CartController> {
       ),
     );
   }
-
-
 
   Widget _buildDeliveryDetails(DeliveryDetailsController deliveryController) {
     return Obx(() {
@@ -322,9 +322,8 @@ class OrderSummaryScreen extends GetView<CartController> {
     });
   }
 
-
-
-  void _showPaymentOptions(BuildContext context, DeliveryDetailsController deliveryController) {
+  void _showPaymentOptions(
+      BuildContext context, DeliveryDetailsController deliveryController) {
     if (!deliveryController.validateDeliveryAddress()) {
       return;
     }
@@ -332,14 +331,14 @@ class OrderSummaryScreen extends GetView<CartController> {
     // Create a serializable map of the address data
     final addressData = deliveryController.selectedAddress.value != null
         ? {
-      'address1': deliveryController.selectedAddress.value!.address1,
-      'address2': deliveryController.selectedAddress.value!.address2,
-      'area': deliveryController.selectedAddress.value!.area,
-      'landmark': deliveryController.selectedAddress.value!.landmark,
-      'city': deliveryController.selectedAddress.value!.city,
-      'state': deliveryController.selectedAddress.value!.state,
-      'pinCode': deliveryController.selectedAddress.value!.pinCode,
-    }
+            'address1': deliveryController.selectedAddress.value!.address1,
+            'address2': deliveryController.selectedAddress.value!.address2,
+            'area': deliveryController.selectedAddress.value!.area,
+            'landmark': deliveryController.selectedAddress.value!.landmark,
+            'city': deliveryController.selectedAddress.value!.city,
+            'state': deliveryController.selectedAddress.value!.state,
+            'pinCode': deliveryController.selectedAddress.value!.pinCode,
+          }
         : null;
 
     Get.bottomSheet(
@@ -413,14 +412,16 @@ class OrderSummaryScreen extends GetView<CartController> {
                   Get.back();
                   Future.delayed(const Duration(milliseconds: 100), () {
                     Get.to(
-                          () => const RazorpayCheckoutScreen(),
+                      () => const RazorpayCheckoutScreen(),
                       arguments: {
                         'subtotal': deliveryController.subtotal.value,
                         'discount': deliveryController.discount.value,
                         'finalAmount': deliveryController.finalAmount.value,
                         'appliedCoupon': deliveryController.appliedCoupon.value,
-                        'patientName': deliveryController.selectedPatientName.value,
-                        'address': addressData, // Pass the formatted address data
+                        'patientName':
+                            deliveryController.selectedPatientName.value,
+                        'address':
+                            addressData, // Pass the formatted address data
                       },
                     );
                   });
@@ -501,7 +502,6 @@ class OrderSummaryScreen extends GetView<CartController> {
                   ),
                 ),
               ],
-
             ),
             const SizedBox(height: 8),
           ],
@@ -528,7 +528,8 @@ class OrderSummaryScreen extends GetView<CartController> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _showPaymentOptions(Get.context!, deliveryController),
+              onPressed: () =>
+                  _showPaymentOptions(Get.context!, deliveryController),
               style: ElevatedButton.styleFrom(
                 backgroundColor: CustomTheme.loginGradientStart,
                 padding: const EdgeInsets.symmetric(vertical: 16),

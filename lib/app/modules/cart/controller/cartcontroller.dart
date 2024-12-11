@@ -1,5 +1,8 @@
+// ignore_for_file: avoid_print, unnecessary_brace_in_string_interps, annotate_overrides
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:genric_bharat/app/modules/auth/controllers/auth_controller.dart';
 import 'package:genric_bharat/app/modules/cart/controller/cartservice.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +14,7 @@ import '../../routes/app_routes.dart';
 class CartController extends GetxController {
   final CartApiService _apiService = Get.find<CartApiService>();
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
+  final AuthController _authController = Get.find<AuthController>();
   RxList<CartItem> cartItems = <CartItem>[].obs;
   RxDouble total = 0.0.obs;
   RxInt cartCount = 0.obs;
@@ -36,15 +40,29 @@ class CartController extends GetxController {
       }
     });
   }
+
   @override
   void onInit() async {
     super.onInit();
     print('🚀 CartController initialized');
-    ever(isInitialized, (_) => print('Cart initialization status changed: $isInitialized'));
 
+    // Add listener for auth changes
+    ever(_authController.isLoggedIn, (isLoggedIn) {
+      if (!isLoggedIn) {
+        // Clear cart data when logged out
+        cartItems.clear();
+        total.value = 0.0;
+        cartCount.value = 0;
+        currentUserId = null;
+        hasAddress.value = false;
+      }
+    });
+
+    // Update existing userId listener
     ever(_apiService.userId, (userId) {
       if (userId != null) {
         print('👤 User ID changed in CartController: $userId');
+        currentUserId = userId; // Explicitly update currentUserId
         initializeCart(userId: userId);
       }
     });
@@ -52,8 +70,21 @@ class CartController extends GetxController {
     await fetchPromoCodes();
     checkAndInitializeCart();
   }
+
   Future<void> checkAndInitializeCart() async {
     try {
+      // First check auth service for current user
+      if (_authController.isLoggedIn.value) {
+        final prefs = await SharedPreferences.getInstance();
+        final userId = prefs.getInt('user_id');
+        if (userId != null) {
+          currentUserId = userId; // Explicitly set currentUserId
+          print('✅ Using authenticated userId: $userId');
+          await initializeCart(userId: userId);
+          return;
+        }
+      }
+
       if (_apiService.userId.value != null) {
         currentUserId = _apiService.userId.value;
         print('✅ Using userId from service: ${currentUserId}');
@@ -61,19 +92,12 @@ class CartController extends GetxController {
         return;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('user_id');
-
-      if (userId != null) {
-        currentUserId = userId;
-        print('✅ Retrieved userId from SharedPreferences: $userId');
-        await initializeCart(userId: userId);
-      } else {
-        print('⚠️ No userId found in SharedPreferences or service');
-        cartItems.clear();
-        total.value = 0.0;
-        cartCount.value = 0;
-      }
+      print('⚠️ No valid userId found');
+      cartItems.clear();
+      total.value = 0.0;
+      cartCount.value = 0;
+      currentUserId = null;
+      hasAddress.value = false;
     } catch (e) {
       print('❌ Error in checkAndInitializeCart: $e');
     } finally {
@@ -109,37 +133,39 @@ class CartController extends GetxController {
     try {
       if (currentUserId == null) {
         print('❌ Cannot fetch addresses: currentUserId is null');
+        hasAddress.value = false;
         return;
       }
 
       print('📍 Fetching addresses for user $currentUserId');
-      final response = await _apiProvider.get(
-          ApiEndpoints.getAddressesForUser(currentUserId!)
-      );
+      final response = await _apiProvider
+          .get(ApiEndpoints.getAddressesForUser(currentUserId!));
 
       if (response.statusCode == 200) {
         final List<dynamic> addressData = response.data['data'] ?? [];
-        try {
-          userAddresses.value = addressData.map((data) {
-            try {
-              return Address.fromJson(data);
-            } catch (e) {
-              print('Error parsing individual address: $e');
-              print('Address data: $data');
-              return null;
-            }
-          }).whereType<Address>().toList();
+        userAddresses.value = addressData
+            .map((data) {
+              try {
+                return Address.fromJson(data);
+              } catch (e) {
+                print('Error parsing individual address: $e');
+                print('Address data: $data');
+                return null;
+              }
+            })
+            .whereType<Address>()
+            .toList();
 
-          hasAddress.value = userAddresses.isNotEmpty;
-          print('📍 Found ${userAddresses.length} addresses, hasAddress: ${hasAddress.value}');
-        } catch (e) {
-          print('Error processing address list: $e');
-          hasAddress.value = false;
-        }
+        // Update hasAddress based on valid addresses
+        hasAddress.value = userAddresses.isNotEmpty;
+        print(
+            '📍 Found ${userAddresses.length} addresses, hasAddress: ${hasAddress.value}');
+      } else {
+        hasAddress.value = false;
+        print('❌ Failed to fetch addresses: ${response.statusCode}');
       }
     } catch (e) {
       print('❌ Error fetching addresses: $e');
-      print('Stack trace: ${StackTrace.current}');
       hasAddress.value = false;
     }
   }
@@ -147,6 +173,7 @@ class CartController extends GetxController {
   Future<void> refreshAddressStatus() async {
     await fetchAddresses();
   }
+
   Future<void> fetchPromoCodes() async {
     try {
       isLoadingCoupons.value = true;
@@ -168,7 +195,7 @@ class CartController extends GetxController {
   // Add method to apply coupon
   void applyCoupon(String code) {
     final promoCode = availablePromoCodes.firstWhereOrNull(
-          (coupon) => coupon.codeName.toLowerCase() == code.toLowerCase(),
+      (coupon) => coupon.codeName.toLowerCase() == code.toLowerCase(),
     );
 
     if (promoCode == null) {
@@ -204,7 +231,6 @@ class CartController extends GetxController {
     couponErrorMessage.value = '';
   }
 
-
   Future<void> checkAddressFromProfile(int userId) async {
     try {
       print('📍 Checking address from profile for user: $userId');
@@ -235,7 +261,19 @@ class CartController extends GetxController {
 
   Future<void> proceedToCheckout() async {
     try {
-      if (total.value < 1) {
+      // First check if there are items in cart
+      if (cartItems.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Your cart is empty',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.black,
+        );
+        return;
+      }
+
+      // Check minimum order amount
+      if (total.value < 500) {
         Get.snackbar(
           'Error',
           'Minimum order amount should be ₹500',
@@ -245,11 +283,13 @@ class CartController extends GetxController {
         return;
       }
 
+      // Fetch latest address status
+      await fetchAddresses();
+
       if (!hasAddress.value) {
-        // When returning from AddressScreen, refresh the address status
-        final result = await Get.to(() => AddressScreen());
-        if (result == true) {  // Add this check
-          await fetchAddresses();  // Refresh address status
+        final result = await Get.toNamed(Routes.ADDRESS);
+        if (result == true) {
+          await fetchAddresses();
         }
         return;
       }
@@ -274,9 +314,6 @@ class CartController extends GetxController {
       'appliedCoupon': appliedCouponCode.value,
     };
   }
-
-
-
 
   Future<void> addToCart(Map<String, dynamic> service) async {
     try {
@@ -306,11 +343,13 @@ class CartController extends GetxController {
       print('✅ addToCart completed');
     }
   }
+
   void refreshCart() {
     if (currentUserId != null) {
       fetchCart();
     }
   }
+
   Future<void> fetchCart() async {
     try {
       print('📝 Starting fetchCart');
@@ -326,7 +365,8 @@ class CartController extends GetxController {
         // Clear and update cart items
         cartItems.clear();
         if (cartData.isNotEmpty) {
-          cartItems.addAll(cartData.map((item) => _createCartItem(item as Map<String, dynamic>)));
+          cartItems.addAll(cartData
+              .map((item) => _createCartItem(item as Map<String, dynamic>)));
         }
         print('📦 Cart items count after update: ${cartItems.length}');
 
@@ -344,6 +384,7 @@ class CartController extends GetxController {
       print('✅ fetchCart completed');
     }
   }
+
   CartItem _createCartItem(Map<String, dynamic> item) {
     print('Creating cart item - Full item data: $item');
 
@@ -359,6 +400,7 @@ class CartController extends GetxController {
       quantity: int.parse(item['qty']?.toString() ?? '1'),
     );
   }
+
   Future<void> updateQuantity(String itemId, int quantity) async {
     // If an update is already in progress for this item, skip
     if (_updatingQuantities[itemId] == true) return;
@@ -396,7 +438,8 @@ class CartController extends GetxController {
 
       if (response['status'] != true) {
         print('❌ Failed to update quantity: ${response['message']}');
-        Get.snackbar('Error', response['message'] ?? 'Failed to update quantity');
+        Get.snackbar(
+            'Error', response['message'] ?? 'Failed to update quantity');
         // Only fetch cart if the API call fails
         await fetchCart();
       }
@@ -409,6 +452,7 @@ class CartController extends GetxController {
       _updatingQuantities[itemId] = false;
     }
   }
+
   void _updateLocalTotal() {
     double newTotal = 0.0;
     for (var item in cartItems) {
@@ -417,13 +461,15 @@ class CartController extends GetxController {
     total.value = newTotal;
     cartCount.value = cartItems.length;
   }
+
   Future<void> incrementQuantity(String id) async {
     try {
       final itemIndex = cartItems.indexWhere((item) => item.id == id);
       if (itemIndex != -1) {
         final item = cartItems[itemIndex];
         final newQuantity = item.quantity + 1;
-        print('🔼 Incrementing quantity for item $id from ${item.quantity} to $newQuantity');
+        print(
+            '🔼 Incrementing quantity for item $id from ${item.quantity} to $newQuantity');
         await updateQuantity(id, newQuantity);
       }
     } catch (e) {
@@ -438,7 +484,8 @@ class CartController extends GetxController {
         final item = cartItems[itemIndex];
         if (item.quantity > 1) {
           final newQuantity = item.quantity - 1;
-          print('🔽 Decrementing quantity for item $id from ${item.quantity} to $newQuantity');
+          print(
+              '🔽 Decrementing quantity for item $id from ${item.quantity} to $newQuantity');
           await updateQuantity(id, newQuantity);
         } else {
           await removeFromCart(id);
@@ -448,8 +495,6 @@ class CartController extends GetxController {
       print('❌ Error in decrementQuantity: $e');
     }
   }
-
-
 
   double _parseDouble(dynamic value) {
     if (value == null) return 0.0;
@@ -472,7 +517,8 @@ class CartController extends GetxController {
         cartCount.value = response['data']['total_items'] ?? 0;
         Get.snackbar('Success', 'Item removed from cart');
       } else {
-        Get.snackbar('Error', response['message'] ?? 'Failed to remove item from cart');
+        Get.snackbar(
+            'Error', response['message'] ?? 'Failed to remove item from cart');
         await fetchCart(); // Refresh the cart if the API call failed
       }
     } catch (e) {
@@ -556,14 +602,15 @@ class PromoCode {
     );
   }
 }
+
 class Address {
   final int id;
   final int userId;
   final String pinCode;
   final String shipAddress1;
-  final String? shipAddress2;  // Made optional
-  final String? area;         // Made optional
-  final String? landmark;     // Made optional
+  final String? shipAddress2; // Made optional
+  final String? area; // Made optional
+  final String? landmark; // Made optional
   final String city;
   final String state;
   final DateTime createdAt;
@@ -575,9 +622,9 @@ class Address {
     required this.userId,
     required this.pinCode,
     required this.shipAddress1,
-    this.shipAddress2,    // Optional
-    this.area,           // Optional
-    this.landmark,       // Optional
+    this.shipAddress2, // Optional
+    this.area, // Optional
+    this.landmark, // Optional
     required this.city,
     required this.state,
     required this.createdAt,
@@ -597,8 +644,10 @@ class Address {
         landmark: json['landmark']?.toString(),
         city: json['city']?.toString() ?? '',
         state: json['state']?.toString() ?? '',
-        createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-        updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+        createdAt: DateTime.parse(
+            json['created_at'] ?? DateTime.now().toIso8601String()),
+        updatedAt: DateTime.parse(
+            json['updated_at'] ?? DateTime.now().toIso8601String()),
         user: User.fromJson(json['user'] ?? {}),
       );
     } catch (e) {

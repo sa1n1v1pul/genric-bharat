@@ -30,13 +30,22 @@ class DeliveryDetailsController extends GetxController {
   RxDouble discount = 0.0.obs;
   RxDouble finalAmount = 0.0.obs;
   RxString appliedCoupon = ''.obs;
-
+  final TextEditingController emailController = TextEditingController();
+  final RxString selectedEmail = ''.obs;
   @override
   void onInit() {
     super.onInit();
-    loadUserDetails();
-    updateOrderAmounts();
 
+    // Initialize with default values
+    subtotal.value = 0.0;
+    discount.value = 0.0;
+    finalAmount.value = 0.0;
+    appliedCoupon.value = '';
+
+    // Load user details
+    loadUserDetails();
+
+    // First try to get values from arguments
     if (Get.arguments != null) {
       final args = Get.arguments as Map<String, dynamic>;
       subtotal.value = args['subtotal'] ?? 0.0;
@@ -45,26 +54,53 @@ class DeliveryDetailsController extends GetxController {
       appliedCoupon.value = args['appliedCoupon'] ?? '';
     }
 
+    // Then update from cart controller
+    updateOrderAmounts();
 
+    // Set up route observer
     ever(RxString(Get.currentRoute), (String route) {
       if (route == Routes.DELIVERY) {
         loadUserDetails();
         updateOrderAmounts();
       }
     });
+
+    // Add listener to cart controller's total
+    CartController cartController = Get.find<CartController>();
+    ever(cartController.total, (_) {
+      updateOrderAmounts();
+    });
+
+    // Add listener to cart controller's discount
+    ever(cartController.discountAmount, (_) {
+      updateOrderAmounts();
+    });
   }
 
   void updateOrderAmounts() {
-    final orderSummary = cartController.getOrderSummary();
-    subtotal.value = orderSummary['subtotal'];
-    discount.value = orderSummary['discount'];
-    finalAmount.value = orderSummary['finalAmount'];
-    appliedCoupon.value = orderSummary['appliedCoupon'];
+    try {
+      CartController cartController = Get.find<CartController>();
+
+      // Update values from cart controller
+      subtotal.value = cartController.total.value;
+      discount.value = cartController.discountAmount.value;
+      finalAmount.value = cartController.finalAmount;
+      appliedCoupon.value = cartController.appliedCouponCode.value;
+
+      // Force update
+      update();
+
+      print(
+          'Updated Order Amounts - Subtotal: ${subtotal.value}, Discount: ${discount.value}, Final: ${finalAmount.value}');
+    } catch (e) {
+      print('Error updating order amounts: $e');
+    }
   }
 
   @override
   void onClose() {
     patientNameController.dispose();
+    emailController.dispose();
     super.onClose();
   }
 
@@ -79,10 +115,12 @@ class DeliveryDetailsController extends GetxController {
         return;
       }
 
-      // Fetch user profile for patient name
+      // Fetch user profile for patient name and email
       final userResponse = await apiProvider.getUserProfile(userId);
       if (userResponse.data != null) {
         final userData = userResponse.data;
+
+        // Handle patient name as before
         String fullName = userData['fullname'] ?? '';
         if (fullName.isEmpty) {
           String firstName = userData['first_name'] ?? '';
@@ -90,16 +128,20 @@ class DeliveryDetailsController extends GetxController {
           fullName = '$firstName ${lastName}'.trim();
         }
         selectedPatientName.value = fullName;
+
+        // Handle email
+        String email = userData['email'] ?? '';
+        selectedEmail.value = email;
       }
 
       // Fetch addresses using CartController's endpoint
-      final addressResponse = await apiProvider.get(
-          ApiEndpoints.getAddressesForUser(userId)
-      );
+      final addressResponse =
+          await apiProvider.get(ApiEndpoints.getAddressesForUser(userId));
 
       if (addressResponse.statusCode == 200) {
         final List<dynamic> addressData = addressResponse.data['data'];
-        addresses.value = addressData.map((data) => Address.fromJson(data)).toList();
+        addresses.value =
+            addressData.map((data) => Address.fromJson(data)).toList();
 
         // Select the first address by default if available
         if (addresses.isNotEmpty) {
@@ -109,6 +151,40 @@ class DeliveryDetailsController extends GetxController {
     } catch (e) {
       print('Error loading user details: $e');
       Get.snackbar('Error', 'Failed to load user details');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateEmail() async {
+    try {
+      isLoading.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id') ?? 0;
+
+      if (userId <= 0) {
+        throw Exception('Invalid user ID');
+      }
+
+      final newEmail = emailController.text.trim();
+      if (newEmail.isEmpty) {
+        throw Exception('Please enter email');
+      }
+
+      // Validate email format
+      if (!GetUtils.isEmail(newEmail)) {
+        throw Exception('Please enter a valid email address');
+      }
+
+      await apiProvider.updateUserProfile(userId, {
+        'email': newEmail,
+      });
+
+      selectedEmail.value = newEmail;
+    } catch (e) {
+      print('Error updating email: $e');
+      throw e;
     } finally {
       isLoading.value = false;
     }
@@ -161,14 +237,17 @@ class DeliveryDetailsController extends GetxController {
       }
 
       // Format the current date and time
-      final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+      final formattedDate =
+          DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
       // Create order items array with proper format
-      final List<Map<String, dynamic>> orderItems = cartController.cartItems.map((item) {
+      final List<Map<String, dynamic>> orderItems =
+          cartController.cartItems.map((item) {
         return {
           'name': item.name,
           'quantity': item.quantity.toString(),
-          'qty': item.quantity.toString(), // Adding qty field as seen in Postman
+          'qty':
+              item.quantity.toString(), // Adding qty field as seen in Postman
           'rs': (item.price * item.quantity).toStringAsFixed(2)
         };
       }).toList();
@@ -202,7 +281,8 @@ class DeliveryDetailsController extends GetxController {
       print('Order confirmation API response: ${response.data}');
 
       if (response.data['status'] == 'success') {
-        print('Order confirmed successfully! Order ID: ${response.data['data']['order_id']}');
+        print(
+            'Order confirmed successfully! Order ID: ${response.data['data']['order_id']}');
         return response.data['data'];
       } else {
         throw Exception(response.data['message'] ?? 'Failed to confirm order');
@@ -234,10 +314,12 @@ class DeliveryDetailsController extends GetxController {
       }
 
       // Format the current date and time
-      final formattedDate = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+      final formattedDate =
+          DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
       // Create order items array - Fixed to match confirmOrder format
-      final List<Map<String, dynamic>> orderItems = cartController.cartItems.map((item) {
+      final List<Map<String, dynamic>> orderItems =
+          cartController.cartItems.map((item) {
         return {
           'name': item.name,
           'quantity': item.quantity.toString(),
@@ -260,7 +342,8 @@ class DeliveryDetailsController extends GetxController {
         'city': selectedAddress.value!.city,
         'state': selectedAddress.value!.state,
         'pincode': selectedAddress.value!.pinCode,
-        'items': orderItems, // Changed from 'order_items' to 'items' to match confirmOrder
+        'items':
+            orderItems, // Changed from 'order_items' to 'items' to match confirmOrder
       };
 
       print('COD order request body: $requestBody');
@@ -284,12 +367,14 @@ class DeliveryDetailsController extends GetxController {
       print('COD order API response: ${response.data}');
 
       if (response.data['status'] == 'success') {
-        print('COD Order confirmed! Order ID: ${response.data['data']['order_id']}');
+        print(
+            'COD Order confirmed! Order ID: ${response.data['data']['order_id']}');
         // Clear cart after successful order
         cartController.clearAllCart();
         return response.data['data'];
       } else {
-        throw Exception(response.data['message'] ?? 'Failed to confirm COD order');
+        throw Exception(
+            response.data['message'] ?? 'Failed to confirm COD order');
       }
     } catch (e) {
       print('Error confirming COD order: $e');
@@ -310,7 +395,9 @@ class DeliveryDetailsController extends GetxController {
     }
 
     final address = selectedAddress.value!;
-    if (address.city.isEmpty || address.state.isEmpty || address.pinCode.isEmpty) {
+    if (address.city.isEmpty ||
+        address.state.isEmpty ||
+        address.pinCode.isEmpty) {
       Get.snackbar(
         'Error',
         'Please provide complete address with city, state and pincode',
@@ -323,14 +410,15 @@ class DeliveryDetailsController extends GetxController {
     return true;
   }
 
-
   void onAddAddressPressed() {
     Get.to(() => AddressScreen())?.then((_) => loadUserDetails());
   }
 
   void onEditAddressPressed(AddressModel address) {
-    Get.to(() => AddressScreen(addressToEdit: address))?.then((_) => loadUserDetails());
+    Get.to(() => AddressScreen(addressToEdit: address))
+        ?.then((_) => loadUserDetails());
   }
+
   Future<void> updatePatientName() async {
     try {
       isLoading.value = true;
@@ -352,7 +440,6 @@ class DeliveryDetailsController extends GetxController {
       });
 
       selectedPatientName.value = newName;
-
     } catch (e) {
       print('Error updating patient name: $e');
       throw e;
@@ -386,6 +473,20 @@ class DeliveryDetailsController extends GetxController {
         await updatePatientName();
       }
 
+      // Add email validation
+      if (selectedEmail.isEmpty) {
+        if (emailController.text.trim().isEmpty) {
+          Get.snackbar(
+            'Error',
+            'Please enter email',
+            backgroundColor: Colors.red[100],
+            colorText: Colors.black,
+          );
+          return;
+        }
+        await updateEmail();
+      }
+
       Get.to(() => OrderSummaryScreen(), arguments: {
         'subtotal': subtotal.value,
         'discount': discount.value,
@@ -397,6 +498,7 @@ class DeliveryDetailsController extends GetxController {
     }
   }
 }
+
 class Address {
   final int id;
   final String pinCode;

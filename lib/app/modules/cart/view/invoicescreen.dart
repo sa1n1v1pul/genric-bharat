@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, unnecessary_to_list_in_spreads, use_build_context_synchronously, avoid_print, deprecated_member_use
+
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +85,8 @@ class InvoiceScreen extends StatelessWidget {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Storage Permission Required'),
-            content: const Text('Storage permission is required to download invoices. Please enable it in app settings.'),
+            content: const Text(
+                'Storage permission is required to download invoices. Please enable it in app settings.'),
             actions: [
               TextButton(
                 onPressed: () => openAppSettings(),
@@ -101,6 +104,7 @@ class InvoiceScreen extends StatelessWidget {
       return true;
     }
   }
+
   Future<void> _generateAndDownloadPdf(
       CartController cartController,
       DeliveryDetailsController deliveryController,
@@ -115,20 +119,21 @@ class InvoiceScreen extends StatelessWidget {
       var status = await Permission.storage.request();
       if (!status.isGranted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Storage permission is required to download invoice')));
+            content:
+                Text('Storage permission is required to download invoice')));
         return;
       }
 
       final pdf = pw.Document();
       final regularFont =
-      await rootBundle.load("assets/fonts/Roboto/Roboto-Regular.ttf");
+          await rootBundle.load("assets/fonts/Roboto/Roboto-Regular.ttf");
       final ttfRegular = pw.Font.ttf(regularFont);
 
       List<pw.MemoryImage> productImages = [];
       for (var item in cartController.cartItems) {
         try {
-          final response =
-          await http.get(Uri.parse('${ApiEndpoints.imageBaseUrl}${item.image}'));
+          final response = await http
+              .get(Uri.parse('${ApiEndpoints.imageBaseUrl}${item.image}'));
           if (response.statusCode == 200) {
             productImages.add(pw.MemoryImage(response.bodyBytes));
           }
@@ -194,7 +199,8 @@ class InvoiceScreen extends StatelessWidget {
                       font: ttfRegular,
                     ),
                     if (couponCode.isNotEmpty)
-                      _buildPdfRow('Coupon Applied', couponCode, font: ttfRegular),
+                      _buildPdfRow('Coupon Applied', couponCode,
+                          font: ttfRegular),
                     _buildPdfRow(
                       'Original Amount',
                       'Rs. ${originalAmount.toStringAsFixed(2)}',
@@ -240,16 +246,41 @@ class InvoiceScreen extends StatelessWidget {
                     _buildPdfRow('Patient Name',
                         deliveryController.selectedPatientName.value,
                         font: ttfRegular),
-                    _buildPdfRow('Patient Name', deliveryController.selectedPatientName.value, font: ttfRegular),
-                    _buildPdfRow('Address Line 1', deliveryController.selectedAddress.value?.address1 ?? '', font: ttfRegular),
-                    if (deliveryController.selectedAddress.value?.address2.isNotEmpty ?? false)
-                      _buildPdfRow('Address Line 2', deliveryController.selectedAddress.value?.address2 ?? '', font: ttfRegular),
-                    if (deliveryController.selectedAddress.value?.landmark.isNotEmpty ?? false)
-                      _buildPdfRow('Landmark', deliveryController.selectedAddress.value?.landmark ?? '', font: ttfRegular),
-                    _buildPdfRow('Area', deliveryController.selectedLocality.value, font: ttfRegular),
-                    _buildPdfRow('City', deliveryController.selectedCity.value, font: ttfRegular),
-                    _buildPdfRow('State', deliveryController.selectedState.value, font: ttfRegular),
-                    _buildPdfRow('PIN Code', deliveryController.selectedPincode.value, font: ttfRegular),
+                    _buildPdfRow('Patient Name',
+                        deliveryController.selectedPatientName.value,
+                        font: ttfRegular),
+                    _buildPdfRow(
+                        'Address Line 1',
+                        deliveryController.selectedAddress.value?.address1 ??
+                            '',
+                        font: ttfRegular),
+                    if (deliveryController
+                            .selectedAddress.value?.address2.isNotEmpty ??
+                        false)
+                      _buildPdfRow(
+                          'Address Line 2',
+                          deliveryController.selectedAddress.value?.address2 ??
+                              '',
+                          font: ttfRegular),
+                    if (deliveryController
+                            .selectedAddress.value?.landmark.isNotEmpty ??
+                        false)
+                      _buildPdfRow(
+                          'Landmark',
+                          deliveryController.selectedAddress.value?.landmark ??
+                              '',
+                          font: ttfRegular),
+                    _buildPdfRow(
+                        'Area', deliveryController.selectedLocality.value,
+                        font: ttfRegular),
+                    _buildPdfRow('City', deliveryController.selectedCity.value,
+                        font: ttfRegular),
+                    _buildPdfRow(
+                        'State', deliveryController.selectedState.value,
+                        font: ttfRegular),
+                    _buildPdfRow(
+                        'PIN Code', deliveryController.selectedPincode.value,
+                        font: ttfRegular),
                   ],
                 ),
               ),
@@ -298,7 +329,8 @@ class InvoiceScreen extends StatelessWidget {
                               pw.SizedBox(width: 10),
                               pw.Expanded(
                                 child: pw.Column(
-                                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      pw.CrossAxisAlignment.start,
                                   children: [
                                     pw.Text(
                                       item.name,
@@ -394,8 +426,8 @@ class InvoiceScreen extends StatelessWidget {
 
   pw.Widget _buildPdfRow(String label, String value,
       {bool isBold = false,
-        required pw.Font font,
-        PdfColor color = PdfColors.black}) {
+      required pw.Font font,
+      PdfColor color = PdfColors.black}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Row(
@@ -427,145 +459,155 @@ class InvoiceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
     final DeliveryDetailsController deliveryController =
-    Get.find<DeliveryDetailsController>();
+        Get.find<DeliveryDetailsController>();
     bool isDarkMode = Get.isDarkMode;
 
     return WillPopScope(
-        onWillPop: () async {
-          await cartController.clearAllCart();
-          Get.offAllNamed(Routes.HOME);
-          return false;
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
-            foregroundColor: isDarkMode ? Colors.white : Colors.black,
-            centerTitle: true,
-            scrolledUnderElevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, size: 18),
-              color: Colors.black,
-              onPressed: () async {
-                await cartController.clearAllCart();
-                Get.offAllNamed(Routes.HOME);
-              },
-            ),
-            title: const Text(
-              'Order Invoice',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+      onWillPop: () async {
+        await cartController.clearAllCart();
+        Get.offAllNamed(Routes.HOME);
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
+          foregroundColor: isDarkMode ? Colors.white : Colors.black,
+          centerTitle: true,
+          scrolledUnderElevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 18),
+            color: Colors.black,
+            onPressed: () async {
+              await cartController.clearAllCart();
+              Get.offAllNamed(Routes.HOME);
+            },
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            Center(
-            child: Column(
+          title: const Text(
+            'Order Invoice',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 80,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Payment Successful!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.green[700],
+              Center(
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 80,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Payment Successful!',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+
+              _buildSectionHeader('Payment Details'),
+              _buildDetailRow('Payment ID', paymentId),
+              _buildDetailRow('Payment Date',
+                  DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())),
+              if (couponCode.isNotEmpty)
+                _buildDetailRow('Coupon Applied', couponCode),
+              _buildDetailRow(
+                  'Original Amount', '₹${originalAmount.toStringAsFixed(2)}'),
+              if (discountAmount > 0)
+                _buildDetailRow(
+                  'Discount',
+                  '- ₹${discountAmount.toStringAsFixed(2)}',
+                  valueColor: Colors.green,
+                ),
+              _buildDetailRow(
+                  'Final Amount', '₹${totalAmount.toStringAsFixed(2)}',
+                  isBold: true),
+
+              const SizedBox(height: 20),
+
+              _buildSectionHeader('Delivery Information'),
+              _buildDetailRow(
+                  'Patient Name', deliveryController.selectedPatientName.value),
+              _buildSectionHeader('Delivery Information'),
+              _buildDetailRow(
+                  'Patient Name', deliveryController.selectedPatientName.value),
+              _buildDetailRow('Address Line 1',
+                  deliveryController.selectedAddress.value?.address1 ?? ''),
+              if (deliveryController
+                      .selectedAddress.value?.address2.isNotEmpty ??
+                  false)
+                _buildDetailRow('Address Line 2',
+                    deliveryController.selectedAddress.value?.address2 ?? ''),
+              if (deliveryController
+                      .selectedAddress.value?.landmark.isNotEmpty ??
+                  false)
+                _buildDetailRow('Landmark',
+                    deliveryController.selectedAddress.value?.landmark ?? ''),
+              _buildDetailRow(
+                  'Area', deliveryController.selectedLocality.value),
+              _buildDetailRow('City', deliveryController.selectedCity.value),
+              _buildDetailRow('State', deliveryController.selectedState.value),
+              _buildDetailRow(
+                  'PIN Code', deliveryController.selectedPincode.value),
+
+              const SizedBox(height: 20),
+
+              _buildSectionHeader(
+                  'Order Items (${cartController.cartItems.length})'),
+              ...cartController.cartItems
+                  .map((item) => _buildOrderItemCard(item))
+                  .toList(),
+
+              const SizedBox(height: 20),
+
+              // Total Summary section with discount details
+              _buildSectionHeader('Order Summary'),
+              Column(
+                children: [
+                  _buildTotalRow('Subtotal', originalAmount),
+                  if (discountAmount > 0)
+                    _buildTotalRow('Discount', discountAmount,
+                        isDiscount: true),
+                  _buildTotalRow('Delivery Charges', 0.0, isDelivery: true),
+                  const Divider(),
+                  _buildTotalRow('Total Amount', totalAmount, isBold: true),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => _generateAndDownloadPdf(
+                    cartController,
+                    deliveryController,
+                    context,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                  ),
+                  child: const Text(
+                    'Download Invoice',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
-        const SizedBox(height: 20),
-
-        _buildSectionHeader('Payment Details'),
-        _buildDetailRow('Payment ID', paymentId),
-        _buildDetailRow('Payment Date',
-            DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())),
-        if (couponCode.isNotEmpty)
-    _buildDetailRow('Coupon Applied', couponCode),
-    _buildDetailRow(
-    'Original Amount', '₹${originalAmount.toStringAsFixed(2)}'),
-    if (discountAmount > 0)
-    _buildDetailRow(
-    'Discount',
-    '- ₹${discountAmount.toStringAsFixed(2)}',
-    valueColor: Colors.green,
-    ),
-    _buildDetailRow(
-    'Final Amount', '₹${totalAmount.toStringAsFixed(2)}',
-    isBold: true),
-
-    const SizedBox(height: 20),
-
-    _buildSectionHeader('Delivery Information'),
-    _buildDetailRow('Patient Name',
-    deliveryController.selectedPatientName.value),
-                _buildSectionHeader('Delivery Information'),
-                _buildDetailRow('Patient Name', deliveryController.selectedPatientName.value),
-                _buildDetailRow('Address Line 1', deliveryController.selectedAddress.value?.address1 ?? ''),
-                if (deliveryController.selectedAddress.value?.address2.isNotEmpty ?? false)
-                  _buildDetailRow('Address Line 2', deliveryController.selectedAddress.value?.address2 ?? ''),
-                if (deliveryController.selectedAddress.value?.landmark.isNotEmpty ?? false)
-                  _buildDetailRow('Landmark', deliveryController.selectedAddress.value?.landmark ?? ''),
-                _buildDetailRow('Area', deliveryController.selectedLocality.value),
-                _buildDetailRow('City', deliveryController.selectedCity.value),
-                _buildDetailRow('State', deliveryController.selectedState.value),
-                _buildDetailRow('PIN Code', deliveryController.selectedPincode.value),
-
-    const SizedBox(height: 20),
-
-                _buildSectionHeader(
-                    'Order Items (${cartController.cartItems.length})'),
-                ...cartController.cartItems
-                    .map((item) => _buildOrderItemCard(item))
-                    .toList(),
-
-                const SizedBox(height: 20),
-
-                // Total Summary section with discount details
-                _buildSectionHeader('Order Summary'),
-                Column(
-                  children: [
-                    _buildTotalRow('Subtotal', originalAmount),
-                    if (discountAmount > 0)
-                      _buildTotalRow('Discount', discountAmount,
-                          isDiscount: true),
-                    _buildTotalRow('Delivery Charges', 0.0, isDelivery: true),
-                    const Divider(),
-                    _buildTotalRow('Total Amount', totalAmount, isBold: true),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () => _generateAndDownloadPdf(
-                      cartController,
-                      deliveryController,
-                      context,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                    ),
-                    child: const Text(
-                      'Download Invoice',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
-        ),
+      ),
     );
   }
 
@@ -703,16 +745,16 @@ class InvoiceScreen extends StatelessWidget {
             isDelivery
                 ? 'Free'
                 : isDiscount
-                ? '- ₹${amount.toStringAsFixed(2)}'
-                : '₹${amount.toStringAsFixed(2)}',
+                    ? '- ₹${amount.toStringAsFixed(2)}'
+                    : '₹${amount.toStringAsFixed(2)}',
             style: TextStyle(
               fontSize: 16,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
               color: isDelivery
                   ? Colors.green
                   : isDiscount
-                  ? Colors.green
-                  : Colors.black,
+                      ? Colors.green
+                      : Colors.black,
             ),
           ),
         ],

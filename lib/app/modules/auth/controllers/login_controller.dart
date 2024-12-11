@@ -61,7 +61,8 @@ class LoginController extends GetxController {
           userId.value = responseData['id'];
           await getOtp();
         } else {
-          Get.snackbar('Error', responseData['message'] ?? 'Failed to send OTP');
+          Get.snackbar(
+              'Error', responseData['message'] ?? 'Failed to send OTP');
         }
       } else {
         Get.snackbar('Error', 'Failed to send OTP. Please try again.');
@@ -135,7 +136,6 @@ class LoginController extends GetxController {
       cartController.currentUserId = userId;
       await cartController.initializeCart(userId: userId);
       print('✓ CartController initialized with explicit userId');
-
     } catch (e) {
       print('Error initializing controllers: $e');
     }
@@ -158,6 +158,9 @@ class LoginController extends GetxController {
       if (response.statusCode == 200) {
         final responseData = response.data;
         if (responseData['success'] == true) {
+          if (Get.isRegistered<CartController>()) {
+            Get.delete<CartController>(force: true);
+          }
           // Save user data
           String token = responseData['token'] ?? '';
           await _authController.saveToken(token);

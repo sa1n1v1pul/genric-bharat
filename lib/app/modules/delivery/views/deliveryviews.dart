@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, unused_element
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
@@ -31,42 +33,101 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
         ),
       ),
       body: Obx(() => Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Patient Name',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Patient Name',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPatientNameWidget(),
+                    const SizedBox(height: 24),
+
+                    // Add Email Section
+                    const Text(
+                      'Email',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildEmailWidget(),
+                    const SizedBox(height: 24),
+
+                    _buildAddressSection(),
+                    const SizedBox(height: 40),
+                    _buildProceedButton(),
+                  ],
+                ),
+              ),
+              if (controller.isLoading.value)
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
                   ),
                 ),
-                const SizedBox(height: 12),
-                _buildPatientNameWidget(),
-                const SizedBox(height: 12),
-
-                _buildAddressSection(),
-                const SizedBox(height: 40),
-                _buildProceedButton(),
-              ],
-            ),
-          ),
-          if (controller.isLoading.value)
-            Container(
-              color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-        ],
-      )),
+            ],
+          )),
     );
   }
 
+  Widget _buildEmailWidget() {
+    return Obx(() {
+      if (controller.selectedEmail.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: TextField(
+            controller: controller.emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              hintText: 'Enter email address',
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      } else {
+        return _buildEmailCard();
+      }
+    });
+  }
+
+  Widget _buildEmailCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Text(
+        controller.selectedEmail.value,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
 
   Widget _buildPatientNameWidget() {
     return Obx(() {
@@ -79,7 +140,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           ),
           child: TextField(
             controller: controller.patientNameController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Enter patient name',
               border: InputBorder.none,
               isDense: true,
@@ -142,7 +203,9 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? CustomTheme.loginGradientStart : Colors.grey[300]!,
+              color: isSelected
+                  ? CustomTheme.loginGradientStart
+                  : Colors.grey[300]!,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -230,7 +293,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
               ),
             ),
             TextButton(
-              onPressed: () => Get.to(() => AddressScreen()),
+              onPressed: () => Get.to(() => const AddressScreen()),
               child: const Text('Add New Address'),
             ),
           ],
@@ -245,7 +308,8 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
 
           return Column(
             children: [
-              ...controller.addresses.map((address) => _buildAddressCard(address)),
+              ...controller.addresses
+                  .map((address) => _buildAddressCard(address)),
             ],
           );
         }),
