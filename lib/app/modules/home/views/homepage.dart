@@ -54,6 +54,7 @@ class _HomePageState extends State<HomePage> {
   double getScaledFontSize(double originalSize) {
     return originalSize / MediaQuery.of(context).textScaleFactor;
   }
+
   String getCompleteImageUrl(String photoPath) {
     if (photoPath.startsWith('http')) {
       return photoPath;
@@ -69,27 +70,30 @@ class _HomePageState extends State<HomePage> {
     locationController = Get.put(LocationController());
     searchController = Get.put(ProductSearchController());
   }
+
   Future<bool> _onWillPop() async {
     return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Exit App'),
-        content: const Text('Do you want to exit the app?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('No'),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit the app?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () {
+                  SystemNavigator.pop(); // This will close the app
+                },
+                child: const Text('Yes'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              SystemNavigator.pop(); // This will close the app
-            },
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
+
   @override
   void dispose() {
     _currentIndexNotifier.dispose();
@@ -122,7 +126,8 @@ class _HomePageState extends State<HomePage> {
                                 color: Colors.white),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.settings, color: Colors.white),
+                            icon:
+                                const Icon(Icons.settings, color: Colors.white),
                             onPressed: () {
                               if (_isDrawerOnRight) {
                                 _scaffoldKey.currentState?.openEndDrawer();
@@ -150,7 +155,8 @@ class _HomePageState extends State<HomePage> {
                                 await locationController
                                     .updateLocationFromHomepage();
                                 locationController.isLoading.value = true;
-                                await locationController.handleLocationRequest();
+                                await locationController
+                                    .handleLocationRequest();
                                 locationController.isLoading.value = false;
                               },
                               icon: const Icon(
@@ -161,7 +167,8 @@ class _HomePageState extends State<HomePage> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () async {
-                                  if (locationController.currentPosition.value !=
+                                  if (locationController
+                                              .currentPosition.value !=
                                           null &&
                                       !locationController
                                           .isLocationSkipped.value) {
@@ -169,10 +176,13 @@ class _HomePageState extends State<HomePage> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => LocationPage(
-                                          locationController.recentlyUpdatedViaButton
+                                          locationController
+                                                  .recentlyUpdatedViaButton
                                                   .value
                                               ? locationController
-                                                  .currentPosition.value!.latitude
+                                                  .currentPosition
+                                                  .value!
+                                                  .latitude
                                               : locationController
                                                       .selectedLocation
                                                       .value
@@ -182,9 +192,12 @@ class _HomePageState extends State<HomePage> {
                                                       .value!
                                                       .latitude,
                                           locationController
-                                                  .recentlyUpdatedViaButton.value
-                                              ? locationController.currentPosition
-                                                  .value!.longitude
+                                                  .recentlyUpdatedViaButton
+                                                  .value
+                                              ? locationController
+                                                  .currentPosition
+                                                  .value!
+                                                  .longitude
                                               : locationController
                                                       .selectedLocation
                                                       .value
@@ -203,27 +216,38 @@ class _HomePageState extends State<HomePage> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content: Text(
-                                              'Location not available. Please try again.',style: TextStyle(color: Colors.white),)),
+                                        'Location not available. Please try again.',
+                                        style: TextStyle(color: Colors.white),
+                                      )),
                                     );
                                   }
                                 },
                                 child: Obx(() {
                                   if (locationController.isLoading.value) {
-                                    return  Text('Loading...',
+                                    return Text('Loading...',
                                         style: TextStyle(
-                                            fontSize: 16 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
+                                            fontSize: 16 /
+                                                MediaQuery.of(context)
+                                                    .textScaleFactor,
+                                            color: Colors.white));
                                   } else if (locationController
                                       .isPermissionDenied.value) {
-                                    return  Text('Permissions denied',
+                                    return Text('Permissions denied',
                                         style: TextStyle(
-                                            fontSize: 16 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
+                                            fontSize: 16 /
+                                                MediaQuery.of(context)
+                                                    .textScaleFactor,
+                                            color: Colors.white));
                                   } else if (locationController
                                           .isLocationSkipped.value &&
                                       !locationController
                                           .currentAddress.value.isNotEmpty) {
-                                    return  Text('Location Skipped',
+                                    return Text('Location Skipped',
                                         style: TextStyle(
-                                            fontSize: 14 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
+                                            fontSize: 14 /
+                                                MediaQuery.of(context)
+                                                    .textScaleFactor,
+                                            color: Colors.white));
                                   } else if (locationController
                                       .cityName.value.isNotEmpty) {
                                     return Column(
@@ -234,21 +258,24 @@ class _HomePageState extends State<HomePage> {
                                           'Current Location',
                                           style: TextStyle(
                                               fontSize: getScaledFontSize(14),
-                                              color: Colors.white
-                                          ),
+                                              color: Colors.white),
                                         ),
                                         Text(
                                           locationController.cityName.value,
                                           style: const TextStyle(
-                                              fontSize: 16, color: Colors.white),
+                                              fontSize: 16,
+                                              color: Colors.white),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     );
                                   } else {
-                                    return  Text('Location Unavailable',
+                                    return Text('Location Unavailable',
                                         style: TextStyle(
-                                            fontSize: 16 / MediaQuery.of(context).textScaleFactor, color: Colors.white));
+                                            fontSize: 16 /
+                                                MediaQuery.of(context)
+                                                    .textScaleFactor,
+                                            color: Colors.white));
                                   }
                                 }),
                               ),
@@ -276,33 +303,37 @@ class _HomePageState extends State<HomePage> {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: BackdropFilter(
-                                    filter:
-                                        ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                    child: TextField(
-                                      decoration: InputDecoration(
-                                        hintText: 'Search medicines, categories...',
-                                        hintStyle: TextStyle(
-                                          color: Colors.black54,
-                                          fontSize: 16 / MediaQuery.of(context).textScaleFactor,
+                                      filter: ImageFilter.blur(
+                                          sigmaX: 10, sigmaY: 10),
+                                      child: TextField(
+                                        decoration: InputDecoration(
+                                          hintText:
+                                              'Search medicines, categories...',
+                                          hintStyle: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 16 /
+                                                MediaQuery.of(context)
+                                                    .textScaleFactor,
+                                          ),
+                                          prefixIcon: const Icon(Icons.search),
+                                          prefixIconColor: Colors.black54,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.white,
                                         ),
-                                        prefixIcon: const Icon(Icons.search),
-                                        prefixIconColor: Colors.black54,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                        style: TextStyle(
+                                          fontSize: 16 /
+                                              MediaQuery.of(context)
+                                                  .textScaleFactor,
                                         ),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                      ),
-                                      style: TextStyle(
-                                        fontSize: 16 / MediaQuery.of(context).textScaleFactor,
-                                      ),
-                                      onTap: () {
-                                        Get.to(() => SearchScreen());
-                                      },
-                                      readOnly: true,
-                                    )
-
-                                  ),
+                                        onTap: () {
+                                          Get.to(() => SearchScreen());
+                                        },
+                                        readOnly: true,
+                                      )),
                                 ),
                               ),
                             ),
@@ -319,7 +350,8 @@ class _HomePageState extends State<HomePage> {
                       SliverToBoxAdapter(child: _buildPopularSection()),
                       SliverToBoxAdapter(child: _buildDiabetesCareSection()),
                       SliverToBoxAdapter(child: _buildNeedHelpSection()),
-                      SliverToBoxAdapter(child: _buildHealthcareDevicesSection()),
+                      SliverToBoxAdapter(
+                          child: _buildHealthcareDevicesSection()),
                       SliverToBoxAdapter(
                           child: _buildCleaningPestControlSection()),
                       const SliverToBoxAdapter(child: SocialMediaSection()),
@@ -790,8 +822,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-
   Widget _buildCategoriesSection() {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -826,7 +856,7 @@ class _HomePageState extends State<HomePage> {
                 final adjustedFontSize = 15 / textScaleFactor;
 
                 return Padding(
-                  padding: const EdgeInsets.only(left: 16,top: 12),
+                  padding: const EdgeInsets.only(left: 16, top: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -871,7 +901,8 @@ class _HomePageState extends State<HomePage> {
                       height: 278,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: (homeController.categories.length / 2).ceil(),
+                        itemCount:
+                            (homeController.categories.length / 2).ceil(),
                         itemBuilder: (context, index) {
                           return _buildCategoriesColumn(
                             homeController.categories,
@@ -885,7 +916,6 @@ class _HomePageState extends State<HomePage> {
                         Get.to(() => AllCategories());
                       },
                       child: Row(
-
                         children: [
                           Text(
                             'View all Categories',
@@ -941,9 +971,9 @@ class _HomePageState extends State<HomePage> {
     return InkWell(
       onTap: () {
         Get.to(() => ServiceExplore(
-          categoryId: category['id'].toString(),
-          categoryTitle: category['name'] ?? 'Unknown Category',
-        ));
+              categoryId: category['id'].toString(),
+              categoryTitle: category['name'] ?? 'Unknown Category',
+            ));
       },
       child: Container(
         margin: const EdgeInsets.only(right: 10),
@@ -1007,7 +1037,8 @@ class _HomePageState extends State<HomePage> {
     final HomeController controller = Get.find<HomeController>();
 
     return Obx(() {
-      final items = controller.getItemsForCategory("MULTIVITAMINS AND MULTIMINERALS");
+      final items =
+          controller.getItemsForCategory("MULTIVITAMINS AND MULTIMINERALS");
 
       if (controller.isCategoryItemsLoading.value) {
         return const Center(child: CircularProgressIndicator());
@@ -1030,9 +1061,7 @@ class _HomePageState extends State<HomePage> {
           return Container(
             margin: EdgeInsets.only(top: width * 0.025),
             padding: EdgeInsets.symmetric(
-                horizontal: width * 0.04,
-                vertical: width * 0.04
-            ),
+                horizontal: width * 0.04, vertical: width * 0.04),
             decoration: BoxDecoration(
               color: isDarkMode ? Colors.black45 : Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -1058,7 +1087,8 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(
                                   fontSize: titleFontSize,
                                   fontWeight: FontWeight.bold,
-                                  color: isDarkMode ? Colors.white : Colors.black,
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1082,7 +1112,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     // Optional: Add a refresh or more info icon
-
                   ],
                 ),
 
@@ -1092,7 +1121,8 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: EdgeInsets.all(width * 0.02),
                   decoration: BoxDecoration(
-                    color: isDarkMode ? Colors.black45 : const Color(0xFFF7F1FF),
+                    color:
+                        isDarkMode ? Colors.black45 : const Color(0xFFF7F1FF),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -1125,8 +1155,7 @@ class _HomePageState extends State<HomePage> {
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(
                               horizontal: width * 0.04,
-                              vertical: width * 0.025
-                          ),
+                              vertical: width * 0.025),
                           backgroundColor: isDarkMode
                               ? Colors.blueGrey.shade700
                               : Colors.white,
@@ -1168,10 +1197,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildVitaminsItem(
-      Map<String, dynamic> item,
-      double maxWidth,
-      double textScaleFactor,
-      ) {
+    Map<String, dynamic> item,
+    double maxWidth,
+    double textScaleFactor,
+  ) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return InkWell(
@@ -1223,7 +1252,6 @@ class _HomePageState extends State<HomePage> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-
                       Text(
                         '₹${item['discount_price']?.toStringAsFixed(2) ?? 'N/A'}',
                         style: TextStyle(
@@ -1239,7 +1267,8 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               flex: 3,
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(12)),
                 child: Image.network(
                   getCompleteImageUrl(item['photo'] as String? ?? ''),
                   width: double.infinity,
@@ -1268,7 +1297,8 @@ class _HomePageState extends State<HomePage> {
     final screenSize = MediaQuery.of(context).size;
 
     return Obx(() {
-      final bestDealProducts = controller.getItemsForCategory("BEST DEAL PRODUCTS");
+      final bestDealProducts =
+          controller.getItemsForCategory("BEST DEAL PRODUCTS");
 
       return Column(
         children: [
@@ -1291,7 +1321,9 @@ class _HomePageState extends State<HomePage> {
                 'View all',
                 style: TextStyle(
                   fontSize: 12 / textScaleFactor,
-                  color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                  color: isDarkMode
+                      ? Colors.white
+                      : CustomTheme.loginGradientStart,
                 ),
               ),
               onPressed: () => Get.to(() => const BestOffers()),
@@ -1314,7 +1346,8 @@ class _HomePageState extends State<HomePage> {
                         initialChildSize: 0.8,
                         minChildSize: 0.6,
                         maxChildSize: 0.8,
-                        builder: (context, scrollController) => MedicineDetailsSheet(
+                        builder: (context, scrollController) =>
+                            MedicineDetailsSheet(
                           service: product,
                         ),
                       ),
@@ -1326,6 +1359,9 @@ class _HomePageState extends State<HomePage> {
                     isNetworkImage: true,
                     textScaleFactor: textScaleFactor,
                     screenWidth: screenSize.width,
+                    originalPrice: product['previous_price']?.toDouble() ?? 0.0,
+                    discountedPrice:
+                        product['discount_price']?.toDouble() ?? 0.0,
                   ),
                 );
               },
@@ -1339,90 +1375,135 @@ class _HomePageState extends State<HomePage> {
 
 // Best Offers Item Widget
   Widget _buildOfferItem(
-      String imagePath,
-      String title, {
-        bool isNetworkImage = false,
-        required double textScaleFactor,
-        required double screenWidth,
-      }) {
+    String imagePath,
+    String title, {
+    bool isNetworkImage = false,
+    required double textScaleFactor,
+    required double screenWidth,
+    required double originalPrice,
+    required double discountedPrice,
+  }) {
     final itemWidth = screenWidth * 0.4;
     final itemHeight = 190 / textScaleFactor;
+    final discount = originalPrice > 0
+        ? ((originalPrice - discountedPrice) / originalPrice * 100)
+            .toStringAsFixed(0)
+        : '0';
 
     return Container(
-
       margin: EdgeInsets.only(left: 16 / textScaleFactor),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: Stack(
           children: [
+            // Image
             isNetworkImage
                 ? Image.network(
-              imagePath,
-              height: itemHeight,
-              width: itemWidth,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: itemHeight,
-                  width: itemWidth,
-                  color: Colors.grey[300],
-                  child: Icon(
-                    Icons.error,
-                    size: 24 / textScaleFactor,
-                  ),
-                );
-              },
-            )
+                    imagePath,
+                    height: itemHeight,
+                    width: itemWidth,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: itemHeight,
+                        width: itemWidth,
+                        color: Colors.grey[300],
+                        child: Icon(
+                          Icons.error,
+                          size: 24 / textScaleFactor,
+                        ),
+                      );
+                    },
+                  )
                 : Image.asset(
-              imagePath,
-              height: itemHeight,
-              width: itemWidth,
-              fit: BoxFit.cover,
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 20 / textScaleFactor, // Adjust height as needed
-              child: Container(
-                color: Colors.black26,
-              ),
-            ),
-            Positioned(
-              top: 10 / textScaleFactor,
-              bottom: 0,
-              left: 0,
-              child: Container(
-                width: itemWidth * 0.8,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withOpacity(0.7),
-                      Colors.black.withOpacity(0.01),
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
+                    imagePath,
+                    height: itemHeight,
+                    width: itemWidth,
+                    fit: BoxFit.cover,
+                  ),
+
+            // Discount badge at top
+            if (discount != '0')
+              Positioned(
+                top: 10 / textScaleFactor,
+                right: 10 / textScaleFactor,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8 / textScaleFactor,
+                    vertical: 4 / textScaleFactor,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$discount% OFF',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12 / textScaleFactor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
+
+            // Bottom gradient and content
             Positioned(
-              bottom: 15 / textScaleFactor,
-              left: 8 / textScaleFactor,
-              right: 8 / textScaleFactor,
-              child: SizedBox(
-                height: 48 / textScaleFactor,
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13 / textScaleFactor,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 80 / textScaleFactor,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.8),
+                      Colors.black.withOpacity(0.0),
+                    ],
                   ),
+                ),
+                padding: EdgeInsets.all(8 / textScaleFactor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13 / textScaleFactor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4 / textScaleFactor),
+                    Row(
+                      children: [
+                        if (originalPrice > 0) ...[
+                          Text(
+                            '₹${originalPrice.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12 / textScaleFactor,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                          SizedBox(width: 4 / textScaleFactor),
+                        ],
+                        Text(
+                          '₹${discountedPrice.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14 / textScaleFactor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1473,7 +1554,9 @@ class _HomePageState extends State<HomePage> {
                   'View all',
                   style: TextStyle(
                     fontSize: 12 / textScaleFactor,
-                    color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                    color: isDarkMode
+                        ? Colors.white
+                        : CustomTheme.loginGradientStart,
                   ),
                 ),
                 onPressed: () => Get.to(() => const PersonalCareListScreen()),
@@ -1517,14 +1600,14 @@ class _HomePageState extends State<HomePage> {
 
 // Personal Care Item Widget
   Widget _buildPersonalItem(
-      String photoPath,
-      String title,
-      String price,
-      Size screenSize,
-      double textScaleFactor,
-      bool isLast,
-      Map<String, dynamic> item, // Add item parameter
-      ) {
+    String photoPath,
+    String title,
+    String price,
+    Size screenSize,
+    double textScaleFactor,
+    bool isLast,
+    Map<String, dynamic> item, // Add item parameter
+  ) {
     final itemWidth = screenSize.width * 0.4;
 
     return GestureDetector(
@@ -1595,6 +1678,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   Widget _buildCarouselAdds() {
     final List<String> imgList = [
       'assets/images/medicine1.jpeg',
@@ -1732,7 +1816,8 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(
                                   fontSize: adjustedFontSize,
                                   fontWeight: FontWeight.bold,
-                                  color: isDarkMode ? Colors.white : Colors.black,
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
                                 ),
                               ),
                               Text(
@@ -1759,7 +1844,9 @@ class _HomePageState extends State<HomePage> {
                       child: Text(
                         'View all',
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                          color: isDarkMode
+                              ? Colors.white
+                              : CustomTheme.loginGradientStart,
                           fontSize: adjustedFontSize * 0.8,
                         ),
                       ),
@@ -1777,17 +1864,19 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: (context, index) {
                   final product = demandProducts[index];
                   final discount = product['previous_price'] != 0
-                      ? ((product['previous_price'] - product['discount_price']) /
-                      product['previous_price'] *
-                      100)
-                      .toStringAsFixed(0)
+                      ? ((product['previous_price'] -
+                                  product['discount_price']) /
+                              product['previous_price'] *
+                              100)
+                          .toStringAsFixed(0)
                       : '0';
 
                   return _buildMedicineCard(
                     discount: '$discount%',
                     name: product['name'],
                     originalPrice: product['previous_price']?.toDouble() ?? 0.0,
-                    discountedPrice: product['discount_price']?.toDouble() ?? 0.0,
+                    discountedPrice:
+                        product['discount_price']?.toDouble() ?? 0.0,
                     image: getCompleteImageUrl(product['photo']),
                     product: product,
                     isNetworkImage: true,
@@ -1844,33 +1933,35 @@ class _HomePageState extends State<HomePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               AspectRatio(
-                aspectRatio: 4/3,
+                aspectRatio: 4 / 3,
                 child: Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(12)),
                       child: isNetworkImage
                           ? Image.network(
-                        image,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.error),
-                          );
-                        },
-                      )
+                              image,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.error),
+                                );
+                              },
+                            )
                           : Image.asset(
-                        image,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
+                              image,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                     if (discount != '0%')
                       Container(
                         margin: const EdgeInsets.all(8),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.green,
                           borderRadius: BorderRadius.circular(4),
@@ -1888,7 +1979,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 8,right: 8),
+                padding: const EdgeInsets.only(left: 8, right: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -1936,7 +2027,8 @@ class _HomePageState extends State<HomePage> {
                         style: ElevatedButton.styleFrom(
                           foregroundColor: CustomTheme.loginGradientStart,
                           backgroundColor: Colors.white,
-                          side: BorderSide(color: CustomTheme.loginGradientStart),
+                          side:
+                              BorderSide(color: CustomTheme.loginGradientStart),
                           padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                         child: Text(
@@ -1964,7 +2056,8 @@ class _HomePageState extends State<HomePage> {
     final adjustedFontSize = 16 / textScaleFactor;
 
     return Obx(() {
-      final diabetesItems = controller.getItemsForCategory("SUGAR AND ANTI DIABETES MEDICINES");
+      final diabetesItems =
+          controller.getItemsForCategory("SUGAR AND ANTI DIABETES MEDICINES");
       final displayItems = diabetesItems.take(6).toList();
 
       return Container(
@@ -2003,11 +2096,14 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => Get.to(() => const DiabetesCareProductsScreen()),
+                  onPressed: () =>
+                      Get.to(() => const DiabetesCareProductsScreen()),
                   child: Text(
                     'View all',
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                      color: isDarkMode
+                          ? Colors.white
+                          : CustomTheme.loginGradientStart,
                       fontSize: adjustedFontSize * 0.8,
                     ),
                   ),
@@ -2029,14 +2125,16 @@ class _HomePageState extends State<HomePage> {
                 mainAxisSpacing: 8, // Reduced spacing
                 crossAxisSpacing: 8, // Reduced spacing
                 childAspectRatio: 0.75,
-                children: displayItems.map((item) => _buildDiabetesCard(
-                  title: item['name'],
-                  discount: item['previous_price'] != 0
-                      ? 'Save ₹${(item['previous_price'] - item['discount_price']).toStringAsFixed(0)}'
-                      : 'Up to 20% off',
-                  imageUrl: item['photo'],
-                  item: item,
-                )).toList(),
+                children: displayItems
+                    .map((item) => _buildDiabetesCard(
+                          title: item['name'],
+                          discount: item['previous_price'] != 0
+                              ? 'Save ₹${(item['previous_price'] - item['discount_price']).toStringAsFixed(0)}'
+                              : 'Up to 20% off',
+                          imageUrl: item['photo'],
+                          item: item,
+                        ))
+                    .toList(),
               ),
             ),
           ],
@@ -2059,7 +2157,9 @@ class _HomePageState extends State<HomePage> {
     if (item['previous_price'] != 0) {
       final previousPrice = item['previous_price'].toDouble();
       final discountPrice = item['discount_price'].toDouble();
-      discountPercentage = ((previousPrice - discountPrice) / previousPrice * 100).roundToDouble();
+      discountPercentage =
+          ((previousPrice - discountPrice) / previousPrice * 100)
+              .roundToDouble();
     }
 
     return GestureDetector(
@@ -2089,7 +2189,8 @@ class _HomePageState extends State<HomePage> {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Image.network(
                   getCompleteImageUrl(imageUrl),
                   width: double.infinity,
@@ -2324,7 +2425,9 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     'View all',
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                      color: isDarkMode
+                          ? Colors.white
+                          : CustomTheme.loginGradientStart,
                       fontSize: adjustedFontSize * 0.8,
                     ),
                   ),
@@ -2351,8 +2454,8 @@ class _HomePageState extends State<HomePage> {
                           maxChildSize: 0.8,
                           builder: (context, scrollController) =>
                               MedicineDetailsSheet(
-                                service: device,
-                              ),
+                            service: device,
+                          ),
                         ),
                       );
                     },
@@ -2388,8 +2491,11 @@ class _HomePageState extends State<HomePage> {
     if (discount.isNotEmpty) {
       // Extract numeric values from price and previous price
       final priceValue = double.parse(price.replaceAll('₹', ''));
-      final previousPriceValue = double.parse(discount.replaceAll('Save ₹', '')) + priceValue;
-      discountPercentage = ((previousPriceValue - priceValue) / previousPriceValue * 100).roundToDouble();
+      final previousPriceValue =
+          double.parse(discount.replaceAll('Save ₹', '')) + priceValue;
+      discountPercentage =
+          ((previousPriceValue - priceValue) / previousPriceValue * 100)
+              .roundToDouble();
     }
 
     return Container(
@@ -2405,9 +2511,10 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             AspectRatio(
-              aspectRatio: 4/3,
+              aspectRatio: 4 / 3,
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Image.network(
                   getCompleteImageUrl(imageUrl),
                   width: double.infinity,
@@ -2424,7 +2531,8 @@ class _HomePageState extends State<HomePage> {
             Container(
               color: const Color(0xffeff8ff),
               child: Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, top: 5,bottom: 5),
+                padding: const EdgeInsets.only(
+                    left: 12, right: 12, top: 5, bottom: 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -2473,7 +2581,8 @@ class _HomePageState extends State<HomePage> {
     final HomeController controller = Get.find<HomeController>();
 
     return Obx(() {
-      final cheapMedicines = controller.getItemsForCategory("CHEAP AND BEST MEDICINES");
+      final cheapMedicines =
+          controller.getItemsForCategory("CHEAP AND BEST MEDICINES");
 
       return LayoutBuilder(
         builder: (context, constraints) {
@@ -2515,7 +2624,9 @@ class _HomePageState extends State<HomePage> {
                         'View all',
                         style: TextStyle(
                           fontSize: adjustedSubtitleFontSize,
-                          color: isDarkMode ? Colors.white : CustomTheme.loginGradientStart,
+                          color: isDarkMode
+                              ? Colors.white
+                              : CustomTheme.loginGradientStart,
                         ),
                       ),
                       onPressed: () {
@@ -2539,7 +2650,8 @@ class _HomePageState extends State<HomePage> {
                             initialChildSize: 0.8,
                             minChildSize: 0.6,
                             maxChildSize: 0.8,
-                            builder: (context, scrollController) => MedicineDetailsSheet(
+                            builder: (context, scrollController) =>
+                                MedicineDetailsSheet(
                               service: medicine,
                             ),
                           ),
@@ -2562,15 +2674,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCleaningPestItem(
-      String imagePath,
-      String title, {
-        bool isNetworkImage = false,
-      }) {
+    String imagePath,
+    String title, {
+    bool isNetworkImage = false,
+  }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final textScaleFactor = MediaQuery.of(context).textScaleFactor;
         final adjustedTitleFontSize = 13 / textScaleFactor;
-        final imageSize = constraints.maxWidth > 150 ? 100.0 : constraints.maxWidth * 0.7;
+        final imageSize =
+            constraints.maxWidth > 150 ? 100.0 : constraints.maxWidth * 0.7;
 
         return Padding(
           padding: const EdgeInsets.all(8.0),
@@ -2583,25 +2696,25 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                   child: isNetworkImage
                       ? Image.network(
-                    imagePath,
-                    height: imageSize,
-                    width: imageSize,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: imageSize,
-                        width: imageSize,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
-                      );
-                    },
-                  )
+                          imagePath,
+                          height: imageSize,
+                          width: imageSize,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: imageSize,
+                              width: imageSize,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.error),
+                            );
+                          },
+                        )
                       : Image.asset(
-                    imagePath,
-                    height: imageSize,
-                    width: imageSize,
-                    fit: BoxFit.contain,
-                  ),
+                          imagePath,
+                          height: imageSize,
+                          width: imageSize,
+                          fit: BoxFit.contain,
+                        ),
                 ),
                 SizedBox(
                   height: 40, // Fixed height for text container

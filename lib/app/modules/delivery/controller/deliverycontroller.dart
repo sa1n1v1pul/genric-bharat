@@ -156,6 +156,82 @@ class DeliveryDetailsController extends GetxController {
     }
   }
 
+  Future<void> deleteAddress(int addressId) async {
+    try {
+      isLoading.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id') ?? 0;
+
+      if (userId <= 0) {
+        throw Exception('Invalid user ID');
+      }
+
+      final response = await apiProvider.post(
+        ApiEndpoints.deleteAddress,
+        {
+          'user_id':
+              userId.toString(), // Convert to string as API might expect string
+          'id': addressId.toString(),
+        },
+      );
+
+      if (response.statusCode == 200 && response.data['status'] == 'success') {
+        // Remove the address from the local list
+        addresses.removeWhere((address) => address.id == addressId);
+
+        // If the deleted address was selected, clear the selection
+        if (selectedAddress.value?.id == addressId) {
+          selectedAddress.value = addresses.isNotEmpty ? addresses.first : null;
+        }
+
+        Get.snackbar(
+          'Success',
+          'Address deleted successfully',
+          backgroundColor: Colors.green[100],
+          colorText: Colors.black,
+        );
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to delete address');
+      }
+    } catch (e) {
+      print('Error deleting address: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to delete address: ${e.toString()}',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.black,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> confirmDeleteAddress(int addressId) async {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Delete Address'),
+        content: const Text('Are you sure you want to delete this address?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Get.back();
+              await deleteAddress(addressId);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> updateEmail() async {
     try {
       isLoading.value = true;

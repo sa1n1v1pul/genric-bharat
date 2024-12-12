@@ -19,7 +19,24 @@ class ApiProvider extends GetxController {
     _initializeDio();
   }
 
-  Future<dio.Response> postOrderCODConfirmation(String endpoint, Map<String, dynamic> data) async {
+  Future<dio.Response> post(String endpoint, Map<String, dynamic> data) async {
+    return _handleRequest(() async {
+      final token = await getToken();
+      return await _dio.post(
+        endpoint,
+        data: data,
+        options: dio.Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+    });
+  }
+
+  Future<dio.Response> postOrderCODConfirmation(
+      String endpoint, Map<String, dynamic> data) async {
     return _handleRequest(() async {
       final token = await getToken();
       print('Sending order data to API: $data');
@@ -37,7 +54,8 @@ class ApiProvider extends GetxController {
     });
   }
 
-  Future<dio.Response> postOrderConfirmation(String endpoint, Map<String, dynamic> data) async {
+  Future<dio.Response> postOrderConfirmation(
+      String endpoint, Map<String, dynamic> data) async {
     return _handleRequest(() async {
       final token = await getToken();
       print('Sending order data to API: $data');
@@ -55,7 +73,8 @@ class ApiProvider extends GetxController {
     });
   }
 
-  Future<dio.Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<dio.Response> get(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     return _handleRequest(() async {
       final token = await getToken();
       return await _dio.get(
@@ -113,7 +132,8 @@ class ApiProvider extends GetxController {
         error.type == dio.DioExceptionType.connectionError ||
         (error.error is SocketException) ||
         (error.type == dio.DioExceptionType.unknown &&
-            (error.error is TimeoutException || error.error is SocketException));
+            (error.error is TimeoutException ||
+                error.error is SocketException));
   }
 
   Future<void> _retryRequest(
@@ -124,7 +144,8 @@ class ApiProvider extends GetxController {
     if (retryCount <= maxRetries) {
       // Exponential backoff
       final delay = retryDelay * retryCount;
-      print('Retry attempt $retryCount for ${requestOptions.path} after ${delay.inSeconds}s');
+      print(
+          'Retry attempt $retryCount for ${requestOptions.path} after ${delay.inSeconds}s');
       await Future.delayed(delay);
 
       try {
@@ -162,6 +183,7 @@ class ApiProvider extends GetxController {
     }
     return handler.next(err);
   }
+
   Future<dio.Response> checkPincode(String pincode) async {
     print('Checking pincode: $pincode');
     return _handleRequest(() async {
@@ -174,7 +196,8 @@ class ApiProvider extends GetxController {
     });
   }
 
-  Future<dio.Response> _handleRequest(Future<dio.Response> Function() request) async {
+  Future<dio.Response> _handleRequest(
+      Future<dio.Response> Function() request) async {
     try {
       return await request();
     } on dio.DioException catch (e) {
@@ -206,6 +229,7 @@ class ApiProvider extends GetxController {
       throw e;
     }
   }
+
   String _getErrorMessage(dio.DioException e) {
     if (e.error is SocketException) {
       final socketError = e.error as SocketException;
@@ -231,7 +255,9 @@ class ApiProvider extends GetxController {
       default:
         return 'An unexpected error occurred. Please try again.';
     }
-  }String _handleBadResponse(int? statusCode) {
+  }
+
+  String _handleBadResponse(int? statusCode) {
     switch (statusCode) {
       case 400:
         return 'Invalid request. Please check your input.';
@@ -342,7 +368,8 @@ class ApiProvider extends GetxController {
   }
 
   Future<dio.Response> updateUserProfile(
-      int userId, Map<String, dynamic> userData, {File? profileImage}) async {
+      int userId, Map<String, dynamic> userData,
+      {File? profileImage}) async {
     return _handleRequest(() async {
       final token = await getToken();
 
@@ -381,7 +408,6 @@ class ApiProvider extends GetxController {
       }
     });
   }
-
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();

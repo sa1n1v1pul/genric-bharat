@@ -1,5 +1,3 @@
-// ignore_for_file: use_super_parameters, unused_element
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
@@ -94,7 +92,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           child: TextField(
             controller: controller.emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Enter email address',
               border: InputBorder.none,
               isDense: true,
@@ -140,7 +138,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           ),
           child: TextField(
             controller: controller.patientNameController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Enter patient name',
               border: InputBorder.none,
               isDense: true,
@@ -228,6 +226,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                       ),
                     ),
                   ),
+                  // Edit button
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: () {
@@ -244,6 +243,16 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                       );
                       Get.to(() => AddressScreen(addressToEdit: addressModel));
                     },
+                  ),
+                  // Delete button
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete,
+                      size: 20,
+                      color: Colors.red,
+                    ),
+                    onPressed: () =>
+                        controller.confirmDeleteAddress(address.id),
                   ),
                 ],
               ),
@@ -293,7 +302,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
               ),
             ),
             TextButton(
-              onPressed: () => Get.to(() => const AddressScreen()),
+              onPressed: () => Get.to(() => AddressScreen()),
               child: const Text('Add New Address'),
             ),
           ],
