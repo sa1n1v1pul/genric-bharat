@@ -1425,12 +1425,12 @@ class _HomePageState extends State<HomePage> {
             // Discount badge at top
             if (discount != '0')
               Positioned(
-                top: 10 / textScaleFactor,
+                top: 5 / textScaleFactor,
                 right: 10 / textScaleFactor,
                 child: Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 8 / textScaleFactor,
-                    vertical: 4 / textScaleFactor,
+                    vertical: 1 / textScaleFactor,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.green,
@@ -1959,9 +1959,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                     if (discount != '0%')
                       Container(
-                        margin: const EdgeInsets.all(8),
+                        margin: const EdgeInsets.only(left: 8),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 8, vertical: 1),
                         decoration: BoxDecoration(
                           color: Colors.green,
                           borderRadius: BorderRadius.circular(4),
