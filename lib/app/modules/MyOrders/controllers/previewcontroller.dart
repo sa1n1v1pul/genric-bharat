@@ -69,7 +69,8 @@ class OrderDetailModel {
       OrderDetailModel(
         id: json['id'] ?? 0,
         userId: json['user_id']?.toString() ?? '',
-        cart: CartDetails.fromJson(json['cart'] ?? {}),
+        cart: CartDetails.fromJson(json[
+            'cart']), // Remove the ?? {} as we'll handle null in CartDetails
         currencySign: json['currency_sign'] ?? '₹',
         discount: json['discount'] ?? '0',
         couponApplied: json['coupon_applied'],
@@ -91,12 +92,29 @@ class CartDetails {
 
   CartDetails({required this.items});
 
-  factory CartDetails.fromJson(Map<String, dynamic> json) => CartDetails(
-        items: (json['items'] as List?)
-                ?.map((item) => CartItem.fromJson(item))
-                .toList() ??
-            [],
+  factory CartDetails.fromJson(dynamic cartData) {
+    if (cartData == null) {
+      return CartDetails(items: []);
+    }
+
+    // Handle the case where cartData is already a List
+    if (cartData is List) {
+      return CartDetails(
+        items: cartData.map((item) => CartItem.fromJson(item)).toList(),
       );
+    }
+
+    // Handle the case where cartData is a Map (for backwards compatibility)
+    if (cartData is Map<String, dynamic>) {
+      final itemsList = cartData['items'] as List?;
+      return CartDetails(
+        items: itemsList?.map((item) => CartItem.fromJson(item)).toList() ?? [],
+      );
+    }
+
+    // If none of the above, return empty list
+    return CartDetails(items: []);
+  }
 }
 
 class CartItem {
@@ -111,9 +129,9 @@ class CartItem {
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
-        name: json['name'] ?? '',
-        price: json['rs'] ?? '',
-        quantity: json['quantity'] ?? '',
+        name: json['name']?.toString() ?? '',
+        price: json['rs']?.toString() ?? '',
+        quantity: json['quantity']?.toString() ?? '',
       );
 }
 
@@ -217,5 +235,3 @@ class BillingInfo {
         country: json['bill_country'] ?? '',
       );
 }
-
-

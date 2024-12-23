@@ -1,12 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:genric_bharat/app/modules/api_endpoints/api_endpoints.dart';
+
 import 'package:get/get.dart';
 import 'dart:async';
 
 class ProductSearchController extends GetxController {
   final Dio _dio = Dio();
 
-  final RxList<Map<String, dynamic>> searchResults = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> searchResults =
+      <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
   final RxString searchQuery = ''.obs;
   final RxBool isCompositionSearch = false.obs;
@@ -21,17 +23,27 @@ class ProductSearchController extends GetxController {
   @override
   void onClose() {
     _debounce?.cancel();
+    resetSearch();
     super.onClose();
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    resetSearch();
   }
 
   void resetSearch() {
     searchResults.clear();
+    searchQuery.value = '';
     currentPage.value = 1;
     lastPage.value = 1;
     total.value = 0;
+    isLoading.value = false;
   }
 
-  Future<void> searchItems(String query, {bool isNewSearch = true, bool? isComposition}) async {
+  Future<void> searchItems(String query,
+      {bool isNewSearch = true, bool? isComposition}) async {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
     _debounce = Timer(const Duration(milliseconds: 500), () async {
@@ -83,7 +95,6 @@ class ProductSearchController extends GetxController {
           if (responseData is Map &&
               responseData['status'] == 'success' &&
               responseData['data'] is Map) {
-
             if (responseData['data']['pagination'] != null) {
               final pagination = responseData['data']['pagination'];
               currentPage.value = pagination['current_page'] ?? 1;
@@ -97,10 +108,12 @@ class ProductSearchController extends GetxController {
                 searchResults.clear();
               }
 
-              final newItems = List<Map<String, dynamic>>.from(responseData['data']['items']);
+              final newItems = List<Map<String, dynamic>>.from(
+                  responseData['data']['items']);
 
               for (var newItem in newItems) {
-                if (!searchResults.any((existingItem) => existingItem['id'] == newItem['id'])) {
+                if (!searchResults.any(
+                    (existingItem) => existingItem['id'] == newItem['id'])) {
                   searchResults.add(newItem);
                 }
               }

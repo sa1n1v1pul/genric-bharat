@@ -1,6 +1,9 @@
+// ignore_for_file: use_super_parameters, prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:genric_bharat/app/modules/cart/view/razorpayscreen.dart';
+
 import 'package:get/get.dart';
 import '../../../core/theme/theme.dart';
 import '../../api_endpoints/api_endpoints.dart';
@@ -307,15 +310,6 @@ class OrderSummaryScreen extends GetView<CartController> {
               'PIN: ${selectedAddress.pinCode}',
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Delivery by 22nd - 24th Nov',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.green[700],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
           ],
         ),
       );
@@ -363,9 +357,79 @@ class OrderSummaryScreen extends GetView<CartController> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  Get.back();
+                  Get.back(); // Close the bottom sheet
+
+                  // Show a glassy loading dialog
+                  Get.dialog(
+                    WillPopScope(
+                      onWillPop: () async => false,
+                      child: Scaffold(
+                        backgroundColor: Colors.transparent,
+                        body: Center(
+                          child: Container(
+                            width: 200,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withOpacity(0.2),
+                                        blurRadius: 10,
+                                        spreadRadius: 5,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const CircularProgressIndicator(),
+                                ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  'Processing Order',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Please wait...',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    barrierDismissible: false,
+                    barrierColor: Colors.black.withOpacity(0.2),
+                  );
+
                   try {
-                    EasyLoading.show(status: 'Placing order...');
                     final result = await deliveryController.confirmCODOrder(
                       originalAmount: deliveryController.subtotal.value,
                       discountAmount: deliveryController.discount.value,
@@ -373,23 +437,35 @@ class OrderSummaryScreen extends GetView<CartController> {
                       couponCode: deliveryController.appliedCoupon.value,
                     );
 
-                    EasyLoading.dismiss();
+                    // Close the loading dialog
+                    Get.back();
+
+                    // Show success snackbar and navigate to home
                     Get.snackbar(
                       'Success',
                       'Order placed successfully!\nOrder ID: ${result['transaction_number']}',
                       backgroundColor: Colors.green[100],
                       colorText: Colors.black,
-                      duration: const Duration(seconds: 3),
+                      duration: const Duration(seconds: 2),
+                      snackPosition: SnackPosition.TOP,
+                      margin: const EdgeInsets.all(16),
                     );
 
-                    Get.offAllNamed(Routes.HOME);
+                    // Navigate to home after a brief delay
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      Get.offAllNamed(Routes.HOME);
+                    });
                   } catch (e) {
-                    EasyLoading.dismiss();
+                    // Close the loading dialog
+                    Get.back();
+
                     Get.snackbar(
                       'Error',
                       'Failed to place COD order: ${e.toString()}',
                       backgroundColor: Colors.red[100],
                       colorText: Colors.black,
+                      duration: const Duration(seconds: 3),
+                      margin: const EdgeInsets.all(16),
                     );
                   }
                 },

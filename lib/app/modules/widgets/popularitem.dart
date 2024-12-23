@@ -43,7 +43,8 @@ class PopularItemsScreen extends StatelessWidget {
                 color: isDarkMode ? Colors.grey[800] : Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: (isDarkMode ? Colors.black : Colors.grey).withOpacity(0.3),
+                    color: (isDarkMode ? Colors.black : Colors.grey)
+                        .withOpacity(0.3),
                     spreadRadius: 2,
                     blurRadius: 3,
                     offset: const Offset(0, 1),
@@ -53,7 +54,8 @@ class PopularItemsScreen extends StatelessWidget {
               child: IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios,
-                  size: 18 / textScaleFactor, // Adjust icon size based on text scale
+                  size: 18 /
+                      textScaleFactor, // Adjust icon size based on text scale
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
                 onPressed: () => Navigator.of(context).pop(),
@@ -81,13 +83,15 @@ class PopularItemsScreen extends StatelessWidget {
         toolbarHeight: 60 * textScaleFactor,
       ),
       body: Obx(() {
-        final demandProducts = controller.getItemsForCategory("Demand Products");
+        final demandProducts =
+            controller.getItemsForCategory("Demand Products");
 
         return GridView.builder(
           padding: EdgeInsets.all(16 * textScaleFactor),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.65 / textScaleFactor, // Adjust aspect ratio based on text scale
+            childAspectRatio: 0.65 /
+                textScaleFactor, // Adjust aspect ratio based on text scale
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -96,9 +100,9 @@ class PopularItemsScreen extends StatelessWidget {
             final product = demandProducts[index];
             final discount = product['previous_price'] != 0
                 ? ((product['previous_price'] - product['discount_price']) /
-                product['previous_price'] *
-                100)
-                .toStringAsFixed(0)
+                        product['previous_price'] *
+                        100)
+                    .toStringAsFixed(0)
                 : '0';
 
             return _buildPopularItemCard(
@@ -116,13 +120,13 @@ class PopularItemsScreen extends StatelessWidget {
   }
 
   Widget _buildPopularItemCard(
-      BuildContext context, {
-        required Map<String, dynamic> product,
-        required String discount,
-        required bool isDarkMode,
-        required CartController cartController,
-        required double textScaleFactor,
-      }) {
+    BuildContext context, {
+    required Map<String, dynamic> product,
+    required String discount,
+    required bool isDarkMode,
+    required CartController cartController,
+    required double textScaleFactor,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.blueGrey : Colors.white,
@@ -154,9 +158,11 @@ class PopularItemsScreen extends StatelessWidget {
         child: Column(
           children: [
             Stack(
+              clipBehavior: Clip.none,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.network(
                     getCompleteImageUrl(product['photo']),
                     height: 110 * textScaleFactor,
@@ -172,22 +178,28 @@ class PopularItemsScreen extends StatelessWidget {
                   ),
                 ),
                 if (discount != '0')
-                  Container(
-                    margin: EdgeInsets.all(8 * textScaleFactor),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8 * textScaleFactor,
-                      vertical: 4 * textScaleFactor,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '$discount% OFF',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12 / textScaleFactor,
-                        fontWeight: FontWeight.bold,
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8 * textScaleFactor,
+                        vertical: 1 * textScaleFactor,
+                      ),
+                      child: Text(
+                        '$discount% OFF',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12 / textScaleFactor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -195,7 +207,8 @@ class PopularItemsScreen extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(left:12,right:12,top:12 * textScaleFactor),
+                padding: EdgeInsets.only(
+                    left: 12, right: 12, top: 12 * textScaleFactor),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -216,7 +229,9 @@ class PopularItemsScreen extends StatelessWidget {
                             '₹${product['previous_price'].toStringAsFixed(2)}',
                             style: TextStyle(
                               decoration: TextDecoration.lineThrough,
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                               fontSize: 12 / textScaleFactor,
                             ),
                           ),
@@ -242,8 +257,10 @@ class PopularItemsScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           foregroundColor: CustomTheme.loginGradientStart,
                           backgroundColor: Colors.white,
-                          side: BorderSide(color: CustomTheme.loginGradientStart),
-                          padding: EdgeInsets.symmetric(vertical: 8 * textScaleFactor),
+                          side:
+                              BorderSide(color: CustomTheme.loginGradientStart),
+                          padding: EdgeInsets.symmetric(
+                              vertical: 8 * textScaleFactor),
                         ),
                         child: Text(
                           'Add',
@@ -260,6 +277,4 @@ class PopularItemsScreen extends StatelessWidget {
       ),
     );
   }
-
-
 }

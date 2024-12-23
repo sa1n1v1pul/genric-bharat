@@ -2260,7 +2260,7 @@ class _HomePageState extends State<HomePage> {
     Future<void> _makePhoneCall() async {
       final Uri phoneUri = Uri(
         scheme: 'tel',
-        path: '+910123456789',
+        path: '+919119772993',
       );
 
       if (await canLaunchUrl(phoneUri)) {
