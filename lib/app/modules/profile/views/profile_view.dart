@@ -11,7 +11,18 @@ import '../controller/profile_controller.dart';
 import 'edit_profile.dart';
 
 class ProfileView extends GetView<ProfileController> {
-  ProfileView({Key? key}) : super(key: key);
+  ProfileView({Key? key}) : super(key: key) {
+    // Ensure controller is registered
+    if (!Get.isRegistered<ProfileController>()) {
+      Get.put(ProfileController());
+    }
+
+    // Wait for next frame to ensure context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // First load userId, then get user data
+      await controller.loadUserIdFromPrefs();
+    });
+  }
 
   final AuthController _authController = Get.find<AuthController>();
 
@@ -60,7 +71,7 @@ class ProfileView extends GetView<ProfileController> {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    // Add remove photo logic if needed
+                    controller.removeProfileImage();
                   },
                 ),
               ListTile(
@@ -113,7 +124,6 @@ class ProfileView extends GetView<ProfileController> {
 
       if (localPath.isNotEmpty) {
         if (localPath.startsWith('http')) {
-          // For network paths, use CachedNetworkImageProvider for better caching
           return NetworkImage(localPath, headers: const {
             'Cache-Control': 'max-age=3600',
           });
@@ -158,20 +168,38 @@ class ProfileView extends GetView<ProfileController> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Obx(() {
-          print('Building ProfileView');
-          print('IsLoading: ${controller.isLoading.value}');
-          print('UserData: ${controller.userData.value}');
+          print('ProfileView rebuild - userId: ${controller.userId.value}');
+          print(
+              'ProfileView rebuild - isLoading: ${controller.isLoading.value}');
+          print(
+              'ProfileView rebuild - userData empty: ${controller.userData.value.isEmpty}');
 
-          final userData = controller.userData.value;
-
-          if (controller.isLoading.value && userData.isEmpty) {
-            print('Showing loading indicator');
+          if (controller.isLoading.value) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final fullName = userData['fullname'] ?? 'User';
+          // Show error/retry state if no data and not loading
+          if (controller.userData.value.isEmpty &&
+              !controller.isLoading.value) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Unable to load profile data'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => controller.getUserData(),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final userData = controller.userData.value;
+          final fullName = userData['fullname'] ?? userData['name'] ?? '';
           final mobileNumber = userData['mobile_number'] ?? '';
-          final email = userData['email'] ?? 'User@gmail.com';
+          final email = userData['email'] ?? '';
 
           return Column(
             children: [
@@ -263,17 +291,15 @@ class ProfileView extends GetView<ProfileController> {
                               ),
                             Container(
                               width: screenWidth * 0.5,
-                              child: RichText(
+                              child: Text(
+                                email,
+                                style: TextStyle(
+                                  fontSize:
+                                      (16 * textScaleFactor).clamp(14.0, 22.0),
+                                  color: Colors.grey[600],
+                                ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                text: TextSpan(
-                                  text: email,
-                                  style: TextStyle(
-                                    fontSize: (16 * textScaleFactor)
-                                        .clamp(14.0, 22.0),
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
                               ),
                             ),
                           ],

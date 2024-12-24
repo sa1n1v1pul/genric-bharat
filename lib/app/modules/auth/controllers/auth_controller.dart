@@ -50,7 +50,6 @@ class AuthController extends GetxController {
         Get.delete<CartController>(force: true);
       }
 
-
       await Future.delayed(Duration(milliseconds: 200));
       final cartController = Get.put(CartController());
       await cartController.initializeCart();
@@ -99,6 +98,11 @@ class AuthController extends GetxController {
     await saveUserPhone(phone);
   }
 
+  Future<void> setUserEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_email', email);
+  }
+
   Future<void> saveUserPhone(String phone) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_phone', phone);
@@ -122,7 +126,8 @@ class AuthController extends GetxController {
 
         await prefs.setString('user_name', userData.value['fullname'] ?? '');
         await prefs.setString('user_email', userData.value['email'] ?? '');
-        await prefs.setString('user_mobile', userData.value['mobile_number'] ?? '');
+        await prefs.setString(
+            'user_mobile', userData.value['mobile_number'] ?? '');
       }
     } catch (e) {
       print('Error fetching user data: $e');

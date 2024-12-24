@@ -1,155 +1,207 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:pin_code_fields/pin_code_fields.dart'; // Add this import
+import 'package:genric_bharat/app/modules/auth/controllers/login_controller.dart';
 
-import '../controllers/login_controller.dart';
+import 'package:get/get.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 class LoginView extends GetView<LoginController> {
+  const LoginView({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/login.jpg'),
-            fit: BoxFit.cover,
+    return GetBuilder<LoginController>(builder: (controller) {
+      return Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            image: const DecorationImage(
+              image: AssetImage('assets/images/login.jpg'),
+              fit: BoxFit.cover,
+            ),
+            // Add glassy overlay
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.2),
+                Colors.white.withOpacity(0.1),
+              ],
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: MediaQuery.of(context).size.height * 0.45,
-              left: MediaQuery.of(context).size.width * 0.1,
-              right: MediaQuery.of(context).size.width * 0.1,
-              bottom: 0,
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
+          child: Stack(
+            children: [
+              // Add glass effect container
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                  child: itemsLogin(),
                 ),
               ),
-            ),
+              Positioned(
+                top: MediaQuery.of(context).size.height * 0.45,
+                left: MediaQuery.of(context).size.width * 0.1,
+                right: MediaQuery.of(context).size.width * 0.1,
+                bottom: 0,
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: Column(
+                      children: [
+                        _buildLoginSection(),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'OR',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _buildGoogleSignInButton(),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildLoginSection() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.7),
+            Colors.white.withOpacity(0.3),
           ],
         ),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(
+            child: Text(
+              'Login',
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.black,
+                fontFamily: 'WorkSansBold',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Obx(() =>
+              controller.isOtpSent.value || controller.isPhoneOtpSent.value
+                  ? _buildOtpInput()
+                  : _buildMergedInput()),
+          const SizedBox(height: 12),
+
+          // Combined OTP Status and Resend Button
+          Obx(() {
+            if (controller.isOtpSent.value || controller.isPhoneOtpSent.value) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: _buildResendButton(),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+
+          const SizedBox(height: 15),
+          _buildActionButton(),
+        ],
       ),
     );
   }
 
-  Column itemsLogin() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Center(
-          child: Text(
-            'Login',
-            style: TextStyle(
-                fontSize: 19,
-                color: Colors.black,
-                fontFamily: 'WorkSansBold',
-                fontWeight: FontWeight.w600),
+  Widget _buildMergedInput() {
+    return Center(
+      child: Container(
+        height: 45,
+        width: 250,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withOpacity(0.9),
+              Colors.white.withOpacity(0.8),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Obx(() =>
-        controller.isOtpSent.value ? _buildOtpInput() : _buildPhoneInput()),
-        const SizedBox(height: 8),
-        Obx(() => controller.isOtpSent.value
-            ? Center(
-          child: Text(
-            'OTP sent to your mobile number: ${controller.displayedOtp.value}',
-            style: const TextStyle(
-                color: Colors.black, fontFamily: 'WorkSansBold'),
-          ),
-        )
-            : const SizedBox.shrink()),
-        const SizedBox(height: 15),
-        Center(
-          child: SizedBox(
-            height: 35,
-            width: 110,
-            child: Obx(() => controller.isLoading.value
-                ? const CircularProgressIndicator(color: Colors.blue)
-                : DecoratedBox(
-              decoration: BoxDecoration(
-                color: const Color(0xffE15564),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: TextButton(
-                onPressed: controller.isOtpSent.value
-                    ? controller.verifyOtp
-                    : controller.requestOtp,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  minimumSize: const Size.fromHeight(35),
-                  padding: EdgeInsets.zero,
-                ),
-                child: Text(
-                  controller.isOtpSent.value ? 'Submit' : 'Send OTP',
-                  style: const TextStyle(
-                      color: Colors.white, fontFamily: 'WorkSansBold'),
-                ),
-              ),
-            )),
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _buildPhoneInput() {
-    return Center(
-      child: SizedBox(
-        height: 34,
-        width: 250,
         child: TextField(
-          controller: controller.phoneController,
+          controller: controller.mergedController,
           decoration: InputDecoration(
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(50)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide.none,
             ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(50)),
-              borderSide: BorderSide(
-                color: Color(0xffE15564),
-              ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: const BorderSide(color: Color(0xffE15564)),
             ),
-            prefix: Container(
-              width: 40,
-              alignment: Alignment.center,
-              child: const Text(
-                '+91',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            hintText: 'Enter Email or Phone',
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Colors.transparent,
             contentPadding: const EdgeInsets.symmetric(
-              vertical: 10,
+              vertical: 12,
+              horizontal: 20,
             ),
             errorStyle: const TextStyle(height: 0),
           ),
           cursorColor: const Color(0xffE15564),
-          style: const TextStyle(color: Colors.black, fontSize: 14),
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            LengthLimitingTextInputFormatter(10),
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),
-          ],
+          style: const TextStyle(color: Colors.black, fontSize: 15),
+          keyboardType: TextInputType.text,
+          onChanged: (value) => controller.handleInputChange(value),
         ),
       ),
     );
@@ -165,29 +217,211 @@ class LoginView extends GetView<LoginController> {
         animationType: AnimationType.fade,
         pinTheme: PinTheme(
           shape: PinCodeFieldShape.box,
-          borderRadius: BorderRadius.circular(5),
-          fieldHeight: 30,
-          fieldWidth: 30,
-          activeFillColor: Colors.white,
-          inactiveFillColor: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          fieldHeight: 40,
+          fieldWidth: 35,
+          activeFillColor: Colors.white.withOpacity(0.9),
+          inactiveFillColor: Colors.white.withOpacity(0.7),
           selectedFillColor: Colors.white,
-          activeColor: Color(0xffE15564),
-          inactiveColor: Color(0xffE15564),
-          selectedColor: Color(0xffE15564),
+          activeColor: const Color(0xffE15564),
+          inactiveColor: Colors.grey.shade300,
+          selectedColor: const Color(0xffE15564),
         ),
         animationDuration: const Duration(milliseconds: 300),
         enableActiveFill: true,
-        controller: TextEditingController(),
+        controller: controller.isPhoneOtpSent.value
+            ? controller.phoneOtpController
+            : controller.otpController,
         onCompleted: (v) {
-          controller.otpController.text = v;
+          if (controller.isPhoneOtpSent.value) {
+            controller.phoneOtpController.text = v;
+          } else {
+            controller.otpController.text = v;
+          }
         },
         onChanged: (value) {
-          controller.otpController.text = value;
+          if (controller.isPhoneOtpSent.value) {
+            controller.phoneOtpController.text = value;
+          } else {
+            controller.otpController.text = value;
+          }
         },
-        beforeTextPaste: (text) {
-          return true; // Enable paste
-        },
+        beforeTextPaste: (text) => true,
         keyboardType: TextInputType.number,
+        // Add this for auto-fill support
+        autoDismissKeyboard: true,
+      ),
+    );
+  }
+
+  Widget _buildResendButton() {
+    return Obx(() => Center(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  controller.otpResendTimer.value == 0
+                      ? const Color(0xffE15564).withOpacity(0.8)
+                      : Colors.grey.withOpacity(0.5),
+                  controller.otpResendTimer.value == 0
+                      ? const Color(0xffE15564).withOpacity(0.6)
+                      : Colors.grey.withOpacity(0.3),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: TextButton(
+              onPressed: controller.otpResendTimer.value == 0
+                  ? () {
+                      if (controller.isPhoneOtpSent.value) {
+                        controller.sendPhoneOtp();
+                      } else {
+                        controller.requestOtp();
+                      }
+                    }
+                  : null,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: Text(
+                controller.otpResendTimer.value == 0
+                    ? 'Resend OTP'
+                    : 'Resend OTP in ${controller.otpResendTimer.value}s',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'WorkSansBold',
+                ),
+              ),
+            ),
+          ),
+        ));
+  }
+
+  Widget _buildActionButton() {
+    return Center(
+      child: Container(
+        height: 40,
+        width: 120,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xffE15564), Color(0xffE13664)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xffE15564).withOpacity(0.3),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Obx(
+          () => controller.isLoading.value
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white))
+              : ElevatedButton(
+                  onPressed: () {
+                    if (controller.isOtpSent.value) {
+                      controller.verifyOtp();
+                    } else if (controller.isPhoneOtpSent.value) {
+                      controller.verifyPhoneOtp();
+                    } else {
+                      controller.handleSubmit();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Text(
+                    _getButtonText(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'WorkSansBold',
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  String _getButtonText() {
+    if (controller.isOtpSent.value || controller.isPhoneOtpSent.value) {
+      return 'Verify';
+    }
+    return 'Send OTP';
+  }
+
+  Widget _buildGoogleSignInButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withOpacity(0.9),
+              Colors.white.withOpacity(0.7),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: controller.signInWithGoogle,
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/googlelogo.png',
+                    height: 24,
+                    width: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Sign in with Google',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -32,6 +32,9 @@ class DeliveryDetailsController extends GetxController {
   RxString appliedCoupon = ''.obs;
   final TextEditingController emailController = TextEditingController();
   final RxString selectedEmail = ''.obs;
+  final TextEditingController mobileNumberController = TextEditingController();
+  final RxString selectedMobileNumber = ''.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -97,10 +100,45 @@ class DeliveryDetailsController extends GetxController {
     }
   }
 
+  Future<void> updateMobileNumber() async {
+    try {
+      isLoading.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id') ?? 0;
+
+      if (userId <= 0) {
+        throw Exception('Invalid user ID');
+      }
+
+      final newMobileNumber = mobileNumberController.text.trim();
+      if (newMobileNumber.isEmpty) {
+        throw Exception('Please enter mobile number');
+      }
+
+      // Optional: Add mobile number validation
+      if (!GetUtils.isPhoneNumber(newMobileNumber)) {
+        throw Exception('Please enter a valid mobile number');
+      }
+
+      await apiProvider.updateUserProfile(userId, {
+        'mobile_number': newMobileNumber,
+      });
+
+      selectedMobileNumber.value = newMobileNumber;
+    } catch (e) {
+      print('Error updating mobile number: $e');
+      throw e;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   @override
   void onClose() {
     patientNameController.dispose();
     emailController.dispose();
+    mobileNumberController.dispose();
     super.onClose();
   }
 
@@ -128,6 +166,8 @@ class DeliveryDetailsController extends GetxController {
           fullName = '$firstName ${lastName}'.trim();
         }
         selectedPatientName.value = fullName;
+        String mobileNumber = userData['mobile_number'] ?? '';
+        selectedMobileNumber.value = mobileNumber;
 
         // Handle email
         String email = userData['email'] ?? '';
@@ -547,6 +587,18 @@ class DeliveryDetailsController extends GetxController {
           return;
         }
         await updatePatientName();
+      }
+      if (selectedMobileNumber.isEmpty) {
+        if (mobileNumberController.text.trim().isEmpty) {
+          Get.snackbar(
+            'Error',
+            'Please enter mobile number',
+            backgroundColor: Colors.red[100],
+            colorText: Colors.black,
+          );
+          return;
+        }
+        await updateMobileNumber();
       }
 
       // Add email validation

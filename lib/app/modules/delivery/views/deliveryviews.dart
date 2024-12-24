@@ -38,7 +38,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Patient Name',
+                      'Name',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -47,7 +47,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                     ),
                     const SizedBox(height: 12),
                     _buildPatientNameWidget(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
                     // Add Email Section
                     const Text(
@@ -60,7 +60,19 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
                     ),
                     const SizedBox(height: 12),
                     _buildEmailWidget(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
+
+                    const Text(
+                      'Mobile Number',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMobileNumberWidget(),
+                    const SizedBox(height: 12),
 
                     _buildAddressSection(),
                     const SizedBox(height: 40),
@@ -80,6 +92,53 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
     );
   }
 
+  Widget _buildMobileNumberWidget() {
+    return Obx(() {
+      if (controller.selectedMobileNumber.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: TextField(
+            controller: controller.mobileNumberController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              hintText: 'Enter mobile number',
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      } else {
+        return _buildMobileNumberCard();
+      }
+    });
+  }
+
+  Widget _buildMobileNumberCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Text(
+        controller.selectedMobileNumber.value,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmailWidget() {
     return Obx(() {
       if (controller.selectedEmail.isEmpty) {
@@ -92,7 +151,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           child: TextField(
             controller: controller.emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Enter email address',
               border: InputBorder.none,
               isDense: true,
@@ -138,8 +197,8 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
           ),
           child: TextField(
             controller: controller.patientNameController,
-            decoration: InputDecoration(
-              hintText: 'Enter patient name',
+            decoration: const InputDecoration(
+              hintText: 'Please enter name',
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
@@ -302,7 +361,7 @@ class DeliveryDetailsScreen extends GetView<DeliveryDetailsController> {
               ),
             ),
             TextButton(
-              onPressed: () => Get.to(() => AddressScreen()),
+              onPressed: () => Get.to(() => const AddressScreen()),
               child: const Text('Add New Address'),
             ),
           ],

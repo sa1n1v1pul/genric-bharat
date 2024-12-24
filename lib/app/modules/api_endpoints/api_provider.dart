@@ -184,6 +184,70 @@ class ApiProvider extends GetxController {
     return handler.next(err);
   }
 
+  Future<dio.Response> getUserProfile(int userId) async {
+    print('Fetching user profile for ID: $userId');
+    return _handleRequest(() async {
+      final token = await getToken();
+      final response = await _dio.get(
+        '${ApiEndpoints.profile}?id=$userId',
+        options: dio.Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      print('User profile response: ${response.data}');
+      return response;
+    });
+  }
+
+  Future<dio.Response> updateUserProfile(
+      int userId, Map<String, dynamic> userData,
+      {File? profileImage}) async {
+    return _handleRequest(() async {
+      final token = await getToken();
+
+      if (profileImage != null) {
+        // Create form data for multipart request
+        final formData = dio.FormData.fromMap({
+          ...userData,
+          'profile': await dio.MultipartFile.fromFile(
+            profileImage.path,
+            filename: 'profile_image.jpg',
+          ),
+        });
+
+        return await _dio.post(
+          '${ApiEndpoints.profile_update}$userId',
+          data: formData,
+          options: dio.Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'multipart/form-data',
+            },
+          ),
+        );
+      } else {
+        // Regular JSON request without image
+        return await _dio.post(
+          '${ApiEndpoints.profile_update}$userId',
+          data: userData,
+          options: dio.Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+      }
+    });
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
   Future<dio.Response> checkPincode(String pincode) async {
     print('Checking pincode: $pincode');
     return _handleRequest(() async {
@@ -296,20 +360,19 @@ class ApiProvider extends GetxController {
     });
   }
 
-  Future<dio.Response> requestOtp(String mobileNumber) async {
+  Future<dio.Response> requestOtp(String email) async {
     return _handleRequest(() async {
       return await _dio.post(
         ApiEndpoints.requestOtp,
-        data: {'mobile_number': mobileNumber},
+        data: {'email': email},
       );
     });
   }
 
-  Future<dio.Response> verifyOtp(
-      String mobileNumber, String otp, int? id) async {
+  Future<dio.Response> verifyOtp(String email, String otp, int? id) async {
     return _handleRequest(() async {
       final data = {
-        'mobile_number': mobileNumber,
+        'email': email,
         'otp': otp,
         'id': id,
       };
@@ -321,11 +384,11 @@ class ApiProvider extends GetxController {
     });
   }
 
-  Future<dio.Response> getOtp(String mobileNumber) async {
+  Future<dio.Response> getOtp(String email) async {
     return _handleRequest(() async {
       return await _dio.get(
         ApiEndpoints.getOtp,
-        queryParameters: {'mobile_number': mobileNumber},
+        queryParameters: {'email': email},
       );
     });
   }
@@ -348,70 +411,6 @@ class ApiProvider extends GetxController {
       print('Address update response: ${response.data}');
       return response;
     });
-  }
-
-  Future<dio.Response> getUserProfile(int userId) async {
-    print('Fetching user profile for ID: $userId');
-    return _handleRequest(() async {
-      final token = await getToken();
-      final response = await _dio.get(
-        '${ApiEndpoints.profile}?id=$userId',
-        options: dio.Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
-      print('User profile response: ${response.data}');
-      return response;
-    });
-  }
-
-  Future<dio.Response> updateUserProfile(
-      int userId, Map<String, dynamic> userData,
-      {File? profileImage}) async {
-    return _handleRequest(() async {
-      final token = await getToken();
-
-      if (profileImage != null) {
-        // Create form data for multipart request
-        final formData = dio.FormData.fromMap({
-          ...userData,
-          'profile': await dio.MultipartFile.fromFile(
-            profileImage.path,
-            filename: 'profile_image.jpg',
-          ),
-        });
-
-        return await _dio.post(
-          '${ApiEndpoints.profile_update}$userId',
-          data: formData,
-          options: dio.Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'multipart/form-data',
-            },
-          ),
-        );
-      } else {
-        // Regular JSON request without image
-        return await _dio.post(
-          '${ApiEndpoints.profile_update}$userId',
-          data: userData,
-          options: dio.Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-            },
-          ),
-        );
-      }
-    });
-  }
-
-  Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
   }
 }
 

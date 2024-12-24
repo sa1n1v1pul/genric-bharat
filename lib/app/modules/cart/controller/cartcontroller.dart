@@ -41,6 +41,13 @@ class CartController extends GetxController {
     });
   }
 
+  void resetCouponState() {
+    appliedCouponCode.value = '';
+    discountAmount.value = 0.0;
+    isCouponValid.value = false;
+    couponErrorMessage.value = '';
+  }
+
   @override
   void onInit() async {
     super.onInit();
@@ -367,7 +374,11 @@ class CartController extends GetxController {
         if (cartData.isNotEmpty) {
           cartItems.addAll(cartData
               .map((item) => _createCartItem(item as Map<String, dynamic>)));
+        } else {
+          // Reset coupon state if cart is empty
+          resetCouponState();
         }
+
         print('📦 Cart items count after update: ${cartItems.length}');
 
         total.value = double.parse(response['data']['total_amount'].toString());
@@ -541,6 +552,7 @@ class CartController extends GetxController {
         cartItems.clear();
         total.value = 0.0;
         cartCount.value = 0;
+        resetCouponState(); // Reset coupon state when cart is cleared
         Get.snackbar('Success', 'Cart cleared successfully');
       } else {
         Get.snackbar('Error', response['message'] ?? 'Failed to clear cart');

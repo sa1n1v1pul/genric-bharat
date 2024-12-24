@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,9 +17,18 @@ class ProfileController extends GetxController {
   final RxInt userId = 0.obs;
 
   // Vlogs states
-  final RxList<Map<String, dynamic>> vlogsList = RxList<Map<String, dynamic>>([]);
+  final RxList<Map<String, dynamic>> vlogsList =
+      RxList<Map<String, dynamic>>([]);
   final RxBool isVlogsLoading = false.obs;
   final Rx<Map<String, dynamic>> selectedVlog = Rx<Map<String, dynamic>>({});
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Load user data when controller is initialized
+    ever(userId, (_) => getUserData());
+    loadUserIdFromPrefs();
+  }
 
   // New method to handle API response
   Future<void> fetchVlogs() async {
@@ -40,7 +50,6 @@ class ProfileController extends GetxController {
 
       final response = await apiProvider.get(
         ApiEndpoints.vlogs,
-
       );
 
       print('Vlogs API response: ${response.data}');
@@ -49,7 +58,6 @@ class ProfileController extends GetxController {
           response.data != null &&
           response.data['success'] == true &&
           response.data['data'] is List) {
-
         final List<Map<String, dynamic>> processedVlogs = [];
 
         for (var vlog in response.data['data']) {
@@ -64,7 +72,8 @@ class ProfileController extends GetxController {
         update();
         print('Vlogs loaded successfully: ${vlogsList.length} items');
       } else {
-        print('Invalid response format or unsuccessful response: ${response.data}');
+        print(
+            'Invalid response format or unsuccessful response: ${response.data}');
         throw 'Failed to load vlogs: ${response.statusCode}';
       }
     } catch (e) {
@@ -125,55 +134,62 @@ class ProfileController extends GetxController {
       final storedUserId = prefs.getInt('user_id');
       if (storedUserId != null && storedUserId > 0) {
         userId.value = storedUserId;
-        print('Loaded userId from SharedPreferences: $storedUserId');
-        await getUserData();
+        print('✓ Loaded userId from SharedPreferences: $storedUserId');
       } else {
-        print('No userId found in SharedPreferences');
+        print('❌ No userId found in SharedPreferences');
+        // Try to get user data anyway if we have a token
+        final token = prefs.getString('token');
+        if (token != null) {
+          await getUserData();
+        }
       }
     } catch (e) {
-      print('Error loading userId from SharedPreferences: $e');
+      print('❌ Error loading userId from SharedPreferences: $e');
     }
   }
 
   // Initialize the controller with user ID
   Future<void> initialize(int id) async {
-    print('Initializing ProfileController with userId: $id');
-    userId.value = id;
-
-    // Save userId to SharedPreferences
     try {
+      print('Initializing ProfileController with userId: $id');
+
+      // Validate user ID
+      if (id <= 0) {
+        print('Invalid user ID: $id');
+        return;
+      }
+
+      // Set user ID
+      userId.value = id;
+
+      // Save userId to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('user_id', id);
-      print('Saved userId to SharedPreferences: $id');
-    } catch (e) {
-      print('Error saving userId to SharedPreferences: $e');
-    }
+      print('✓ Saved userId to SharedPreferences: $id');
 
-    await getUserData();
+      // Fetch user data
+      await getUserData();
+    } catch (e, stackTrace) {
+      print('❌ Error initializing ProfileController: $e');
+      print('Stack trace: $stackTrace');
+
+      // Optionally show a user-friendly error
+      Get.snackbar('Error', 'Could not initialize profile. Please try again.',
+          snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
-  // Get user profile data
   Future<void> getUserData() async {
-    print('Fetching user data...');
+    print('📱 Fetching user data...');
     if (isLoading.value) {
-      print('Already loading data, skipping request');
+      print('⏳ Already loading data, skipping request');
       return;
     }
 
     isLoading.value = true;
     try {
-      // First try to get userId from state, if not available try from SharedPreferences
-      if (userId.value <= 0) {
-        await loadUserIdFromPrefs();
-        if (userId.value <= 0) {
-          print('Invalid userId: ${userId.value}');
-          _setDefaultUserData();
-          return;
-        }
-      }
-
       final response = await apiProvider.getUserProfile(userId.value);
-      print('User profile API response: ${response.data}');
+      print('✉️ User profile API response: ${response.data}');
 
       if (response.data != null && response.data is Map<String, dynamic>) {
         final updatedData = Map<String, dynamic>.from(response.data);
@@ -186,19 +202,22 @@ class ProfileController extends GetxController {
               : ApiEndpoints.apibaseUrl + relativePath;
         }
 
-        // Update state
+        // Update state with actual user data
         userData.value = updatedData;
         profileImagePath.value = updatedData['profile'] ?? '';
 
-        print('Updated user data: ${userData.value}');
+        // Cache the user data
+        _cacheUserData(updatedData);
+
+        print('✓ Updated user data: ${userData.value}');
         update();
       } else {
-        print('Invalid response data format');
-        _setDefaultUserData();
+        print('❌ Invalid response data format');
+        _loadCachedUserData();
       }
     } catch (e) {
-      print('Error fetching user data: $e');
-      _setDefaultUserData();
+      print('❌ Error fetching user data: $e');
+      _loadCachedUserData();
       Get.snackbar(
         'Error',
         'Failed to fetch user data. Please try again later.',
@@ -206,7 +225,7 @@ class ProfileController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-      print('Profile data loading completed');
+      print('✓ Profile data loading completed');
     }
   }
 
@@ -226,6 +245,32 @@ class ProfileController extends GetxController {
       'locality': '',
     };
     update();
+  }
+
+  Future<void> _cacheUserData(Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_user_data', jsonEncode(data));
+      print('✓ User data cached successfully');
+    } catch (e) {
+      print('❌ Error caching user data: $e');
+    }
+  }
+
+  Future<void> _loadCachedUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString('cached_user_data');
+      if (cachedData != null) {
+        final decodedData = jsonDecode(cachedData) as Map<String, dynamic>;
+        userData.value = decodedData;
+        profileImagePath.value = decodedData['profile'] ?? '';
+        print('✓ Loaded cached user data');
+        update();
+      }
+    } catch (e) {
+      print('❌ Error loading cached user data: $e');
+    }
   }
 
   // Clear user data on logout
@@ -390,7 +435,8 @@ class ProfileController extends GetxController {
 
     int filledFields = 0;
     for (var field in requiredFields) {
-      if (userData.value[field] != null && userData.value[field].toString().isNotEmpty) {
+      if (userData.value[field] != null &&
+          userData.value[field].toString().isNotEmpty) {
         filledFields++;
       }
     }

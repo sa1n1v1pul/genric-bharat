@@ -1,23 +1,28 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:genric_bharat/app/modules/auth/bindings/auth_binding.dart';
+import 'package:genric_bharat/firebase_options.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import 'app/core/theme/theme.dart';
 import 'app/modules/api_endpoints/api_provider.dart';
-import 'app/modules/auth/controllers/auth_controller.dart';
-import 'app/modules/auth/controllers/login_controller.dart';
+
 import 'app/modules/cart/controller/cartcontroller.dart';
 import 'app/modules/cart/controller/cartservice.dart';
 import 'app/modules/location/binding/location_binding.dart';
 import 'app/modules/onboarding/startup_view.dart';
-import 'app/modules/profile/controller/profile_controller.dart';
+
 import 'app/modules/routes/app_pages.dart';
 
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
     await InitializationService.initServices();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     runApp(const MyApp());
   } catch (e) {
     print('Fatal error during app initialization: $e');
@@ -48,13 +53,13 @@ class InitializationService {
       CustomTheme.loadSavedTheme();
       print('✓ Theme loaded');
 
-      // Initialize Core Controllers
+      // Initialize Core Controllers and Services
       Get.put(ApiProvider());
       Get.put(ThemeController());
-      Get.put(AuthController(), permanent: true);
-      Get.put(LoginController());
-      Get.put(ProfileController());
-      print('✓ Core controllers initialized');
+
+      // Initialize Auth related dependencies
+      AuthBinding().dependencies();
+      print('✓ Auth dependencies initialized');
 
       // Initialize User Service
       final userService = UserService();
@@ -66,7 +71,6 @@ class InitializationService {
       await cartService.initializeService();
       Get.put(cartService);
       print('✓ Cart service initialized');
-
     } catch (e, stackTrace) {
       print('❌ Error during initialization: $e');
       print('Stack trace: $stackTrace');
@@ -96,6 +100,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 class ThemeController extends GetxController {
   void changeTheme(int colorIndex) {
     CustomTheme.changeTheme(colorIndex);

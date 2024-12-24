@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "1055868701225",
+    "project_id": "generic--bharat",
+    "storage_bucket": "generic--bharat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055868701225:android:1d8cb38386208553146a38",
+        "android_client_info": {
+          "package_name": "com.BdsInfotech.GenricBharat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1055868701225-imlsa49i4eqgu3eon1in9cff56drk819.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.BdsInfotech.GenricBharat",
+            "certificate_hash": "8532d7b49acd874698d63a8e78d2976df64f26c8"
+          }
+        },
+        {
+          "client_id": "1055868701225-l7p1bdh09kfi0g4vv6h2p5ikcsb1f3no.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.BdsInfotech.GenricBharat",
+            "certificate_hash": "3cd98440d2cf0cdc69c6e31f5ca5f3c1786a31b3"
+          }
+        },
+        {
+          "client_id": "1055868701225-8f752aojpg7pa7a43qevs5kphvo3j40s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgApAjvNFakkdJ8rTjAw7irvlmVA8tOOU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055868701225-8f752aojpg7pa7a43qevs5kphvo3j40s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1055868701225-lkq5b3ru62d4tse29sh4tm563b0j5bgi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.BdsInfotech.GenricBharat"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

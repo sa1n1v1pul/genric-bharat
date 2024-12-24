@@ -2,16 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.BdsInfotech.GenricBharat">
 
-    <!-- Permissions -->
+    <!-- SMS and Phone Permissions -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    
+    <!-- Location Permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    
+    <!-- Storage Permissions -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    
+    <!-- Network and Phone Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <!-- Add these permissions for URL launcher -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
@@ -21,6 +29,13 @@
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true">
 
+        <!-- SMS User Consent Activity -->
+        <activity
+            android:name="com.google.android.gms.auth.api.phone.ui.UserConsentActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,22 +46,23 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
+            <!-- Flutter Theme Metadata -->
             <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
 
+            <!-- Splash Screen Metadata -->
             <meta-data
-              android:name="io.flutter.embedding.android.SplashScreenDrawable"
-              android:resource="@drawable/genric"  
-              />
+                android:name="io.flutter.embedding.android.SplashScreenDrawable"
+                android:resource="@drawable/genric" />
 
+            <!-- Launch Intent Filter -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Add URL handling -->
+            <!-- URL Handling Intent Filter -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -56,20 +72,20 @@
             </intent-filter>
         </activity>
 
-        <!-- Don't delete the meta-data below.
-             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <!-- Flutter Embedding Metadata -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- Google Maps API Key -->
         <meta-data 
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCRQIhsGS3xrGeopcSPW70zal2yNRIQAJc"/>
     </application>
 
-    <!-- Queries for URL launcher and other intents -->
+    <!-- Query Intentions -->
     <queries>
-        <!-- URL launcher queries -->
+        <!-- Browser URLs -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />
@@ -80,15 +96,23 @@
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="http" />
         </intent>
-        <!-- Phone call query -->
+        
+        <!-- Phone Calls -->
         <intent>
             <action android:name="android.intent.action.DIAL" />
             <data android:scheme="tel" />
         </intent>
-        <!-- Text processing query -->
+        
+        <!-- Text Processing -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+
+        <!-- SMS Intent -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
         </intent>
     </queries>
 </manifest>
