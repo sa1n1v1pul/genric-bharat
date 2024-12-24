@@ -2,7 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id 'com.google.gms.google-services'  // Add this line
+    id 'com.google.gms.google-services'
 }
 
 def localProperties = new Properties()
@@ -58,7 +58,11 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        multiDexEnabled true  // Add this line
+        multiDexEnabled true
+        manifestPlaceholders = [
+            applicationName: 'android.app.Application',
+            'package_name': 'com.BdsInfotech.GenricBharat'
+        ]
     }
 
     signingConfigs {
@@ -92,6 +96,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
     implementation 'com.google.android.gms:play-services-safetynet:18.0.1'
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.android.recaptcha:recaptcha:18.4.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

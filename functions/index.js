@@ -1,45 +1,45 @@
+const functions = require('firebase-functions');
 const admin = require("firebase-admin");
-const {onRequest} = require("firebase-functions/v2/https");
-const {initializeApp} = require("firebase-admin/app");
 
 // Initialize the app if it hasn't been initialized yet
 if (!admin.apps.length) {
-  initializeApp();
+  admin.initializeApp();
 }
 
-exports.updateAuthConfig = onRequest(async (req, res) => {
+exports.updateAuthConfig = functions.https.onRequest(async (req, res) => {
   try {
-    // Update the authentication configuration
-    const config = {
-      phoneNumber: {
-        enableTesting: true,
-        testPhoneNumbers: {
-          "+916666666666": "123456",  // Add test phone numbers if needed
+    const projectConfig = {
+      recaptchaConfig: {  // Changed to recaptchaConfig instead of recaptchaEnterpriseConfig
+        siteKey: "6LemjqQqAAAAALfZ_NJuTEwysxGwSWEBoBkhNiIQ",
+        enableInAllowlistedDomains: true
+      },
+      smsRegionConfig: {
+        allowlistedRegions: ["IN"],
+        prohibitedRegions: []
+      },
+      mfa: {
+        state: "DISABLED"
+      },
+      smsAuthOptions: {
+        attemptLimitConfig: {
+          maxAllowedAttempts: 5,
+          resetInterval: "1h"
         }
       }
     };
-
-    await admin.auth().updateConfig(config);
-
-    // Also update the project configuration
-    const projectConfig = {
-      recaptchaEnforcementState: "OFF"
-    };
     
     await admin.auth().updateProjectConfig(projectConfig);
-
     res.json({
       success: true, 
       message: "Auth config updated successfully",
-      config: config,
-      projectConfig: projectConfig
+      config: projectConfig
     });
   } catch (error) {
     console.error("Error updating auth config:", error);
     res.status(500).json({
-      success: false, 
+      success: false,
       error: error.message,
-      stack: error.stack
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });

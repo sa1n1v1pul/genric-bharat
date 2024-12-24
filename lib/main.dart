@@ -20,18 +20,13 @@ void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Initialize Firebase first
+    // Initialize Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Configure Firebase Auth settings
-    await FirebaseAuth.instance.setSettings(
-      appVerificationDisabledForTesting: true,
-      forceRecaptchaFlow: false,
-      phoneNumber: '+917451017434', // Your test phone number
-      smsCode: '123456', // Your test verification code
-    );
+    // Set language code for Firebase Auth
+    await FirebaseAuth.instance.setLanguageCode("en");
 
     // Initialize SMS AutoFill
     await SmsAutoFill().getAppSignature;

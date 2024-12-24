@@ -158,16 +158,13 @@ class LoginController extends GetxController with CodeAutoFill {
       await _auth.verifyPhoneNumber(
         phoneNumber: '+91${phoneController.text}',
         timeout: const Duration(seconds: 60),
+        forceResendingToken: null, // Add this
+        autoRetrievedSmsCodeForTesting: null, // Add this for production
         verificationCompleted: (PhoneAuthCredential credential) async {
           print('Auto verification completed');
-          try {
-            if (credential.smsCode != null) {
-              phoneOtpController.text = credential.smsCode!;
-              await verifyPhoneOtp();
-            }
-          } catch (e) {
-            print('Auto verification error: $e');
-            isLoading.value = false;
+          if (credential.smsCode != null) {
+            phoneOtpController.text = credential.smsCode!;
+            await verifyPhoneOtp();
           }
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -188,7 +185,6 @@ class LoginController extends GetxController with CodeAutoFill {
           _verificationId = verificationId;
           isLoading.value = false;
         },
-        // Remove forceResendingToken if not needed
       );
     } catch (e) {
       print('Phone OTP Error: $e');
