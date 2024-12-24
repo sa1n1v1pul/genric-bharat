@@ -2,6 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id 'com.google.gms.google-services'  // Add this line
 }
 
 def localProperties = new Properties()
@@ -57,6 +58,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true  // Add this line
     }
 
     signingConfigs {
@@ -74,9 +76,24 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            signingConfig signingConfigs.debug
+        }
     }
 }
 
 flutter {
     source '../..'
 }
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-safetynet:18.0.1'
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+
+apply plugin: 'com.google.gms.google-services'

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,27 +6,43 @@ import 'package:genric_bharat/app/modules/auth/bindings/auth_binding.dart';
 import 'package:genric_bharat/firebase_options.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:sms_autofill/sms_autofill.dart'; // Add this import
 
 import 'app/core/theme/theme.dart';
 import 'app/modules/api_endpoints/api_provider.dart';
-
 import 'app/modules/cart/controller/cartcontroller.dart';
 import 'app/modules/cart/controller/cartservice.dart';
 import 'app/modules/location/binding/location_binding.dart';
 import 'app/modules/onboarding/startup_view.dart';
-
 import 'app/modules/routes/app_pages.dart';
 
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    await InitializationService.initServices();
+
+    // Initialize Firebase first
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Configure Firebase Auth settings
+    await FirebaseAuth.instance.setSettings(
+      appVerificationDisabledForTesting: true,
+      forceRecaptchaFlow: false,
+      phoneNumber: '+917451017434', // Your test phone number
+      smsCode: '123456', // Your test verification code
+    );
+
+    // Initialize SMS AutoFill
+    await SmsAutoFill().getAppSignature;
+
+    // Initialize other services
+    await InitializationService.initServices();
+
     runApp(const MyApp());
-  } catch (e) {
+  } catch (e, stackTrace) {
     print('Fatal error during app initialization: $e');
+    print('Stack trace: $stackTrace');
   }
 }
 

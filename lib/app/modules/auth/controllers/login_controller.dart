@@ -182,14 +182,13 @@ class LoginController extends GetxController with CodeAutoFill {
           isPhoneOtpSent.value = true;
           isLoading.value = false;
           startOtpResendTimer();
-
-          // Start listening for SMS immediately after OTP is sent
           listenForCode();
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           _verificationId = verificationId;
           isLoading.value = false;
         },
+        // Remove forceResendingToken if not needed
       );
     } catch (e) {
       print('Phone OTP Error: $e');
