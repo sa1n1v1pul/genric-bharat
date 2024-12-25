@@ -530,12 +530,12 @@ class CartController extends GetxController {
       } else {
         Get.snackbar(
             'Error', response['message'] ?? 'Failed to remove item from cart');
-        await fetchCart(); // Refresh the cart if the API call failed
+        await fetchCart(); 
       }
     } catch (e) {
       print('❌ Error removing item from cart: $e');
       Get.snackbar('Error', 'Failed to remove item from cart');
-      await fetchCart(); // Refresh the cart if there was an error
+      await fetchCart(); 
     } finally {
       isLoading.value = false;
     }
