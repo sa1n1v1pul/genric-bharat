@@ -66,7 +66,7 @@ class OrderPreviewScreen extends StatelessWidget {
         return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child:
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Order Summary Card
               Container(
                 decoration: BoxDecoration(
@@ -95,7 +95,8 @@ class OrderPreviewScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              DateFormat('dd MMM yyyy HH:mm').format(order.createdAt),
+                              DateFormat('dd MMM yyyy HH:mm')
+                                  .format(order.createdAt),
                               style: TextStyle(color: Colors.grey[600]),
                             ),
                           ],
@@ -110,40 +111,41 @@ class OrderPreviewScreen extends StatelessWidget {
                         ),
                         _buildInfoRow('Payment Method', order.paymentMethod),
                         _buildInfoRow('Payment Status', order.paymentStatus),
-                        _buildInfoRow('Transaction ID', order.txnId),
+                        _buildInfoRow(
+                            'Transaction ID', order.displayTransactionId),
                       ],
                     ),
                   ),
                 ),
               ),
 
-
               const SizedBox(height: 16),
 
               // Cart Items Card
-              Container(decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                border: Border.all(
-                  color: CustomTheme.loginGradientStart.withOpacity(0.4),
-                  width: 1.5,
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  border: Border.all(
+                    color: CustomTheme.loginGradientStart.withOpacity(0.4),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
                 child: Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Cart Items',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const Divider(),
-                          ...order.cart.items.map((item) => Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Cart Items',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Divider(),
+                      ...order.cart.items.map((item) => Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -166,7 +168,7 @@ class OrderPreviewScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(
                                         width:
-                                        16), // Add space between Qty and Amount
+                                            16), // Add space between Qty and Amount
                                     Text(
                                       '${order.currencySign}${item.price}',
                                       style: const TextStyle(
@@ -178,132 +180,139 @@ class OrderPreviewScreen extends StatelessWidget {
                             ),
                           )),
 
-                          const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                          // Shipping Details Card
-                          Card(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                border: Border.all(
-                                  color: CustomTheme.loginGradientStart.withOpacity(0.4), // Border color
-                                  width: 1.5, // Border thickness
+                      // Shipping Details Card
+                      Card(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            border: Border.all(
+                              color: CustomTheme.loginGradientStart
+                                  .withOpacity(0.4), // Border color
+                              width: 1.5, // Border thickness
+                            ),
+                            borderRadius: BorderRadius.circular(
+                                8), // Optional: Rounded corners
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Shipping Details',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(8), // Optional: Rounded corners
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Shipping Details',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const Divider(),
-                                    _buildInfoRow('Name', order.shippingInfo.name),
-                                    _buildInfoRow('Address', order.shipping.address),
-                                    _buildInfoRow('Area', order.shipping.area),
-                                    _buildInfoRow('City', order.shipping.city),
-                                    _buildInfoRow('State', order.shipping.state),
-                                    _buildInfoRow('Pincode', order.shipping.pincode),
-                                  ],
-                                ),
-                              ),
+                                const Divider(),
+                                _buildInfoRow('Name', order.shippingInfo.name),
+                                _buildInfoRow(
+                                    'Address', order.shipping.address),
+                                _buildInfoRow('Area', order.shipping.area),
+                                _buildInfoRow('City', order.shipping.city),
+                                _buildInfoRow('State', order.shipping.state),
+                                _buildInfoRow(
+                                    'Pincode', order.shipping.pincode),
+                              ],
                             ),
                           ),
-
-                          const SizedBox(height: 16),
-
-                          // Billing Details Card
-                          Card(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                border: Border.all(
-                                  color: CustomTheme.loginGradientStart.withOpacity(0.4),
-                                  width: 1.5,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Billing Details',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const Divider(),
-                                    _buildInfoRow('Name', order.billingInfo.firstName),
-                                    _buildInfoRow('Address', order.billingInfo.address),
-                                    _buildInfoRow('City', order.billingInfo.city),
-                                    _buildInfoRow('State', order.billingInfo.state),
-                                    _buildInfoRow('Zip', order.billingInfo.zip),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Price Details Card
-                          Card(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                border: Border.all(
-                                  color: CustomTheme.loginGradientStart.withOpacity(0.4),
-                                  width: 1.5,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Price Details',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const Divider(),
-                                    _buildInfoRow(
-                                      'Total Amount',
-                                      '${order.currencySign}${order.finalPrice}',
-                                      isBold: true,
-                                    ),
-                                    if (order.couponApplied != null)
-                                      _buildInfoRow(
-                                        'Coupon Applied',
-                                        order.couponApplied!,
-                                        color: Colors.green,
-                                      ),
-                                    _buildInfoRow(
-                                      'Discount',
-                                      '${order.currencySign}${order.discount}',
-                                      color: Colors.red,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                        ],
+                        ),
                       ),
-                    )),
+
+                      const SizedBox(height: 16),
+
+                      // Billing Details Card
+                      Card(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            border: Border.all(
+                              color: CustomTheme.loginGradientStart
+                                  .withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Billing Details',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const Divider(),
+                                _buildInfoRow(
+                                    'Name', order.billingInfo.firstName),
+                                _buildInfoRow(
+                                    'Address', order.billingInfo.address),
+                                _buildInfoRow('City', order.billingInfo.city),
+                                _buildInfoRow('State', order.billingInfo.state),
+                                _buildInfoRow('Zip', order.billingInfo.zip),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Price Details Card
+                      Card(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            border: Border.all(
+                              color: CustomTheme.loginGradientStart
+                                  .withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Price Details',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const Divider(),
+                                _buildInfoRow(
+                                  'Total Amount',
+                                  '${order.currencySign}${order.finalPrice}',
+                                  isBold: true,
+                                ),
+                                if (order.couponApplied != null)
+                                  _buildInfoRow(
+                                    'Coupon Applied',
+                                    order.couponApplied!,
+                                    color: Colors.green,
+                                  ),
+                                _buildInfoRow(
+                                  'Discount',
+                                  '${order.currencySign}${order.discount}',
+                                  color: Colors.red,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
               )
             ]));
       }),

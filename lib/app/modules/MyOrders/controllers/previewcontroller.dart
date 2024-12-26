@@ -22,13 +22,15 @@ class OrderDetailModel {
   final ShippingDetails shipping;
   final String paymentMethod;
   final String txnId;
+  final String transactionNumber;
   final String orderStatus;
   final ShippingInfo shippingInfo;
   final BillingInfo billingInfo;
   final String paymentStatus;
   final String finalPrice;
   final DateTime createdAt;
-
+  String get displayTransactionId =>
+      txnId.isNotEmpty ? txnId : transactionNumber;
   OrderDetailModel({
     required this.id,
     required this.userId,
@@ -39,6 +41,7 @@ class OrderDetailModel {
     required this.shipping,
     required this.paymentMethod,
     required this.txnId,
+    required this.transactionNumber,
     required this.orderStatus,
     required this.shippingInfo,
     required this.billingInfo,
@@ -57,6 +60,7 @@ class OrderDetailModel {
         shipping: ShippingDetails.empty(),
         paymentMethod: '',
         txnId: '',
+        transactionNumber: '',
         orderStatus: '',
         shippingInfo: ShippingInfo.empty(),
         billingInfo: BillingInfo.empty(),
@@ -77,6 +81,7 @@ class OrderDetailModel {
         shipping: ShippingDetails.fromJson(json['shipping'] ?? {}),
         paymentMethod: json['payment_method'] ?? '',
         txnId: json['txnid'] ?? '',
+        transactionNumber: json['transaction_number'] ?? '',
         orderStatus: json['order_status'] ?? '',
         shippingInfo: ShippingInfo.fromJson(json['shipping_info'] ?? {}),
         billingInfo: BillingInfo.fromJson(json['billing_info'] ?? {}),

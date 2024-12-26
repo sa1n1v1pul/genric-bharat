@@ -451,6 +451,7 @@ class MyOrdersController extends GetxController {
         },
         'payment_method': order.paymentMethod,
         'txnid': order.txnid,
+        'transaction_number': order.transactionNumber,
         'order_status': order.orderStatus,
         'shipping_info': {
           'name': order.shippingInfoName,
