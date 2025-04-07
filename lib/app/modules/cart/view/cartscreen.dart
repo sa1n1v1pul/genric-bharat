@@ -28,7 +28,7 @@ class CartScreen extends GetView<CartController> {
 
     return Scaffold(
       backgroundColor:
-      fromBottomNav ? CustomTheme.backgroundColor : Colors.white,
+          fromBottomNav ? CustomTheme.backgroundColor : Colors.white,
       appBar: AppBar(
         backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
@@ -37,39 +37,41 @@ class CartScreen extends GetView<CartController> {
         automaticallyImplyLeading: !fromBottomNav,
         leading: !fromBottomNav
             ? Container(
-          padding: const EdgeInsets.only(left: 4),
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isDarkMode ? Colors.grey[800] : Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: (isDarkMode ? Colors.black : Colors.white)
-                    .withOpacity(0.3),
-                spreadRadius: 5,
-                blurRadius: 3,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios,
-              size: 18,
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-            onPressed: () => Get.back(),
-            padding: EdgeInsets.zero,
-          ),
-        )
+                padding: const EdgeInsets.only(left: 4),
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDarkMode ? Colors.grey[800] : Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDarkMode ? Colors.black : Colors.white)
+                          .withOpacity(0.3),
+                      spreadRadius: 5,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    size: 18,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  padding: EdgeInsets.zero,
+                ),
+              )
             : null,
         actions: [
-          Obx(() =>
-          controller.cartItems.isNotEmpty
+          Obx(() => controller.cartItems.isNotEmpty
               ? IconButton(
-            icon: const Icon(Icons.delete_outline,color: Colors.red,),
-            onPressed: () => _showClearCartDialog(context),
-          )
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                  ),
+                  onPressed: () => _showClearCartDialog(context),
+                )
               : const SizedBox()),
         ],
         iconTheme: IconThemeData(
@@ -90,7 +92,8 @@ class CartScreen extends GetView<CartController> {
           );
         }
 
-        if (!controller.isInitialized.value || controller.currentUserId == null) {
+        if (!controller.isInitialized.value ||
+            controller.currentUserId == null) {
           return _buildLoadingState();
         }
 
@@ -400,13 +403,13 @@ class CartScreen extends GetView<CartController> {
         color: isEnabled ? Colors.white : Colors.grey[200],
         boxShadow: isEnabled
             ? [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ]
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
       ),
       child: Material(
@@ -452,22 +455,28 @@ class CartScreen extends GetView<CartController> {
                 Expanded(
                   child: Obx(() => controller.appliedCouponCode.isEmpty
                       ? OutlinedButton.icon(
-                    icon: const Icon(Icons.local_offer_outlined, size: 16),
-                    label: const Text('Apply Coupon',
-                        style: TextStyle(fontSize: 14)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    onPressed: () => _showCouponsDialog(),
-                  )
+                          icon:
+                              const Icon(Icons.local_offer_outlined, size: 16),
+                          label: const Text('Apply Coupon',
+                              style: TextStyle(fontSize: 14)),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
+                          onPressed: () => _showCouponsDialog(),
+                        )
                       : Chip(
-                    label: Text(
-                      'Applied Coupon: ${controller.appliedCouponCode.value}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    deleteIcon: const Icon(Icons.close, size: 16, color: Colors.red,),
-                    onDeleted: () => controller.removeCoupon(),
-                  )),
+                          label: Text(
+                            'Applied Coupon: ${controller.appliedCouponCode.value}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          deleteIcon: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.red,
+                          ),
+                          onDeleted: () => controller.removeCoupon(),
+                        )),
                 ),
               ],
             ),
@@ -509,10 +518,8 @@ class CartScreen extends GetView<CartController> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Obx(() =>
-                    Text(
-                      '₹${(controller.total.value -
-                          controller.discountAmount.value).toStringAsFixed(2)}',
+                Obx(() => Text(
+                      '₹${(controller.total.value - controller.discountAmount.value).toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -533,42 +540,45 @@ class CartScreen extends GetView<CartController> {
 
           // Proceed Button
           Obx(() => SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _getButtonAction(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _getButtonColor(),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _getButtonAction(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _getButtonColor(),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _getButtonText(),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: controller.cartItems.isEmpty
+                          ? Colors.grey[600]
+                          : Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                _getButtonText(),
-                style: TextStyle(
-                  fontSize: 16,
-                  color: controller.cartItems.isEmpty ? Colors.grey[600] : Colors.white,
-                ),
-              ),
-            ),
-          )),
+              )),
           if (controller.cartItems.isNotEmpty) ...[
             const SizedBox(height: 6),
             Obx(() => Text(
-              _getHelperText(),
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
-            )),
+                  _getHelperText(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                )),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(String label, double amount, {bool isDiscount = false}) {
+  Widget _buildSummaryRow(String label, double amount,
+      {bool isDiscount = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -622,40 +632,43 @@ class CartScreen extends GetView<CartController> {
                 ],
               ),
               const SizedBox(height: 16),
-              Obx(() => controller.isLoadingCoupons.value
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.separated(
-                shrinkWrap: true,
-                itemCount: controller.availablePromoCodes.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final promoCode = controller.availablePromoCodes[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      promoCode.codeName,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+              Obx(
+                () => controller.isLoadingCoupons.value
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: controller.availablePromoCodes.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final promoCode =
+                              controller.availablePromoCodes[index];
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              promoCode.codeName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${promoCode.discount}${promoCode.type == 'percentage' ? '%' : '₹'} off',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            trailing: TextButton(
+                              onPressed: () {
+                                controller.applyCoupon(promoCode.codeName);
+                                Get.back();
+                              },
+                              child: const Text('Apply'),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    subtitle: Text(
-                      '${promoCode.discount}${promoCode.type == 'percentage' ? '%' : '₹'} off',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    trailing: TextButton(
-                      onPressed: () {
-                        controller.applyCoupon(promoCode.codeName);
-                        Get.back();
-                      },
-                      child: const Text('Apply'),
-                    ),
-                  );
-                },
-              ),
               ),
             ],
           ),
@@ -668,31 +681,36 @@ class CartScreen extends GetView<CartController> {
     if (controller.cartItems.isEmpty) {
       return 'Cart is Empty';
     }
-    return controller.hasAddress.value ? 'Proceed to Checkout' : 'Add Delivery Address';
+    return controller.hasAddress.value
+        ? 'Proceed to Checkout'
+        : 'Add Delivery Address';
   }
+
   Color _getButtonColor() {
     if (controller.cartItems.isEmpty) {
       return Colors.grey[300]!;
     }
     return CustomTheme.loginGradientStart;
   }
+
   String _getHelperText() {
     if (controller.hasAddress.value) {
       return 'Inclusive of all taxes';
     }
     return 'Please add delivery address to continue';
   }
+
   VoidCallback? _getButtonAction() {
     if (controller.cartItems.isEmpty) {
       return null;
     }
 
-
     return () {
       if (controller.hasAddress.value) {
-
         controller.proceedToCheckout();
       } else {
-
         Get.toNamed(Routes.ADDRESS);
-      }};}}
+      }
+    };
+  }
+}

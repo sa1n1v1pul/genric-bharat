@@ -92,11 +92,8 @@ class DeliveryDetailsController extends GetxController {
 
       // Force update
       update();
-
-      print(
-          'Updated Order Amounts - Subtotal: ${subtotal.value}, Discount: ${discount.value}, Final: ${finalAmount.value}');
     } catch (e) {
-      print('Error updating order amounts: $e');
+      // Error handling without print
     }
   }
 
@@ -127,7 +124,6 @@ class DeliveryDetailsController extends GetxController {
 
       selectedMobileNumber.value = newMobileNumber;
     } catch (e) {
-      print('Error updating mobile number: $e');
       throw e;
     } finally {
       isLoading.value = false;
@@ -189,7 +185,6 @@ class DeliveryDetailsController extends GetxController {
         }
       }
     } catch (e) {
-      print('Error loading user details: $e');
       Get.snackbar('Error', 'Failed to load user details');
     } finally {
       isLoading.value = false;
@@ -235,7 +230,6 @@ class DeliveryDetailsController extends GetxController {
         throw Exception(response.data['message'] ?? 'Failed to delete address');
       }
     } catch (e) {
-      print('Error deleting address: $e');
       Get.snackbar(
         'Error',
         'Failed to delete address: ${e.toString()}',
@@ -299,7 +293,6 @@ class DeliveryDetailsController extends GetxController {
 
       selectedEmail.value = newEmail;
     } catch (e) {
-      print('Error updating email: $e');
       throw e;
     } finally {
       isLoading.value = false;
@@ -323,8 +316,6 @@ class DeliveryDetailsController extends GetxController {
     required String couponCode,
   }) async {
     try {
-      print('Preparing order confirmation data...');
-
       // Get the user ID from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id') ?? 0;
@@ -386,25 +377,18 @@ class DeliveryDetailsController extends GetxController {
         'items': orderItems,
       };
 
-      print('Order confirmation request body: $requestBody');
-
       // Make the API call
       final response = await apiProvider.postOrderConfirmation(
         ApiEndpoints.orders,
         requestBody,
       );
 
-      print('Order confirmation API response: ${response.data}');
-
       if (response.data['status'] == 'success') {
-        print(
-            'Order confirmed successfully! Order ID: ${response.data['data']['order_id']}');
         return response.data['data'];
       } else {
         throw Exception(response.data['message'] ?? 'Failed to confirm order');
       }
     } catch (e) {
-      print('Error confirming order: $e');
       throw e;
     }
   }
@@ -416,8 +400,6 @@ class DeliveryDetailsController extends GetxController {
     required String couponCode,
   }) async {
     try {
-      print('Preparing COD order confirmation data...');
-
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id') ?? 0;
 
@@ -462,8 +444,6 @@ class DeliveryDetailsController extends GetxController {
             orderItems, // Changed from 'order_items' to 'items' to match confirmOrder
       };
 
-      print('COD order request body: $requestBody');
-
       // Validate required fields before making the API call
       if (requestBody['city']?.isEmpty ?? true) {
         throw Exception('City is required');
@@ -480,11 +460,7 @@ class DeliveryDetailsController extends GetxController {
         requestBody,
       );
 
-      print('COD order API response: ${response.data}');
-
       if (response.data['status'] == 'success') {
-        print(
-            'COD Order confirmed! Order ID: ${response.data['data']['order_id']}');
         // Clear cart after successful order
         cartController.clearAllCart();
         return response.data['data'];
@@ -493,7 +469,6 @@ class DeliveryDetailsController extends GetxController {
             response.data['message'] ?? 'Failed to confirm COD order');
       }
     } catch (e) {
-      print('Error confirming COD order: $e');
       throw e;
     }
   }
@@ -557,7 +532,6 @@ class DeliveryDetailsController extends GetxController {
 
       selectedPatientName.value = newName;
     } catch (e) {
-      print('Error updating patient name: $e');
       throw e;
     } finally {
       isLoading.value = false;

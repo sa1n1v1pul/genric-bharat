@@ -65,9 +65,9 @@ class AddressController extends GetxController {
     if (addressToEdit != null) {
       // Pre-fill the form with existing address data
       pincodeController.text = addressToEdit!.pinCode;
-       addressLine1Controller.text = addressToEdit!.shipAddress1;
-       addressLine2Controller.text = addressToEdit!.shipAddress2?? '';
-      localityController.text = addressToEdit!.area?? '';
+      addressLine1Controller.text = addressToEdit!.shipAddress1;
+      addressLine2Controller.text = addressToEdit!.shipAddress2 ?? '';
+      localityController.text = addressToEdit!.area ?? '';
       landmarkController.text = addressToEdit!.landmark ?? '';
       cityController.text = addressToEdit!.city;
       stateController.text = addressToEdit!.state;
@@ -119,13 +119,13 @@ class AddressController extends GetxController {
       _resetValidationStates();
 
       final response = await apiProvider.checkPincode(pincodeController.text);
-      print('Pincode API Response: ${response.data}');
 
       if (response.data['status'] == 'success') {
         isPincodeValid.value = true;
         final locationData = response.data['data'];
 
-        isDeliveryAvailable.value = locationData['delivery_status'] == 'Available';
+        isDeliveryAvailable.value =
+            locationData['delivery_status'] == 'Available';
         pincodeValidationMessage.value = isDeliveryAvailable.value
             ? 'Delivery available in this location'
             : 'Delivery not available in this location';
@@ -134,10 +134,10 @@ class AddressController extends GetxController {
           _populateFieldsFromPincodeData(locationData);
         }
       } else {
-        pincodeValidationMessage.value = response.data['message'] ?? 'Invalid pincode';
+        pincodeValidationMessage.value =
+            response.data['message'] ?? 'Invalid pincode';
       }
     } catch (e) {
-      print('Pincode validation error: $e');
       pincodeValidationMessage.value = 'Error validating pincode';
     } finally {
       isLoading.value = false;
@@ -148,7 +148,8 @@ class AddressController extends GetxController {
     cityController.text = data['city_name'] ?? '';
     stateController.text = data['state'] ?? '';
     localityController.text = data['locality'] ?? '';
-    addressLine2Controller.text = data['post_office'] ?? ''; // Always use post office
+    addressLine2Controller.text =
+        data['post_office'] ?? ''; // Always use post office
 
     if (data['landmark'] != null) {
       landmarkController.text = data['landmark'];
@@ -198,7 +199,6 @@ class AddressController extends GetxController {
 
       await _populateFieldsFromLocation();
     } catch (e) {
-      print('Error getting current location: $e');
       Get.snackbar(
         'Error',
         'Failed to get current location',
@@ -212,12 +212,10 @@ class AddressController extends GetxController {
 
   Future<void> loadSavedAddress() async {
     try {
-      print('Loading address from API...');
       isLoading.value = true;
 
       final userId = await _getUserId();
       if (userId <= 0) {
-        print('Invalid User ID: $userId');
         Get.snackbar(
           'Error',
           'Please log in again',
@@ -229,7 +227,6 @@ class AddressController extends GetxController {
 
       final response = await apiProvider.getUserProfile(userId);
       final userData = response.data['data'];
-      print('Received user profile data: $userData');
 
       if (userData != null) {
         pincodeController.text = userData['ship_zip'] ?? '';
@@ -240,14 +237,14 @@ class AddressController extends GetxController {
         cityController.text = userData['ship_city'] ?? '';
         stateController.text = userData['state'] ?? '';
 
-        hasAddress.value = userData['ship_address1'] != null && userData['ship_address1'].isNotEmpty;
+        hasAddress.value = userData['ship_address1'] != null &&
+            userData['ship_address1'].isNotEmpty;
 
         if (hasAddress.value) {
           savedAddress.value = _formatAddress(userData);
         }
       }
     } catch (e) {
-      print('Error loading address from API: $e');
       Get.snackbar(
         'Error',
         'Failed to load address',
@@ -272,8 +269,7 @@ class AddressController extends GetxController {
       parts.add(userData['landmark']);
     if (userData['ship_city']?.isNotEmpty == true)
       parts.add(userData['ship_city']);
-    if (userData['state']?.isNotEmpty == true)
-      parts.add(userData['state']);
+    if (userData['state']?.isNotEmpty == true) parts.add(userData['state']);
     if (userData['ship_zip']?.isNotEmpty == true)
       parts.add(userData['ship_zip']);
 
@@ -291,7 +287,6 @@ class AddressController extends GetxController {
 
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          print('Retrieved location data: $place');
 
           // When editing an existing address, preserve existing data
           if (addressToEdit != null) {
@@ -301,23 +296,30 @@ class AddressController extends GetxController {
                 : cityController.text;
 
             stateController.text = stateController.text.isEmpty
-                ? (place.administrativeArea ?? locationController.stateName.value)
+                ? (place.administrativeArea ??
+                    locationController.stateName.value)
                 : stateController.text;
 
             // Only modify pincode if it's empty
-            if (pincodeController.text.isEmpty && place.postalCode != null && place.postalCode!.isNotEmpty) {
+            if (pincodeController.text.isEmpty &&
+                place.postalCode != null &&
+                place.postalCode!.isNotEmpty) {
               pincodeController.text = place.postalCode!;
             }
 
             // Only update address1 if it's empty
-            if (addressLine1Controller.text.isEmpty && place.subLocality != null && place.subLocality!.isNotEmpty) {
+            if (addressLine1Controller.text.isEmpty &&
+                place.subLocality != null &&
+                place.subLocality!.isNotEmpty) {
               addressLine1Controller.text = place.subLocality!;
             }
           }
           // For new address, populate all fields
           else {
-            cityController.text = place.locality ?? locationController.cityName.value;
-            stateController.text = place.administrativeArea ?? locationController.stateName.value;
+            cityController.text =
+                place.locality ?? locationController.cityName.value;
+            stateController.text =
+                place.administrativeArea ?? locationController.stateName.value;
 
             if (place.postalCode != null && place.postalCode!.isNotEmpty) {
               pincodeController.text = place.postalCode!;
@@ -331,15 +333,18 @@ class AddressController extends GetxController {
           // Make API call to get additional details if pincode is 6 digits
           if (pincodeController.text.length == 6) {
             try {
-              final response = await apiProvider.checkPincode(pincodeController.text);
-              if (response.data['status'] == 'success' && response.data['data'] != null) {
+              final response =
+                  await apiProvider.checkPincode(pincodeController.text);
+              if (response.data['status'] == 'success' &&
+                  response.data['data'] != null) {
                 final locationData = response.data['data'];
 
                 // Only update these fields if they are empty when editing
                 if (addressToEdit != null) {
-                  addressLine2Controller.text = addressLine2Controller.text.isEmpty
-                      ? (locationData['post_office'] ?? '')
-                      : addressLine2Controller.text;
+                  addressLine2Controller.text =
+                      addressLine2Controller.text.isEmpty
+                          ? (locationData['post_office'] ?? '')
+                          : addressLine2Controller.text;
 
                   localityController.text = localityController.text.isEmpty
                       ? (locationData['locality'] ?? '')
@@ -349,13 +354,15 @@ class AddressController extends GetxController {
                       ? (locationData['landmark'] ?? '')
                       : landmarkController.text;
 
-                  if (addressLine1Controller.text.isEmpty && locationData['sublocality'] != null) {
+                  if (addressLine1Controller.text.isEmpty &&
+                      locationData['sublocality'] != null) {
                     addressLine1Controller.text = locationData['sublocality'];
                   }
                 }
                 // For new address, populate all fields
                 else {
-                  addressLine2Controller.text = locationData['post_office'] ?? '';
+                  addressLine2Controller.text =
+                      locationData['post_office'] ?? '';
                   localityController.text = locationData['locality'] ?? '';
 
                   if (locationData['landmark'] != null) {
@@ -368,13 +375,12 @@ class AddressController extends GetxController {
                 }
               }
             } catch (e) {
-              print('Error fetching post office data: $e');
+              // Error handled without print
             }
           }
         }
       }
     } catch (e) {
-      print('Error populating fields from location: $e');
       Get.snackbar(
         'Error',
         'Failed to fetch address details',
@@ -383,11 +389,11 @@ class AddressController extends GetxController {
       );
     }
   }
+
   Future<void> saveAddress() async {
     if (!formKey.currentState!.validate()) return;
 
     try {
-      print('🔍 Address Operation Started...');
       isLoading.value = true;
 
       final userId = await _getUserId();
@@ -408,19 +414,13 @@ class AddressController extends GetxController {
         'state': stateController.text,
       };
 
-      print('📦 Payload to API: $addressData');
-
       // Use the correct endpoint based on whether it's a new or existing address
       final endpoint = addressToEdit != null
           ? '${ApiEndpoints.updateAddress}/${addressToEdit!.id}'
           : ApiEndpoints.updateAddress;
 
-      final response = await apiProvider.postOrderConfirmation(
-          endpoint,
-          addressData
-      );
-
-      print('🌐 API Response: ${response.data}');
+      final response =
+          await apiProvider.postOrderConfirmation(endpoint, addressData);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar(
@@ -438,27 +438,24 @@ class AddressController extends GetxController {
           final cartController = Get.find<CartController>();
           await cartController.fetchAddresses();
         } catch (e) {
-          print('❌ Cart Controller Address Refresh Error: $e');
+          // Error handled without print
         }
 
         try {
           final deliveryController = Get.find<DeliveryDetailsController>();
           await deliveryController.loadUserDetails();
         } catch (e) {
-          print('❌ Delivery Controller Address Refresh Error: $e');
+          // Error handled without print
         }
 
         // Navigate back
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back();
-       // Get.toNamed(Routes.DELIVERY);
-
+        // Get.toNamed(Routes.DELIVERY);
       } else {
-        print('❌ API Reported Failure: ${response.data}');
         throw Exception('Failed to save/update address');
       }
     } catch (e) {
-      print('❌ Address Save/Update Error: $e');
       Get.snackbar(
         'Error',
         'Failed to save/update address',
@@ -469,7 +466,6 @@ class AddressController extends GetxController {
       isLoading.value = false;
     }
   }
-
 
   void clearFields() {
     pincodeController.clear();
@@ -482,4 +478,3 @@ class AddressController extends GetxController {
     selectedAddressType.value = 0;
   }
 }
-

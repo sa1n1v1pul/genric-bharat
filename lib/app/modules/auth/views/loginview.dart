@@ -3,6 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:genric_bharat/app/modules/auth/controllers/login_controller.dart';
+import 'package:genric_bharat/app/modules/cart/controller/cartcontroller.dart';
+import 'package:genric_bharat/app/modules/cart/controller/cartservice.dart';
+import 'package:genric_bharat/app/modules/onboarding/on_boarding_view.dart';
+import 'package:genric_bharat/app/modules/profile/controller/profile_controller.dart';
 
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -23,7 +27,6 @@ class LoginView extends GetView<LoginController> {
               image: AssetImage('assets/images/login.jpg'),
               fit: BoxFit.cover,
             ),
-            // Add glassy overlay
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -35,7 +38,6 @@ class LoginView extends GetView<LoginController> {
           ),
           child: Stack(
             children: [
-              // Add glass effect container
               Container(
                 decoration: BoxDecoration(
                   boxShadow: [
@@ -81,7 +83,8 @@ class LoginView extends GetView<LoginController> {
                         ),
                         const SizedBox(height: 20),
                         _buildGoogleSignInButton(),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 30),
+                        _buildSkipLoginButton(),
                       ],
                     ),
                   ),
@@ -92,6 +95,67 @@ class LoginView extends GetView<LoginController> {
         ),
       );
     });
+  }
+
+  // New method for Skip Login button
+  Widget _buildSkipLoginButton() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 25),
+        child: TextButton(
+          onPressed: () async {
+            try {
+              if (Get.isRegistered<CartController>()) {
+                await Get.delete<CartController>(force: true);
+              }
+              if (Get.isRegistered<ProfileController>()) {
+                await Get.delete<ProfileController>(force: true);
+              }
+
+              if (!Get.isRegistered<CartApiService>()) {
+                final cartService = Get.put(CartApiService());
+                await cartService.initializeService();
+              }
+
+              Get.off(() => const OnBoardingView());
+            } catch (e) {
+              print('Error during skip: $e');
+              Get.snackbar(
+                'Error',
+                'Something went wrong. Please try again.',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            }
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Skip Login',
+                style: TextStyle(
+                  color: Color(0xffE15564),
+                  fontFamily: 'WorkSansBold',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(width: 4),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Color(0xffE15564),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildLoginSection() {
@@ -189,7 +253,8 @@ class LoginView extends GetView<LoginController> {
               borderRadius: BorderRadius.circular(25),
               borderSide: const BorderSide(color: Color(0xffE15564)),
             ),
-            hintText: 'Enter Email or Phone',
+            hintText: 'Enter Email or 10 Digits Phone no.',
+            hintStyle: const TextStyle(fontSize: 13),
             filled: true,
             fillColor: Colors.transparent,
             contentPadding: const EdgeInsets.symmetric(
@@ -407,6 +472,7 @@ class LoginView extends GetView<LoginController> {
                     'assets/images/googlelogo.png',
                     height: 24,
                     width: 24,
+                    fit: BoxFit.cover,
                   ),
                   const SizedBox(width: 12),
                   const Text(

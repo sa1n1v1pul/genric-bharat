@@ -1,7 +1,10 @@
+// ignore_for_file: constant_identifier_names
+
 class ApiEndpoints {
   static const String imageBaseUrl =
-      'https://hayshay.gullygood.com/assets/images/';
-  static const String apibaseUrl = 'https://hayshay.gullygood.com/api/';
+      'https://cyan-gorilla-876897.hostingersite.com/assets/images/';
+  static const String apibaseUrl =
+      'https://cyan-gorilla-876897.hostingersite.com/api/';
   static const String orders = '${apibaseUrl}orders-app';
   static const String ordersCOD = '${apibaseUrl}orders-cod';
   static const String prescription = '${apibaseUrl}prescript';

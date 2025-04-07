@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:genric_bharat/app/modules/auth/controllers/appstatecontroller.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,6 +53,41 @@ class LoginController extends GetxController with CodeAutoFill {
     await _initializeSmsPlugin();
   }
 
+  Future<void> processAuthentication(int userId) async {
+    try {
+      isLoading.value = true;
+
+      // First clean up existing controllers
+      await Get.delete<CartController>(force: true);
+      await Get.delete<ProfileController>(force: true);
+
+      // Initialize AppStateController if not already initialized
+      if (!Get.isRegistered<AppStateController>()) {
+        Get.put(AppStateController());
+      }
+
+      // Initialize app state with proper error handling
+      await AppStateController.to
+          .initializeApp(userId: userId)
+          .catchError((error) {
+        // print('Error initializing app state: $error');
+        throw error; // Rethrow to be caught by outer try-catch
+      });
+
+      // Only navigate if initialization was successful
+      Get.off(() => const OnBoardingView());
+    } catch (e) {
+      // print('Error processing authentication: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to initialize app. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> _initializeSmsPlugin() async {
     try {
       final appSignature = await SmsAutoFill().getAppSignature;
@@ -70,7 +106,7 @@ class LoginController extends GetxController with CodeAutoFill {
   void codeUpdated() {
     try {
       if (code != null) {
-        print('Received OTP: $code');
+        // print('Received OTP: $code');
         phoneOtpController.text = code!;
         // Add a small delay to ensure UI updates
         Future.delayed(const Duration(milliseconds: 100), () {
@@ -78,7 +114,7 @@ class LoginController extends GetxController with CodeAutoFill {
         });
       }
     } catch (e) {
-      print('Error updating code: $e');
+      // print('Error updating code: $e');
     }
   }
 
@@ -307,7 +343,9 @@ class LoginController extends GetxController with CodeAutoFill {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setInt('user_id', userIdFromResponse);
 
-          await initializeControllers(userIdFromResponse);
+          await processAuthentication(userIdFromResponse);
+
+          // await initializeControllers(userIdFromResponse);
           Get.off(() => const OnBoardingView());
         } else {
           Get.snackbar('Error', responseData['message'] ?? 'Invalid OTP');
@@ -316,7 +354,7 @@ class LoginController extends GetxController with CodeAutoFill {
         Get.snackbar('Error', 'Failed to verify OTP. Please try again.');
       }
     } catch (e) {
-      print('Error in verifyOtp: $e');
+      // print('Error in verifyOtp: $e');
       Get.snackbar('Error', 'An error occurred. Please try again.');
     } finally {
       isLoading.value = false;
@@ -327,7 +365,18 @@ class LoginController extends GetxController with CodeAutoFill {
     try {
       isLoading.value = true;
 
-      final GoogleSignInAccount? gUser = await _googleSignIn.signIn();
+      // First sign out from both Firebase and Google
+      await _auth.signOut();
+      await _googleSignIn.signOut();
+
+      // Create a new instance of GoogleSignIn with forced account picker
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        signInOption: SignInOption.standard, // Forces account picker
+      );
+
+      // Attempt to sign in and show account picker
+      final GoogleSignInAccount? gUser = await googleSignIn.signIn();
       if (gUser == null) {
         isLoading.value = false;
         return;
@@ -393,17 +442,21 @@ class LoginController extends GetxController with CodeAutoFill {
         await _authController.saveToken(firebaseToken);
         await _authController.setUserEmail(user.email ?? '');
 
-        await initializeControllers(userIdToUse);
-
+        if (userIdToUse != null) {
+          await processAuthentication(userIdToUse);
+        }
         Get.off(() => const OnBoardingView());
       } catch (e) {
         print('API Error: $e');
-        await _googleSignIn.signOut();
+        await googleSignIn.signOut();
         await _auth.signOut();
         throw Exception('Failed to process user data: $e');
       }
     } catch (e) {
       print('Google Sign In Error: $e');
+      // Clean up on error
+      await _googleSignIn.signOut();
+      await _auth.signOut();
       Get.snackbar(
         'Error',
         'Failed to sign in with Google. Please try again.',
@@ -457,7 +510,9 @@ class LoginController extends GetxController with CodeAutoFill {
       await _authController.saveToken(firebaseToken ?? '');
       await _authController.setUserPhone(phoneController.text);
 
-      await initializeControllers(userIdToUse);
+      if (userIdToUse != null) {
+        await processAuthentication(userIdToUse);
+      }
 
       Get.off(() => const OnBoardingView());
     } catch (e) {

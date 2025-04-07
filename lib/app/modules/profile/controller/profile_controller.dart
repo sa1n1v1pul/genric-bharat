@@ -32,9 +32,7 @@ class ProfileController extends GetxController {
 
   // New method to handle API response
   Future<void> fetchVlogs() async {
-    print('Fetching vlogs...');
     if (isVlogsLoading.value) {
-      print('Already loading vlogs, skipping request');
       return;
     }
 
@@ -52,8 +50,6 @@ class ProfileController extends GetxController {
         ApiEndpoints.vlogs,
       );
 
-      print('Vlogs API response: ${response.data}');
-
       if (response.statusCode == 200 &&
           response.data != null &&
           response.data['success'] == true &&
@@ -70,14 +66,10 @@ class ProfileController extends GetxController {
 
         vlogsList.value = processedVlogs;
         update();
-        print('Vlogs loaded successfully: ${vlogsList.length} items');
       } else {
-        print(
-            'Invalid response format or unsuccessful response: ${response.data}');
         throw 'Failed to load vlogs: ${response.statusCode}';
       }
     } catch (e) {
-      print('Error fetching vlogs: $e');
       Get.snackbar(
         'Error',
         'Failed to load vlogs. Please try again later.',
@@ -95,7 +87,6 @@ class ProfileController extends GetxController {
   }
 
   void setSelectedVlog(Map<String, dynamic> vlog) {
-    print('Setting selected vlog: ${vlog['title']}');
     selectedVlog.value = vlog;
     update();
   }
@@ -134,9 +125,7 @@ class ProfileController extends GetxController {
       final storedUserId = prefs.getInt('user_id');
       if (storedUserId != null && storedUserId > 0) {
         userId.value = storedUserId;
-        print('✓ Loaded userId from SharedPreferences: $storedUserId');
       } else {
-        print('❌ No userId found in SharedPreferences');
         // Try to get user data anyway if we have a token
         final token = prefs.getString('token');
         if (token != null) {
@@ -144,18 +133,15 @@ class ProfileController extends GetxController {
         }
       }
     } catch (e) {
-      print('❌ Error loading userId from SharedPreferences: $e');
+      // Error handled silently
     }
   }
 
   // Initialize the controller with user ID
   Future<void> initialize(int id) async {
     try {
-      print('Initializing ProfileController with userId: $id');
-
       // Validate user ID
       if (id <= 0) {
-        print('Invalid user ID: $id');
         return;
       }
 
@@ -165,14 +151,10 @@ class ProfileController extends GetxController {
       // Save userId to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('user_id', id);
-      print('✓ Saved userId to SharedPreferences: $id');
 
       // Fetch user data
       await getUserData();
     } catch (e, stackTrace) {
-      print('❌ Error initializing ProfileController: $e');
-      print('Stack trace: $stackTrace');
-
       // Optionally show a user-friendly error
       Get.snackbar('Error', 'Could not initialize profile. Please try again.',
           snackPosition: SnackPosition.BOTTOM);
@@ -180,16 +162,13 @@ class ProfileController extends GetxController {
   }
 
   Future<void> getUserData() async {
-    print('📱 Fetching user data...');
     if (isLoading.value) {
-      print('⏳ Already loading data, skipping request');
       return;
     }
 
     isLoading.value = true;
     try {
       final response = await apiProvider.getUserProfile(userId.value);
-      print('✉️ User profile API response: ${response.data}');
 
       if (response.data != null && response.data is Map<String, dynamic>) {
         final updatedData = Map<String, dynamic>.from(response.data);
@@ -209,14 +188,11 @@ class ProfileController extends GetxController {
         // Cache the user data
         _cacheUserData(updatedData);
 
-        print('✓ Updated user data: ${userData.value}');
         update();
       } else {
-        print('❌ Invalid response data format');
         _loadCachedUserData();
       }
     } catch (e) {
-      print('❌ Error fetching user data: $e');
       _loadCachedUserData();
       Get.snackbar(
         'Error',
@@ -225,7 +201,6 @@ class ProfileController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-      print('✓ Profile data loading completed');
     }
   }
 
@@ -251,9 +226,8 @@ class ProfileController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('cached_user_data', jsonEncode(data));
-      print('✓ User data cached successfully');
     } catch (e) {
-      print('❌ Error caching user data: $e');
+      // Error handled silently
     }
   }
 
@@ -265,18 +239,16 @@ class ProfileController extends GetxController {
         final decodedData = jsonDecode(cachedData) as Map<String, dynamic>;
         userData.value = decodedData;
         profileImagePath.value = decodedData['profile'] ?? '';
-        print('✓ Loaded cached user data');
         update();
       }
     } catch (e) {
-      print('❌ Error loading cached user data: $e');
+      // Error handled silently
     }
   }
 
   // Clear user data on logout
   Future<void> clearUserData() async {
     try {
-      print('Clearing user data...');
       final prefs = await SharedPreferences.getInstance();
 
       // Clear essential auth data
@@ -289,9 +261,7 @@ class ProfileController extends GetxController {
       profileImagePath.value = '';
 
       update();
-      print('User data cleared successfully');
     } catch (e) {
-      print('Error clearing user data: $e');
       Get.snackbar(
         'Error',
         'Failed to clear user data',
@@ -302,7 +272,6 @@ class ProfileController extends GetxController {
 
   // Update profile image
   Future<void> updateProfileImage(String imagePath) async {
-    print('Updating profile image: $imagePath');
     isImageLoading.value = true;
 
     try {
@@ -328,7 +297,6 @@ class ProfileController extends GetxController {
         throw 'Failed to update profile image';
       }
     } catch (e) {
-      print('Error updating profile image: $e');
       Get.snackbar(
         'Error',
         'Failed to update profile image. Please try again.',
@@ -341,7 +309,6 @@ class ProfileController extends GetxController {
 
   // Remove profile image
   Future<void> removeProfileImage() async {
-    print('Removing profile image...');
     try {
       if (userId.value <= 0) {
         throw 'Invalid user ID';
@@ -363,7 +330,6 @@ class ProfileController extends GetxController {
         throw 'Failed to remove profile image';
       }
     } catch (e) {
-      print('Error removing profile image: $e');
       Get.snackbar(
         'Error',
         'Failed to remove profile image. Please try again.',
@@ -374,7 +340,6 @@ class ProfileController extends GetxController {
 
   // Update user profile data
   Future<void> updateUserProfile(Map<String, dynamic> updatedData) async {
-    print('Updating user profile with data: $updatedData');
     isLoading.value = true;
 
     try {
@@ -398,7 +363,6 @@ class ProfileController extends GetxController {
         throw 'Failed to update profile';
       }
     } catch (e) {
-      print('Error updating user profile: $e');
       Get.snackbar(
         'Error',
         'Failed to update profile. Please try again.',

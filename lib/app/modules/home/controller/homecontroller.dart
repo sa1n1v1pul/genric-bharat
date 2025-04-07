@@ -24,6 +24,7 @@ class HomeController extends GetxController {
   final RxString pageContent = RxString('');
   final RxBool isPageLoading = RxBool(false);
   final RxString errorMessage = ''.obs;
+
   HomeController() {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
@@ -39,7 +40,6 @@ class HomeController extends GetxController {
             // Retry the request up to 3 times
             for (int i = 0; i < 3; i++) {
               try {
-                print('Retrying request attempt ${i + 1}');
                 final response = await _dio.request(
                   error.requestOptions.path,
                   options: Options(
@@ -60,14 +60,15 @@ class HomeController extends GetxController {
       ),
     );
   }
+
   @override
   void onInit() {
     super.onInit();
     fetchCategoryItems();
     fetchCategories();
     fetchSliders();
-
   }
+
   Future<void> fetchPageContent(String slug) async {
     try {
       isPageLoading.value = true;
@@ -75,22 +76,22 @@ class HomeController extends GetxController {
         '${ApiEndpoints.pagesGet}?slug=$slug',
       );
 
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         // Assuming the first item contains the page details
         final pageData = response.data[0];
         pageContent.value = pageData['details'] ?? 'No content available.';
-        print('Fetched page content for $slug successfully');
       } else {
         pageContent.value = 'Unable to fetch page content.';
-        print('No content found for slug: $slug');
       }
     } catch (e) {
-      print('Error fetching page content: $e');
       pageContent.value = 'Error loading content.';
     } finally {
       isPageLoading.value = false;
     }
   }
+
   Future<void> fetchCategoryItems() async {
     try {
       isCategoryItemsLoading.value = true;
@@ -100,18 +101,10 @@ class HomeController extends GetxController {
         if (response.data['data'] is List) {
           categoryItems.value =
               List<Map<String, dynamic>>.from(response.data['data']);
-
-          // Debug print for category names
-          print("Available Categories:");
-          for (var category in categoryItems) {
-            print("- ${category['category_name']}");
-          }
-        } else {
-          print('Unexpected response structure: ${response.data}');
         }
       }
     } catch (e) {
-      print('Error fetching category items: $e');
+      // Error handling without print
     } finally {
       isCategoryItemsLoading.value = false;
     }
@@ -126,7 +119,6 @@ class HomeController extends GetxController {
       );
       return List<Map<String, dynamic>>.from(category['items'] ?? []);
     } catch (e) {
-      print('Error getting items for category $categoryName: $e');
       return [];
     }
   }
@@ -140,13 +132,10 @@ class HomeController extends GetxController {
         if (response.data['data'] is List) {
           categories.value =
               List<Map<String, dynamic>>.from(response.data['data']);
-          print("Fetching categories successfully: ${response.data['data']}");
-        } else {
-          print('Unexpected response structure: ${response.data}');
         }
       }
     } catch (e) {
-      print('Error fetching categories: $e');
+      // Error handling without print
     } finally {
       isLoading.value = false;
     }
@@ -156,7 +145,6 @@ class HomeController extends GetxController {
     try {
       isSubcategoriesLoading.value = true;
       final url = '${ApiEndpoints.subcategories}?category_id=$categoryId';
-      print('Fetching subcategories from: $url');
 
       final response = await _dio.get(
         url,
@@ -170,28 +158,17 @@ class HomeController extends GetxController {
         ),
       );
 
-      print('Response status code: ${response.statusCode}');
       if (response.statusCode == 200) {
         if (response.data is Map && response.data['data'] is List) {
           subcategories.value =
               List<Map<String, dynamic>>.from(response.data['data']);
-          print(
-              'Successfully fetched ${subcategories.value.length} subcategories');
         } else {
-          print(
-              'Unexpected response structure. Expected a List but got ${response.data.runtimeType}');
           subcategories.value = [];
         }
       } else {
-        print('Unexpected response status: ${response.statusCode}');
         subcategories.value = [];
       }
     } catch (e) {
-      print('Error fetching subcategories: $e');
-      if (e is dio.DioException) {
-        print('DioException details: ${e.message}');
-        print('DioException response: ${e.response}');
-      }
       subcategories.value = [];
     } finally {
       isSubcategoriesLoading.value = false;
@@ -208,13 +185,10 @@ class HomeController extends GetxController {
             responseData.containsKey('data')) {
           final List<dynamic> slidersList = responseData['data'];
           sliders.value = List<Map<String, dynamic>>.from(slidersList);
-          print("Fetched sliders successfully: ${sliders.length}");
-        } else {
-          print('Unexpected response structure: $responseData');
         }
       }
     } catch (e) {
-      print('Error fetching sliders: $e');
+      // Error handling without print
     } finally {
       isSlidersLoading.value = false;
     }
@@ -230,8 +204,6 @@ class HomeController extends GetxController {
         url += '&subcategory_id=$subcategoryId';
       }
 
-      print('Fetching services from: $url');
-
       final response = await _dio.get(
         url,
         options: Options(
@@ -241,8 +213,8 @@ class HomeController extends GetxController {
 
       if (response.statusCode == 200) {
         if (response.data['data'] is List) {
-          services.value = List<Map<String, dynamic>>.from(response.data['data']);
-          print("Successfully fetched ${services.length} services");
+          services.value =
+              List<Map<String, dynamic>>.from(response.data['data']);
         } else {
           throw Exception('Invalid response format: expected a list');
         }
@@ -266,21 +238,15 @@ class HomeController extends GetxController {
           errorMsg = e.message ?? 'An unexpected error occurred';
       }
 
-      print('DioException while fetching services: $errorMsg');
-      print('Error details: ${e.error}');
       errorMessage.value = errorMsg;
       services.value = [];
-
     } catch (e) {
-      print('Unexpected error while fetching services: $e');
       errorMessage.value = 'An unexpected error occurred';
       services.value = [];
     } finally {
       isServicesLoading.value = false;
     }
   }
-
-
 }
 
 class SliderModel {

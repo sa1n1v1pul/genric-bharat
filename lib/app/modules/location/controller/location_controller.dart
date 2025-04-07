@@ -26,7 +26,7 @@ class LocationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print("LocationController initialized");
+    // print("LocationController initialized");
     loadLastKnownLocation();
     Future.delayed(Duration(seconds: 25), () {
       getCurrentLocation();
@@ -35,7 +35,7 @@ class LocationController extends GetxController {
 
   @override
   void onClose() {
-    print("LocationController onClose called");
+    // print("LocationController onClose called");
     _debounceTimer?.cancel();
     super.onClose();
   }
@@ -130,8 +130,8 @@ class LocationController extends GetxController {
       }
 
       await getCurrentLocation();
-    } catch (e) {
-      print('Error in requestPermissionAndGetLocation: $e');
+      // } catch (e) {
+      //   print('Error in requestPermissionAndGetLocation: $e');
       Get.snackbar(
         'Error',
         'An error occurred while requesting location permission',
@@ -144,9 +144,9 @@ class LocationController extends GetxController {
 
   Future<void> getAddressFromLatLng(Position position) async {
     try {
-      print("Executing getAddressFromLatLng");
+      // print("Executing getAddressFromLatLng");
       List<Placemark> placemarks =
-      await placemarkFromCoordinates(position.latitude, position.longitude);
+          await placemarkFromCoordinates(position.latitude, position.longitude);
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
@@ -154,16 +154,16 @@ class LocationController extends GetxController {
         String localityName = place.subLocality?.isNotEmpty == true
             ? place.subLocality!
             : (place.locality?.isNotEmpty == true
-            ? place.locality!
-            : (place.subAdministrativeArea?.isNotEmpty == true
-            ? place.subAdministrativeArea!
-            : 'Unknown Location'));
+                ? place.locality!
+                : (place.subAdministrativeArea?.isNotEmpty == true
+                    ? place.subAdministrativeArea!
+                    : 'Unknown Location'));
 
         String city = place.locality?.isNotEmpty == true
             ? place.locality!
             : (place.subAdministrativeArea?.isNotEmpty == true
-            ? place.subAdministrativeArea!
-            : 'Unknown City');
+                ? place.subAdministrativeArea!
+                : 'Unknown City');
 
         stateName.value = place.administrativeArea ?? 'Unknown State';
 
@@ -175,15 +175,15 @@ class LocationController extends GetxController {
         }
 
         currentAddress.value =
-        "${place.street}, $localityName, $city, ${stateName.value}";
+            "${place.street}, $localityName, $city, ${stateName.value}";
 
         // Save the new location
         saveLastKnownLocation();
       }
     } catch (e) {
-      print('Error in reverse geocoding: $e');
+      // print('Error in reverse geocoding: $e');
       currentAddress.value =
-      '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+          '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
       cityName.value = 'Location Unavailable';
       stateName.value = '';
     }
@@ -246,7 +246,7 @@ class LocationController extends GetxController {
       recentlyUpdatedViaButton.value = true;
       return true;
     } catch (e) {
-      print('Error in handleLocationRequest: $e');
+      // print('Error in handleLocationRequest: $e');
       Get.snackbar(
         'Error',
         'An error occurred while handling location request',
@@ -265,7 +265,7 @@ class LocationController extends GetxController {
         final prefs = await SharedPreferences.getInstance();
         final userId = prefs.getInt('user_id');
         if (userId == null) {
-          print('User ID not found');
+          // print('User ID not found');
           return;
         }
 
@@ -278,10 +278,10 @@ class LocationController extends GetxController {
         if (response.statusCode == 200) {
           print('Location updated successfully in the database');
         } else {
-          print('Failed to update location in the database');
+          // print('Failed to update location in the database');
         }
       } catch (e) {
-        print('Error updating location in the database: $e');
+        // print('Error updating location in the database: $e');
       }
     }
   }
@@ -292,13 +292,13 @@ class LocationController extends GetxController {
           desiredAccuracy: LocationAccuracy.high);
       currentPosition.value = position;
 
-      print(
-          "Current Location: Latitude - ${position.latitude}, Longitude - ${position.longitude}");
+      // print(
+      // "Current Location: Latitude - ${position.latitude}, Longitude - ${position.longitude}");
 
       await getAddressFromLatLng(position);
       await updateLocationInDatabase();
     } catch (e) {
-      print('Error getting location: $e');
+      // print('Error getting location: $e');
     }
   }
 
@@ -325,23 +325,23 @@ class LocationController extends GetxController {
   Future<void> updateSelectedLocation(LatLng location) async {
     selectedLocation.value = location;
     List<Placemark> placemarks =
-    await placemarkFromCoordinates(location.latitude, location.longitude);
+        await placemarkFromCoordinates(location.latitude, location.longitude);
     if (placemarks.isNotEmpty) {
       Placemark place = placemarks[0];
 
       String localityName = place.subLocality?.isNotEmpty == true
           ? place.subLocality!
           : (place.locality?.isNotEmpty == true
-          ? place.locality!
-          : (place.subAdministrativeArea?.isNotEmpty == true
-          ? place.subAdministrativeArea!
-          : 'Unknown Location'));
+              ? place.locality!
+              : (place.subAdministrativeArea?.isNotEmpty == true
+                  ? place.subAdministrativeArea!
+                  : 'Unknown Location'));
 
       String city = place.locality?.isNotEmpty == true
           ? place.locality!
           : (place.subAdministrativeArea?.isNotEmpty == true
-          ? place.subAdministrativeArea!
-          : 'Unknown City');
+              ? place.subAdministrativeArea!
+              : 'Unknown City');
 
       stateName.value = place.administrativeArea ?? 'Unknown State';
 
@@ -353,7 +353,7 @@ class LocationController extends GetxController {
       }
 
       currentAddress.value =
-      "${place.street}, $localityName, $city, ${stateName.value}";
+          "${place.street}, $localityName, $city, ${stateName.value}";
     }
 
     final GoogleMapController controller = await mapController.future;

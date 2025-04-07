@@ -1,6 +1,8 @@
 // auth_controller.dart
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_endpoints/api_provider.dart';
 import '../../cart/controller/cartcontroller.dart';
@@ -36,13 +38,13 @@ class AuthController extends GetxController {
 
   Future<void> _initializeCartServices() async {
     try {
-      print('Initializing cart services after login...');
+      // print('Initializing cart services after login...');
 
       // Initialize CartApiService if not already initialized
       if (!Get.isRegistered<CartApiService>()) {
         final cartService = Get.put(CartApiService());
         await cartService.initializeService();
-        print('✓ Cart service initialized');
+        // print('✓ Cart service initialized');
       }
 
       // Initialize or reinitialize CartController
@@ -54,21 +56,21 @@ class AuthController extends GetxController {
       final cartController = Get.put(CartController());
       await cartController.initializeCart();
       // Wait a bit to ensure userId is available
-      print('✓ Cart controller initialized');
+      // print('✓ Cart controller initialized');
     } catch (e) {
-      print('❌ Error initializing cart services: $e');
+      // print('❌ Error initializing cart services: $e');
     }
   }
 
   void _cleanupCartServices() {
     try {
-      print('Cleaning up cart services...');
+      // print('Cleaning up cart services...');
       if (Get.isRegistered<CartController>()) {
         Get.delete<CartController>();
       }
-      print('✓ Cart services cleaned up');
+      // print('✓ Cart services cleaned up');
     } catch (e) {
-      print('❌ Error cleaning up cart services: $e');
+      // print('❌ Error cleaning up cart services: $e');
     }
   }
 
@@ -130,27 +132,42 @@ class AuthController extends GetxController {
             'user_mobile', userData.value['mobile_number'] ?? '');
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      // print('Error fetching user data: $e');
     }
   }
 
   Future<void> logout() async {
-    final ProfileController profileController = Get.find<ProfileController>();
-    // Clean up cart services before clearing user data
-    _cleanupCartServices();
-    await profileController.clearUserData();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('user_phone');
-    await prefs.remove('user_id');
-    await prefs.remove('user_name');
-    await prefs.remove('user_email');
-    await prefs.remove('user_mobile');
+    try {
+      final ProfileController profileController = Get.find<ProfileController>();
 
-    isLoggedIn.value = false;
-    userData.value = {};
-    await prefs.clear();
-    Get.find<LoginController>().resetState();
-    Get.offAllNamed('/auth');
+      // Sign out from Google and Firebase
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final FirebaseAuth auth = FirebaseAuth.instance;
+      await googleSignIn.signOut();
+      await auth.signOut();
+
+      // Clean up cart services before clearing user data
+      _cleanupCartServices();
+      await profileController.clearUserData();
+
+      // Clear all stored preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Reset states
+      isLoggedIn.value = false;
+      userData.value = {};
+      Get.find<LoginController>().resetState();
+
+      // Navigate back to auth screen
+      Get.offAllNamed('/auth');
+    } catch (e) {
+      // print('Error during logout: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to logout properly. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 }

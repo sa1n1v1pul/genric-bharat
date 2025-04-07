@@ -101,23 +101,23 @@ class SetLocationState extends State<SetLocatio> {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('user_id');
       if (userId == null) {
-        print('User ID not found');
+        // print('User ID not found');
         return;
       }
 
-      print('Updating location for user ID: $userId');
+      // print('Updating location for user ID: $userId');
 
       final response = await apiProvider.updateUserLocation(userId, lat, lng);
 
       if (response.statusCode == 200) {
-        print('Location updated successfully in the database');
+        // print('Location updated successfully in the database');
       } else {
-        print(
-            'Failed to update location in the database. Status code: ${response.statusCode}');
-        print('Response body: ${response.data}');
+        // print(
+        //     'Failed to update location in the database. Status code: ${response.statusCode}');
+        // print('Response body: ${response.data}');
       }
     } catch (e) {
-      print('Error updating location in the database: $e');
+      // print('Error updating location in the database: $e');
     }
   }
 
@@ -269,7 +269,7 @@ class SetLocationState extends State<SetLocatio> {
     final lat = detail.result.geometry!.location.lat;
     final lng = detail.result.geometry!.location.lng;
     _getCameraMoveLocation(LatLng(lat, lng));
-    print("${p.description} - $lat/$lng");
+    // print("${p.description} - $lat/$lng");
 
     final marker = Marker(
       markerId: const MarkerId('location'),
@@ -416,48 +416,47 @@ class SetLocationState extends State<SetLocatio> {
           ),
           (button)
               ? ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                backgroundColor: CustomTheme.loginGradientStart,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 50, vertical: 20),
-                textStyle: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w400)),
-            onPressed: isLoading ? null : handleContinuePressed,
-            child: isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text(
-              'Continue',
-              style: TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w400),
-            ),
-          )
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      backgroundColor: CustomTheme.loginGradientStart,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 20),
+                      textStyle: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w400)),
+                  onPressed: isLoading ? null : handleContinuePressed,
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Continue',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.w400),
+                        ),
+                )
               : ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                backgroundColor: Colors.grey,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 50, vertical: 20),
-                textStyle: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.w400)),
-            onPressed: isLoading ? null : handleContinuePressed,
-            child: isLoading
-                ? const CircularProgressIndicator(color: Colors.black)
-                : const Text(
-              'Continue',
-              style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.w400),
-            ),
-          )
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      backgroundColor: Colors.grey,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 20),
+                      textStyle: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w400)),
+                  onPressed: isLoading ? null : handleContinuePressed,
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : const Text(
+                          'Continue',
+                          style: TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w400),
+                        ),
+                )
         ],
       ),
     );
   }
-
 
   void getMapLoc() async {
     _getCameraMoveLocation(LatLng(lat, lng));

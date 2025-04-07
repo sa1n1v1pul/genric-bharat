@@ -17,7 +17,7 @@ import '../home/binding/homebindings.dart';
 import '../home/views/addressview.dart';
 import '../location/binding/location_binding.dart';
 import '../location/views/locationservices.dart';
-import '../offers/bindings/offersbinding.dart';
+
 import '../prescription/binding/prescriptionbinding.dart';
 import '../profile/binding/profile_binding.dart';
 
@@ -102,7 +102,7 @@ class AppPages {
         LocationBinding().dependencies();
         HomeBindings().dependencies();
         CartBindings().dependencies();
-        OffersBinding().dependencies();
+        VlogsBinding().dependencies();
         Messagebindings().dependencies();
         ProfileBindings().dependencies();
       }),

@@ -19,10 +19,11 @@ class MyOrdersView extends GetView<MyOrdersController> {
     final bool isDarkMode = Get.isDarkMode ?? false;
 
     return Scaffold(
-      backgroundColor:
-          fromBottomNav ? CustomTheme.backgroundColor : Colors.white,
+      backgroundColor: fromBottomNav
+          ? CustomTheme.backgroundColor
+          : (isDarkMode ? Colors.grey[850] : Colors.white),
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[550] : Colors.white,
+        backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -31,7 +32,7 @@ class MyOrdersView extends GetView<MyOrdersController> {
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back_ios, size: 16),
-                color: Colors.black,
+                color: isDarkMode ? Colors.white : Colors.black,
                 onPressed: () => Get.back(),
               ),
         title: const FittedBox(
@@ -52,12 +53,15 @@ class MyOrdersView extends GetView<MyOrdersController> {
             () => controller.isLoading.value
                 ? const Center(child: CircularProgressIndicator())
                 : controller.orders.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
                             'No orders found',
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode ? Colors.white : Colors.black,
+                            ),
                           ),
                         ),
                       )
@@ -68,7 +72,8 @@ class MyOrdersView extends GetView<MyOrdersController> {
                           final order = controller.orders[index];
                           return Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color:
+                                  isDarkMode ? Colors.grey[700] : Colors.white,
                               border: Border.all(
                                 color: isDarkMode
                                     ? Colors.blueGrey
@@ -97,9 +102,12 @@ class MyOrdersView extends GetView<MyOrdersController> {
                                             alignment: Alignment.centerLeft,
                                             child: Text(
                                               'Order id: ${order.id}',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14,
+                                                color: isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
                                               ),
                                             ),
                                           ),
@@ -110,7 +118,9 @@ class MyOrdersView extends GetView<MyOrdersController> {
                                             DateFormat('dd MMM yyyy')
                                                 .format(order.createdAt),
                                             style: TextStyle(
-                                              color: Colors.grey[600],
+                                              color: isDarkMode
+                                                  ? Colors.grey[300]
+                                                  : Colors.grey[600],
                                               fontSize: 12,
                                             ),
                                           ),
@@ -123,7 +133,12 @@ class MyOrdersView extends GetView<MyOrdersController> {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         'Medicine: ${order.cart.map((item) => item.name).join(", ")}',
-                                        style: const TextStyle(fontSize: 13),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: isDarkMode
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -131,7 +146,12 @@ class MyOrdersView extends GetView<MyOrdersController> {
                                     const SizedBox(height: 4),
                                     Text(
                                       'Items: ${order.cart.length}',
-                                      style: const TextStyle(fontSize: 13),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     FittedBox(
@@ -155,9 +175,12 @@ class MyOrdersView extends GetView<MyOrdersController> {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         'Amount: ${order.currencySign}${order.finalPrice}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
+                                          color: isDarkMode
+                                              ? Colors.white
+                                              : Colors.black,
                                         ),
                                       ),
                                     ),

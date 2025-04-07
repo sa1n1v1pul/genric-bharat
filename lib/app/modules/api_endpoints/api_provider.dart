@@ -39,7 +39,7 @@ class ApiProvider extends GetxController {
       String endpoint, Map<String, dynamic> data) async {
     return _handleRequest(() async {
       final token = await getToken();
-      print('Sending order data to API: $data');
+      // print('Sending order data to API: $data');
 
       return await _dio.post(
         endpoint,
@@ -58,7 +58,7 @@ class ApiProvider extends GetxController {
       String endpoint, Map<String, dynamic> data) async {
     return _handleRequest(() async {
       final token = await getToken();
-      print('Sending order data to API: $data');
+      // print('Sending order data to API: $data');
 
       return await _dio.post(
         endpoint,
@@ -144,8 +144,8 @@ class ApiProvider extends GetxController {
     if (retryCount <= maxRetries) {
       // Exponential backoff
       final delay = retryDelay * retryCount;
-      print(
-          'Retry attempt $retryCount for ${requestOptions.path} after ${delay.inSeconds}s');
+      // print(
+      //     'Retry attempt $retryCount for ${requestOptions.path} after ${delay.inSeconds}s');
       await Future.delayed(delay);
 
       try {
@@ -185,7 +185,7 @@ class ApiProvider extends GetxController {
   }
 
   Future<dio.Response> getUserProfile(int userId) async {
-    print('Fetching user profile for ID: $userId');
+    // print('Fetching user profile for ID: $userId');
     return _handleRequest(() async {
       final token = await getToken();
       final response = await _dio.get(
@@ -196,7 +196,7 @@ class ApiProvider extends GetxController {
           },
         ),
       );
-      print('User profile response: ${response.data}');
+      // print('User profile response: ${response.data}');
       return response;
     });
   }
@@ -249,13 +249,13 @@ class ApiProvider extends GetxController {
   }
 
   Future<dio.Response> checkPincode(String pincode) async {
-    print('Checking pincode: $pincode');
+    // print('Checking pincode: $pincode');
     return _handleRequest(() async {
       final response = await _dio.get(
         ApiEndpoints.pincode_checking,
         queryParameters: {'pin_code': pincode},
       );
-      print('Pincode check response: ${response.data}');
+      // print('Pincode check response: ${response.data}');
       return response;
     });
   }
@@ -265,9 +265,9 @@ class ApiProvider extends GetxController {
     try {
       return await request();
     } on dio.DioException catch (e) {
-      print('DioException details: ${e.message}');
-      print('DioException type: ${e.type}');
-      print('DioException response: ${e.response}');
+      // print('DioException details: ${e.message}');
+      // print('DioException type: ${e.type}');
+      // print('DioException response: ${e.response}');
 
       // Check if we've exceeded retry attempts
       if (e.requestOptions.extra['retryCount'] >= maxRetries) {
@@ -282,7 +282,7 @@ class ApiProvider extends GetxController {
       }
       throw e;
     } catch (e) {
-      print('Unexpected error: $e');
+      // print('Unexpected error: $e');
       Get.snackbar(
         'Error',
         'An unexpected error occurred. Please try again.',
@@ -376,7 +376,7 @@ class ApiProvider extends GetxController {
         'otp': otp,
         'id': id,
       };
-      print('Verify OTP request data: $data');
+      // print('Verify OTP request data: $data');
       return await _dio.post(
         ApiEndpoints.verifyOtp,
         data: data,
@@ -394,7 +394,7 @@ class ApiProvider extends GetxController {
   }
 
   Future<dio.Response> updateAddress(Map<String, String> addressData) async {
-    print('Updating address with data: $addressData');
+    // print('Updating address with data: $addressData');
     return _handleRequest(() async {
       final token = await getToken();
       final formData = dio.FormData.fromMap(addressData);
@@ -408,7 +408,7 @@ class ApiProvider extends GetxController {
           },
         ),
       );
-      print('Address update response: ${response.data}');
+      // print('Address update response: ${response.data}');
       return response;
     });
   }
@@ -423,9 +423,9 @@ class UserService extends GetxService {
 
     if (savedUserId != null && savedUserId > 0) {
       userId.value = savedUserId;
-      print('Initialized UserService with User ID: $savedUserId');
+      // print('Initialized UserService with User ID: $savedUserId');
     } else {
-      print('No valid user ID found in SharedPreferences');
+      // print('No valid user ID found in SharedPreferences');
     }
   }
 

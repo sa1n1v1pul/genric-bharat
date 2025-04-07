@@ -73,8 +73,7 @@ class OrderDetailModel {
       OrderDetailModel(
         id: json['id'] ?? 0,
         userId: json['user_id']?.toString() ?? '',
-        cart: CartDetails.fromJson(json[
-            'cart']), // Remove the ?? {} as we'll handle null in CartDetails
+        cart: CartDetails.fromJson(json['cart']),
         currencySign: json['currency_sign'] ?? '₹',
         discount: json['discount'] ?? '0',
         couponApplied: json['coupon_applied'],

@@ -19,25 +19,13 @@ import 'app/modules/routes/app_pages.dart';
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
-
-    // Initialize Firebase
+    await InitializationService.initServices();
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
-    // Set language code for Firebase Auth
-    await FirebaseAuth.instance.setLanguageCode("en");
-
-    // Initialize SMS AutoFill
-    await SmsAutoFill().getAppSignature;
-
-    // Initialize other services
-    await InitializationService.initServices();
-
     runApp(const MyApp());
-  } catch (e, stackTrace) {
+  } catch (e) {
     print('Fatal error during app initialization: $e');
-    print('Stack trace: $stackTrace');
   }
 }
 
