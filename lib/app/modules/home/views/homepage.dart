@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
               ),
               TextButton(
                 onPressed: () {
-                  SystemNavigator.pop(); 
+                  SystemNavigator.pop();
                 },
                 child: const Text('Yes'),
               ),
@@ -669,6 +669,7 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final HomeController controller = Get.find<HomeController>();
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
 
     return Obx(() {
       final items =
@@ -682,240 +683,241 @@ class _HomePageState extends State<HomePage> {
         return const Center(child: Text('No products available'));
       }
 
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          // Dynamic sizing calculations
-          final width = constraints.maxWidth;
-          final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.black45 : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color.fromARGB(255, 223, 223, 223),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title Section with LayoutBuilder
+            LayoutBuilder(builder: (context, constraints) {
+              final adjustedTitleFontSize = 16 / textScaleFactor;
+              final adjustedSubtitleFontSize = 14 / textScaleFactor;
 
-          // Responsive font sizes
-          final titleFontSize = 15 / textScaleFactor;
-          final subtitleFontSize = titleFontSize * 0.8;
-
-          // Define a fixed height for the grid
-          final gridHeight = 300.0 / textScaleFactor;
-
-          return Container(
-            margin: EdgeInsets.only(top: width * 0.025),
-            padding: EdgeInsets.symmetric(
-                horizontal: width * 0.04, vertical: width * 0.04),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black45 : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color.fromARGB(255, 223, 223, 223),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Vitamins & Supplements',
-                                style: TextStyle(
-                                  fontSize: titleFontSize,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                      isDarkMode ? Colors.white : Colors.black,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Vitamins & Supplements',
+                              style: TextStyle(
+                                fontSize: adjustedTitleFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black,
                               ),
-                              Text(
-                                ' 💊',
-                                style: TextStyle(
-                                  fontSize: titleFontSize,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            'Essential vitamins for your health',
-                            style: TextStyle(
-                              fontSize: subtitleFontSize,
-                              color: Colors.grey[600],
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            Text(' 💊',
+                                style:
+                                    TextStyle(fontSize: adjustedTitleFontSize)),
+                          ],
+                        ),
+                        Text(
+                          'Essential vitamins for your health',
+                          style: TextStyle(
+                            fontSize: adjustedSubtitleFontSize,
+                            color: Colors.grey[600],
                           ),
-                        ],
-                      ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
                     ),
-                    // Optional: Add a refresh or more info icon
-                  ],
-                ),
-
-                SizedBox(height: width * 0.04),
-
-                // Products Grid with Horizontal Scrolling
-                Container(
-                  padding: EdgeInsets.all(width * 0.01),
-                  decoration: BoxDecoration(
-                    color:
-                        isDarkMode ? Colors.black45 : const Color(0xFFF7F1FF),
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(
-                            horizontal: 5 / textScaleFactor),
-                        height: gridHeight,
-                        child: GridView.builder(
-                          padding: EdgeInsets.only(top: 15),
-                          shrinkWrap: true,
-                          physics: const BouncingScrollPhysics(),
+                ],
+              );
+            }),
+
+            const SizedBox(height: 15),
+
+            // Products Container
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.black45 : const Color(0xFFF7F1FF),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                children: [
+                  // Horizontal Scrollable Product Display with increased height
+                  SizedBox(
+                    height: 390, // Increased height to better accommodate text
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 1.6,
-                            crossAxisSpacing: width * 0.02,
-                            mainAxisSpacing: width * 0.02,
-                          ),
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) =>
-                                      DraggableScrollableSheet(
-                                    initialChildSize: 0.8,
-                                    minChildSize: 0.6,
-                                    maxChildSize: 0.8,
-                                    builder: (context, scrollController) =>
-                                        MedicineDetailsSheet(
-                                      service: items[index],
+                          itemCount: (items.length / 2).ceil(),
+                          itemBuilder: (context, columnIndex) {
+                            return SizedBox(
+                              width: constraints.maxWidth /
+                                  3, // Ensure 3 columns visible
+                              child: Column(
+                                children: [
+                                  // First product in column
+                                  if (columnIndex * 2 < items.length)
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () => _showProductDetails(
+                                            items[columnIndex * 2]),
+                                        child: _buildVitaminsItem(
+                                          items[columnIndex * 2],
+                                          constraints.maxWidth / 3,
+                                          textScaleFactor,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              child: _buildVitaminsItem(
-                                items[index],
-                                constraints.maxWidth / 6,
-                                textScaleFactor,
+                                  const SizedBox(height: 8),
+                                  // Second product in column
+                                  if (columnIndex * 2 + 1 < items.length)
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () => _showProductDetails(
+                                            items[columnIndex * 2 + 1]),
+                                        child: _buildVitaminsItem(
+                                          items[columnIndex * 2 + 1],
+                                          constraints.maxWidth / 3,
+                                          textScaleFactor,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             );
                           },
-                        ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // View All Button with LayoutBuilder
+                  LayoutBuilder(builder: (context, constraints) {
+                    final adjustedButtonFontSize = 14 / textScaleFactor;
+
+                    return TextButton(
+                      onPressed: () => Get.to(() => AllVitaminsScreen()),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
+                        backgroundColor: isDarkMode
+                            ? Colors.blueGrey.shade700
+                            : Colors.white,
                       ),
-
-                      SizedBox(height: width * 0.04),
-
-                      // View All Button
-                      TextButton(
-                        onPressed: () => Get.to(() => AllVitaminsScreen()),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: width * 0.04,
-                              vertical: width * 0.025),
-                          backgroundColor: isDarkMode
-                              ? Colors.blueGrey.shade700
-                              : Colors.white,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'View all Vitamins & Supplements products',
-                                style: TextStyle(
-                                  fontSize: subtitleFontSize,
-                                  color: isDarkMode
-                                      ? Colors.white
-                                      : CustomTheme.loginGradientStart,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Icon(
-                              CupertinoIcons.right_chevron,
-                              size: width * 0.05,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'View all ',
+                            style: TextStyle(
+                              fontSize: adjustedButtonFontSize,
                               color: isDarkMode
                                   ? Colors.white
                                   : CustomTheme.loginGradientStart,
                             ),
-                          ],
-                        ),
+                          ),
+                          Icon(
+                            CupertinoIcons.right_chevron,
+                            size: 16,
+                            color: isDarkMode
+                                ? Colors.white
+                                : CustomTheme.loginGradientStart,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ],
+                    );
+                  }),
+                ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       );
     });
   }
 
   Widget _buildVitaminsItem(
-    Map<String, dynamic> item,
-    double maxWidth,
-    double textScaleFactor,
-  ) {
+      Map<String, dynamic> item, double maxWidth, double textScaleFactor) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
+    // Calculate responsive font sizes
+    final productNameFontSize = 13 / textScaleFactor;
+    final discountFontSize = 11 / textScaleFactor;
+    final priceFontSize = 11 / textScaleFactor;
+
     return Container(
-      width: maxWidth,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.blueGrey : Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top part with name and price
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: EdgeInsets.all(maxWidth * 0.03),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+          // Top part with name and price - Increased height to prevent overflow
+          Container(
+            height: 105, // Increased height for text section
+            padding: const EdgeInsets.all(6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Product name with guaranteed space
+                SizedBox(
+                  height:
+                      40, // Fixed height for product name to ensure 2 lines visibility
+                  child: Text(
                     item['name'] as String? ?? 'Unknown Product',
                     style: TextStyle(
-                      fontSize: 14 / textScaleFactor,
+                      fontSize: productNameFontSize,
                       fontWeight: FontWeight.w500,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (item['discount_percentage'] != null) ...[
+                ),
+                const SizedBox(height: 2),
+                // Discount and price row
+                Row(
+                  children: [
+                    // Discount percentage if available
+                    if (item['discount_percentage'] != null)
+                      Flexible(
+                        child: Text(
+                          '${item['discount_percentage']}% off',
+                          style: TextStyle(
+                            fontSize: discountFontSize,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    const Spacer(),
+                    // Price
                     Text(
-                      '${item['discount_percentage']}% off',
+                      '₹${item['discount_price']?.toStringAsFixed(2) ?? 'N/A'}',
                       style: TextStyle(
-                        fontSize: 12 / textScaleFactor,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500,
+                        fontSize: priceFontSize,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
-                  Text(
-                    '₹${item['discount_price']?.toStringAsFixed(2) ?? 'N/A'}',
-                    style: TextStyle(
-                      fontSize: 12 / textScaleFactor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          // Image part
+          // Image part - Flexible height
           Expanded(
-            flex: 3,
             child: ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(bottom: Radius.circular(12)),
@@ -934,6 +936,22 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showProductDetails(Map<String, dynamic> product) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.6,
+        maxChildSize: 0.8,
+        builder: (context, scrollController) => MedicineDetailsSheet(
+          service: product,
+        ),
       ),
     );
   }
@@ -1608,7 +1626,6 @@ class _HomePageState extends State<HomePage> {
     final isDarkMode = theme.brightness == Brightness.dark;
     final HomeController controller = Get.find<HomeController>();
     final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-    final screenSize = MediaQuery.of(context).size;
 
     return Obx(() {
       final bestDealProducts =
@@ -1622,137 +1639,158 @@ class _HomePageState extends State<HomePage> {
         return const Center(child: Text('No products available'));
       }
 
-      return Column(
-        children: [
-          ListTile(
-            title: Text(
-              'Best Offers',
-              style: TextStyle(
-                fontSize: 16 / textScaleFactor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: Text(
-              'Hygienic & single-use products | low - contact services',
-              style: TextStyle(
-                fontSize: 12 / textScaleFactor,
-              ),
-            ),
-            trailing: TextButton(
-              child: Text(
-                'View all',
-                style: TextStyle(
-                  fontSize: 12 / textScaleFactor,
-                  color: isDarkMode
-                      ? Colors.white
-                      : CustomTheme.loginGradientStart,
-                ),
-              ),
-              onPressed: () => Get.to(() => const BestOffers()),
-            ),
-          ),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth;
+      return Container(
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            // Title and Subtitle
+            LayoutBuilder(builder: (context, constraints) {
+              final adjustedTitleFontSize = 16 / textScaleFactor;
+              final adjustedSubtitleFontSize = 12 / textScaleFactor;
 
-              // Define a fixed height for the grid
-              final gridHeight = 300.0 / textScaleFactor;
-
-              return Column(
-                children: [
-                  Container(
-                    margin:
-                        EdgeInsets.symmetric(horizontal: 10 / textScaleFactor),
-                    height: gridHeight,
-                    padding: EdgeInsets.all(width * 0.02),
-                    child: GridView.builder(
-                      padding: EdgeInsets.only(top: 15),
-                      shrinkWrap: true,
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        // Modify childAspectRatio to make cards narrower
-                        childAspectRatio: 1.50,
-                        crossAxisSpacing: width * 0.02,
-                        mainAxisSpacing: width * 0.02,
-                      ),
-                      itemCount: bestDealProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = bestDealProducts[index];
-                        return GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => DraggableScrollableSheet(
-                                initialChildSize: 0.8,
-                                minChildSize: 0.6,
-                                maxChildSize: 0.8,
-                                builder: (context, scrollController) =>
-                                    MedicineDetailsSheet(
-                                  service: product,
-                                ),
-                              ),
-                            );
-                          },
-                          child: _buildBestOfferCard(
-                            product,
-                            constraints.maxWidth /
-                                6, // Changed from /3 to /6 to make cards narrower
-                            textScaleFactor,
-                            isDarkMode,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  SizedBox(height: width * 0.04),
-
-                  // View All Button
-                  TextButton(
-                    onPressed: () => Get.to(() => const BestOffers()),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: width * 0.04,
-                        vertical: width * 0.025,
-                      ),
-                      backgroundColor:
-                          isDarkMode ? Colors.blueGrey.shade700 : Colors.white,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'View all Best Offers products',
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Best Offers',
                             style: TextStyle(
-                              fontSize: 12 / textScaleFactor,
-                              color: isDarkMode
-                                  ? Colors.white
-                                  : CustomTheme.loginGradientStart,
+                              fontSize: adjustedTitleFontSize,
+                              fontWeight: FontWeight.bold,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        Icon(
-                          CupertinoIcons.right_chevron,
-                          size: width * 0.05,
+                          Text(
+                            'Hygienic & single-use products | low - contact services',
+                            style:
+                                TextStyle(fontSize: adjustedSubtitleFontSize),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      child: Text(
+                        'View all',
+                        style: TextStyle(
+                          fontSize: adjustedSubtitleFontSize,
                           color: isDarkMode
                               ? Colors.white
                               : CustomTheme.loginGradientStart,
                         ),
-                      ],
+                      ),
+                      onPressed: () => Get.to(() => const BestOffers()),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
-            },
-          ),
-          SizedBox(height: 10 / textScaleFactor),
-        ],
+            }),
+
+            const SizedBox(height: 10),
+
+            // Products Container
+            SizedBox(
+              height:
+                  390, // Increased height to accommodate variable text sizes
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: (bestDealProducts.length / 2).ceil(),
+                    itemBuilder: (context, columnIndex) {
+                      return SizedBox(
+                        width: constraints.maxWidth /
+                            3, // Ensure 3 columns visible
+                        child: Column(
+                          children: [
+                            // First product in column
+                            if (columnIndex * 2 < bestDealProducts.length)
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => _showProductDetails(
+                                      bestDealProducts[columnIndex * 2]),
+                                  child: _buildBestOfferCard(
+                                    bestDealProducts[columnIndex * 2],
+                                    constraints.maxWidth / 3,
+                                    isDarkMode,
+                                    textScaleFactor,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 8),
+                            // Second product in column
+                            if (columnIndex * 2 + 1 < bestDealProducts.length)
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => _showProductDetails(
+                                      bestDealProducts[columnIndex * 2 + 1]),
+                                  child: _buildBestOfferCard(
+                                    bestDealProducts[columnIndex * 2 + 1],
+                                    constraints.maxWidth / 3,
+                                    isDarkMode,
+                                    textScaleFactor,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // View All Button
+            LayoutBuilder(builder: (context, constraints) {
+              final adjustedButtonFontSize = 14 / textScaleFactor;
+
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: TextButton(
+                  onPressed: () => Get.to(() => const BestOffers()),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 10),
+                    backgroundColor:
+                        isDarkMode ? Colors.blueGrey.shade700 : Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'View all Best Offers products',
+                        style: TextStyle(
+                          fontSize: adjustedButtonFontSize,
+                          color: isDarkMode
+                              ? Colors.white
+                              : CustomTheme.loginGradientStart,
+                        ),
+                      ),
+                      Icon(
+                        CupertinoIcons.right_chevron,
+                        size: 16,
+                        color: isDarkMode
+                            ? Colors.white
+                            : CustomTheme.loginGradientStart,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 10),
+          ],
+        ),
       );
     });
   }
@@ -1760,9 +1798,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBestOfferCard(
     Map<String, dynamic> product,
     double maxWidth,
-    double textScaleFactor,
     bool isDarkMode,
+    double textScaleFactor,
   ) {
+    // Calculate responsive font sizes
+    final productNameFontSize = 13 / textScaleFactor;
+    final discountFontSize = 11 / textScaleFactor;
+    final priceFontSize = 11 / textScaleFactor;
+
     final originalPrice = product['previous_price']?.toDouble() ?? 0.0;
     final discountedPrice = product['discount_price']?.toDouble() ?? 0.0;
     final discount = originalPrice > 0
@@ -1771,70 +1814,82 @@ class _HomePageState extends State<HomePage> {
         : '0';
 
     return Container(
-      width: maxWidth,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.blueGrey : Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top part with name and price
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: EdgeInsets.all(maxWidth * 0.03),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+          // Top part with name and price - Increased height to prevent overflow
+          Container(
+            height: 105, // Increased height for text section
+            padding: const EdgeInsets.all(6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Product name with guaranteed space
+                SizedBox(
+                  height:
+                      40, // Fixed height for product name to ensure 2 lines visibility
+                  child: Text(
                     product['name'] as String? ?? 'Unknown Product',
                     style: TextStyle(
-                      fontSize: 14 / textScaleFactor,
+                      fontSize: productNameFontSize,
                       fontWeight: FontWeight.w500,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (discount != '0') ...[
-                    Text(
-                      '$discount% OFF',
-                      style: TextStyle(
-                        fontSize: 12 / textScaleFactor,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                  Row(
-                    children: [
-                      if (originalPrice > 0) ...[
-                        Text(
-                          '₹${originalPrice.toStringAsFixed(0)}',
+                ),
+                const SizedBox(height: 2),
+                // Discount and price row
+                Row(
+                  children: [
+                    if (discount != '0')
+                      Flexible(
+                        child: Text(
+                          '$discount% OFF',
                           style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12 / textScaleFactor,
-                            decoration: TextDecoration.lineThrough,
+                            fontSize: discountFontSize,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(width: 4 / textScaleFactor),
-                      ],
-                      Text(
-                        '₹${discountedPrice.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontSize: 12 / textScaleFactor,
-                          fontWeight: FontWeight.bold,
-                        ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    const Spacer(),
+                    // Price display
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (originalPrice > 0) ...[
+                          Text(
+                            '₹${originalPrice.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: priceFontSize,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          '₹${discountedPrice.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontSize: priceFontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          // Image part
+          // Image part - Flexible height
           Expanded(
-            flex: 3,
             child: ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(bottom: Radius.circular(12)),
@@ -1845,10 +1900,7 @@ class _HomePageState extends State<HomePage> {
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[300],
-                    child: Icon(
-                      Icons.error,
-                      size: 24 / textScaleFactor,
-                    ),
+                    child: const Icon(Icons.error, size: 24),
                   );
                 },
               ),
@@ -1936,7 +1988,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   constraints: BoxConstraints(
-                    maxHeight: screenSize.height * 0.42,
+                    maxHeight: screenSize.height * 0.44,
                   ),
                   child: GridView.builder(
                     padding: EdgeInsets.only(top: 5),
@@ -2857,17 +2909,18 @@ class _HomePageState extends State<HomePage> {
         builder: (context, constraints) {
           final width = constraints.maxWidth;
 
-          // Responsive font sizes
+          // Responsive font sizes based on textScaleFactor
           final titleFontSize = 15 / textScaleFactor;
-          final subtitleFontSize = titleFontSize * 0.8;
+          final subtitleFontSize = 12 / textScaleFactor;
+          final productNameFontSize = 12 / textScaleFactor;
+          final priceFontSize = 12 / textScaleFactor;
 
-          // Define a fixed height for the grid
-          final gridHeight = 300.0 / textScaleFactor;
+          // Increased height for the grid to ensure there's enough space for text
+          final gridHeight = 310.0;
 
           return Container(
-            margin: EdgeInsets.only(top: width * 0.025),
-            padding: EdgeInsets.symmetric(
-                horizontal: width * 0.04, vertical: width * 0.04),
+            margin: EdgeInsets.only(top: 10),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isDarkMode ? Colors.black45 : Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -2893,7 +2946,6 @@ class _HomePageState extends State<HomePage> {
                               fontWeight: FontWeight.bold,
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Removes hard stains & more',
@@ -2902,6 +2954,7 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.grey[600],
                             ),
                             overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ],
                       ),
@@ -2909,34 +2962,34 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
 
-                SizedBox(height: width * 0.04),
+                SizedBox(height: 16),
 
                 // Products Grid with Horizontal Scrolling
                 Container(
-                  padding: EdgeInsets.all(width * 0.01),
+                  padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: isDarkMode
                         ? Colors.black45
-                        : const Color.fromARGB(255, 255, 251, 236),
+                        : Color.fromARGB(255, 236, 255, 237),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
                     children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(
-                            horizontal: 5 / textScaleFactor),
+                      // Products Grid with horizontal scrolling
+                      SizedBox(
                         height: gridHeight,
                         child: GridView.builder(
-                          padding: EdgeInsets.only(top: 15),
+                          padding: EdgeInsets.symmetric(vertical: 10),
                           shrinkWrap: true,
                           physics: const BouncingScrollPhysics(),
                           scrollDirection: Axis.horizontal,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 1.6,
-                            crossAxisSpacing: width * 0.02,
-                            mainAxisSpacing: width * 0.02,
+                            crossAxisCount: 2, // 2 rows
+                            childAspectRatio:
+                                0.8, // Adjusted for better display
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
                           ),
                           itemCount: cheapMedicines.length,
                           itemBuilder: (context, index) {
@@ -2959,19 +3012,20 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 );
                               },
-                              child: _buildCleaningPestItem(
+                              child: _buildMedicineItem(
                                 getCompleteImageUrl(medicine['photo']),
                                 medicine['name'],
                                 isNetworkImage: true,
                                 medicine: medicine,
-                                textScaleFactor: textScaleFactor,
+                                productNameFontSize: productNameFontSize,
+                                priceFontSize: priceFontSize,
                               ),
                             );
                           },
                         ),
                       ),
 
-                      SizedBox(height: width * 0.04),
+                      SizedBox(height: 16),
 
                       // View All Button
                       TextButton(
@@ -2979,8 +3033,7 @@ class _HomePageState extends State<HomePage> {
                             Get.to(() => const CheapMedicinesScreen()),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(
-                              horizontal: width * 0.04,
-                              vertical: width * 0.025),
+                              horizontal: 15, vertical: 10),
                           backgroundColor: isDarkMode
                               ? Colors.blueGrey.shade700
                               : Colors.white,
@@ -3002,7 +3055,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Icon(
                               CupertinoIcons.right_chevron,
-                              size: width * 0.05,
+                              size: 16,
                               color: isDarkMode
                                   ? Colors.white
                                   : CustomTheme.loginGradientStart,
@@ -3021,95 +3074,95 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Widget _buildCleaningPestItem(
+  Widget _buildMedicineItem(
     String imagePath,
     String title, {
     bool isNetworkImage = false,
     required Map<String, dynamic> medicine,
-    required double textScaleFactor,
+    required double productNameFontSize,
+    required double priceFontSize,
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-
-        return Container(
-          width: maxWidth,
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.blueGrey : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top part with name and price
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: EdgeInsets.all(maxWidth * 0.03),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        medicine['name'] as String? ?? 'Unknown Product',
-                        style: TextStyle(
-                          fontSize: 14 / textScaleFactor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (medicine['discount_percentage'] != null) ...[
-                        Text(
-                          '${medicine['discount_percentage']}% off',
-                          style: TextStyle(
-                            fontSize: 12 / textScaleFactor,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                      Text(
-                        '₹${medicine['discount_price']?.toStringAsFixed(2) ?? 'N/A'}',
-                        style: TextStyle(
-                          fontSize: 12 / textScaleFactor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.blueGrey : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top part with name and price - Increased height for text content
+          Container(
+            height:
+                75, // Increased height for text content to accommodate 2 lines
+            padding: const EdgeInsets.all(6.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Product name with guaranteed space for two lines
+                SizedBox(
+                  height:
+                      20, // Fixed height for product name to ensure 2 lines visibility
+                  child: Text(
+                    medicine['name'] as String? ?? 'Unknown Product',
+                    style: TextStyle(
+                      fontSize: productNameFontSize,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2, // Allow two lines for product name
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
-              // Image part
-              Expanded(
-                flex: 3,
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(12)),
-                  child: isNetworkImage
-                      ? Image.network(
-                          imagePath,
-                          width: double.infinity,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.error),
-                            );
-                          },
-                        )
-                      : Image.asset(
-                          imagePath,
-                          width: double.infinity,
-                          fit: BoxFit.contain,
-                        ),
+                const Spacer(),
+                // Price information with proper spacing
+                if (medicine['discount_percentage'] != null) ...[
+                  Text(
+                    '${medicine['discount_percentage']}% off',
+                    style: TextStyle(
+                      fontSize: priceFontSize,
+                      color: Colors.green,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+                Text(
+                  '₹${medicine['discount_price']?.toStringAsFixed(2) ?? 'N/A'}',
+                  style: TextStyle(
+                    fontSize: priceFontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+          // Image part - Flexible height
+          Expanded(
+            child: ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(bottom: Radius.circular(12)),
+              child: isNetworkImage
+                  ? Image.network(
+                      imagePath,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.error),
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      imagePath,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
