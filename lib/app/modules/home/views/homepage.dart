@@ -370,6 +370,332 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildBestOffersSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final HomeController controller = Get.find<HomeController>();
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+
+    return Obx(() {
+      final bestDealProducts =
+          controller.getItemsForCategory("BEST DEAL PRODUCTS");
+
+      if (controller.isCategoryItemsLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (bestDealProducts.isEmpty) {
+        return const Center(child: Text('No products available'));
+      }
+
+      return Container(
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title and Subtitle
+            LayoutBuilder(builder: (context, constraints) {
+              final adjustedTitleFontSize = 16 / textScaleFactor;
+              final adjustedSubtitleFontSize = 12 / textScaleFactor;
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Best Offers',
+                      style: TextStyle(
+                        fontSize: adjustedTitleFontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Hygienic & single-use products | low - contact services',
+                      style: TextStyle(fontSize: adjustedSubtitleFontSize),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            const SizedBox(height: 10),
+
+            // Products Container
+            SizedBox(
+              height: 520,
+              child: GridView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // Two rows
+                  crossAxisSpacing: 12, // Vertical spacing between cards
+                  mainAxisSpacing: 7, // Horizontal spacing between cards
+                  mainAxisExtent: 180, // Card width
+                ),
+                itemCount: bestDealProducts.length,
+                itemBuilder: (context, index) {
+                  final product = bestDealProducts[index];
+                  final originalPrice =
+                      product['previous_price']?.toDouble() ?? 0.0;
+                  final discountedPrice =
+                      product['discount_price']?.toDouble() ?? 0.0;
+                  final discount = originalPrice > 0
+                      ? ((originalPrice - discountedPrice) /
+                              originalPrice *
+                              100)
+                          .toStringAsFixed(0)
+                      : '0';
+
+                  return _buildMedicineCard(
+                    discount: '$discount%',
+                    name: product['name'],
+                    originalPrice: originalPrice,
+                    discountedPrice: discountedPrice,
+                    image: getCompleteImageUrl(product['photo']),
+                    product: product,
+                    isNetworkImage: true,
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // View All Button
+            LayoutBuilder(builder: (context, constraints) {
+              final adjustedButtonFontSize = 14 / textScaleFactor;
+
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: TextButton(
+                  onPressed: () => Get.to(() => const BestOffers()),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 10),
+                    backgroundColor:
+                        isDarkMode ? Colors.blueGrey.shade700 : Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'View all Best Offers products',
+                        style: TextStyle(
+                          fontSize: adjustedButtonFontSize,
+                          color: isDarkMode
+                              ? Colors.white
+                              : CustomTheme.loginGradientStart,
+                        ),
+                      ),
+                      Icon(
+                        CupertinoIcons.right_chevron,
+                        size: 16,
+                        color: isDarkMode
+                            ? Colors.white
+                            : CustomTheme.loginGradientStart,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 10),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildMedicineCard({
+    required String discount,
+    required String name,
+    required double originalPrice,
+    required double discountedPrice,
+    required String image,
+    required Map<String, dynamic> product,
+    bool isNetworkImage = false,
+  }) {
+    final cartController = Get.find<CartController>();
+    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
+    final _authController = Get.find<AuthController>();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.8,
+            minChildSize: 0.6,
+            maxChildSize: 0.8,
+            builder: (context, scrollController) => MedicineDetailsSheet(
+              service: product,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 180,
+        margin: const EdgeInsets.only(right: 12),
+        child: Card(
+          color: isDarkMode ? Colors.blueGrey : Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Image Section
+              AspectRatio(
+                aspectRatio: 4 / 3,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(12)),
+                      child: isNetworkImage
+                          ? Image.network(
+                              image,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.error),
+                                );
+                              },
+                            )
+                          : Image.asset(
+                              image,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                    if (discount != '0%')
+                      Container(
+                        margin: const EdgeInsets.only(left: 8, top: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '$discount OFF',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12 / textScaleFactor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // Content Section - Using Expanded to push the button to the bottom
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8, top: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name with multiple lines
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 14 / textScaleFactor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          // Allow multiple lines (2-3)
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      // Price section
+                      Row(
+                        children: [
+                          if (originalPrice > 0) ...[
+                            Text(
+                              '₹${originalPrice.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey,
+                                fontSize: 13 / textScaleFactor,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            '₹${discountedPrice.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14 / textScaleFactor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Add button always at the bottom
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (!_authController.isLoggedIn.value) {
+                              final shouldLogin =
+                                  await LoginRequiredDialog.show(context);
+                              if (shouldLogin) {
+                                // User chose to login
+                                return;
+                              }
+                              return;
+                            }
+
+                            if (!cartController.isLoading.value) {
+                              await cartController.addToCart(product);
+                              Get.to(() => const CartScreen());
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: CustomTheme.loginGradientStart,
+                            backgroundColor: Colors.white,
+                            side: BorderSide(
+                                color: CustomTheme.loginGradientStart),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          child: Text(
+                            'Add',
+                            style: TextStyle(
+                              fontSize: 14 / textScaleFactor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCarouselAdds() {
     final List<Map<String, dynamic>> testimonialsList = [
       {
@@ -701,38 +1027,35 @@ class _HomePageState extends State<HomePage> {
               final adjustedTitleFontSize = 16 / textScaleFactor;
               final adjustedSubtitleFontSize = 14 / textScaleFactor;
 
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Vitamins & Supplements',
-                            style: TextStyle(
-                              fontSize: adjustedTitleFontSize,
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
+              return Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Vitamins & Supplements',
+                          style: TextStyle(
+                            fontSize: adjustedTitleFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black,
                           ),
-                          Text(' 💊',
-                              style:
-                                  TextStyle(fontSize: adjustedTitleFontSize)),
-                        ],
-                      ),
-                      Text(
-                        'Essential vitamins for your health',
-                        style: TextStyle(
-                          fontSize: adjustedSubtitleFontSize,
-                          color: Colors.grey[600],
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                        Text(' 💊',
+                            style: TextStyle(fontSize: adjustedTitleFontSize)),
+                      ],
+                    ),
+                    Text(
+                      'Essential vitamins for your health',
+                      style: TextStyle(
+                        fontSize: adjustedSubtitleFontSize,
+                        color: Colors.grey[600],
                       ),
-                    ],
-                  ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
                 ),
               );
             }),
@@ -1500,151 +1823,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBestOffersSection() {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    final HomeController controller = Get.find<HomeController>();
-    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-
-    return Obx(() {
-      final bestDealProducts =
-          controller.getItemsForCategory("BEST DEAL PRODUCTS");
-
-      if (controller.isCategoryItemsLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (bestDealProducts.isEmpty) {
-        return const Center(child: Text('No products available'));
-      }
-
-      return Container(
-        margin: const EdgeInsets.all(10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title and Subtitle
-            LayoutBuilder(builder: (context, constraints) {
-              final adjustedTitleFontSize = 16 / textScaleFactor;
-              final adjustedSubtitleFontSize = 12 / textScaleFactor;
-
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Best Offers',
-                        style: TextStyle(
-                          fontSize: adjustedTitleFontSize,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Hygienic & single-use products | low - contact services',
-                        style: TextStyle(fontSize: adjustedSubtitleFontSize),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-
-            const SizedBox(height: 10),
-
-            // Products Container
-            SizedBox(
-              height: 520,
-              child: GridView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // Two rows
-                  crossAxisSpacing: 12, // Vertical spacing between cards
-                  mainAxisSpacing: 7, // Horizontal spacing between cards
-                  mainAxisExtent: 180, // Card width
-                ),
-                itemCount: bestDealProducts.length,
-                itemBuilder: (context, index) {
-                  final product = bestDealProducts[index];
-                  final originalPrice =
-                      product['previous_price']?.toDouble() ?? 0.0;
-                  final discountedPrice =
-                      product['discount_price']?.toDouble() ?? 0.0;
-                  final discount = originalPrice > 0
-                      ? ((originalPrice - discountedPrice) /
-                              originalPrice *
-                              100)
-                          .toStringAsFixed(0)
-                      : '0';
-
-                  return _buildMedicineCard(
-                    discount: '$discount%',
-                    name: product['name'],
-                    originalPrice: originalPrice,
-                    discountedPrice: discountedPrice,
-                    image: getCompleteImageUrl(product['photo']),
-                    product: product,
-                    isNetworkImage: true,
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // View All Button
-            LayoutBuilder(builder: (context, constraints) {
-              final adjustedButtonFontSize = 14 / textScaleFactor;
-
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: TextButton(
-                  onPressed: () => Get.to(() => const BestOffers()),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 10),
-                    backgroundColor:
-                        isDarkMode ? Colors.blueGrey.shade700 : Colors.white,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'View all Best Offers products',
-                        style: TextStyle(
-                          fontSize: adjustedButtonFontSize,
-                          color: isDarkMode
-                              ? Colors.white
-                              : CustomTheme.loginGradientStart,
-                        ),
-                      ),
-                      Icon(
-                        CupertinoIcons.right_chevron,
-                        size: 16,
-                        color: isDarkMode
-                            ? Colors.white
-                            : CustomTheme.loginGradientStart,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-
-            const SizedBox(height: 10),
-          ],
-        ),
-      );
-    });
-  }
-
   Widget _buildPopularSection() {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -1767,188 +1945,6 @@ class _HomePageState extends State<HomePage> {
   }
 
 // Keeping the original _buildMedicineCard function as the base for all sections
-  Widget _buildMedicineCard({
-    required String discount,
-    required String name,
-    required double originalPrice,
-    required double discountedPrice,
-    required String image,
-    required Map<String, dynamic> product,
-    bool isNetworkImage = false,
-  }) {
-    final cartController = Get.find<CartController>();
-    final textScaleFactor = MediaQuery.of(context).textScaleFactor;
-    final _authController = Get.find<AuthController>();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.8,
-            minChildSize: 0.6,
-            maxChildSize: 0.8,
-            builder: (context, scrollController) => MedicineDetailsSheet(
-              service: product,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        width: 180,
-        margin: const EdgeInsets.only(right: 12),
-        child: Card(
-          color: isDarkMode ? Colors.blueGrey : Colors.white,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Image Section
-              AspectRatio(
-                aspectRatio: 4 / 3,
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(12)),
-                      child: isNetworkImage
-                          ? Image.network(
-                              image,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.error),
-                                );
-                              },
-                            )
-                          : Image.asset(
-                              image,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                    if (discount != '0%')
-                      Container(
-                        margin: const EdgeInsets.only(left: 8, top: 4),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '$discount OFF',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12 / textScaleFactor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-
-              // Content Section - Using Expanded to push the button to the bottom
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 8, top: 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Name with multiple lines
-                      Expanded(
-                        child: Text(
-                          name,
-                          style: TextStyle(
-                            fontSize: 14 / textScaleFactor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          // Allow multiple lines (2-3)
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-
-                      // Price section
-                      Row(
-                        children: [
-                          if (originalPrice > 0) ...[
-                            Text(
-                              '₹${originalPrice.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                decoration: TextDecoration.lineThrough,
-                                color: Colors.grey,
-                                fontSize: 13 / textScaleFactor,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            '₹${discountedPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14 / textScaleFactor,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Add button always at the bottom
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (!_authController.isLoggedIn.value) {
-                              final shouldLogin =
-                                  await LoginRequiredDialog.show(context);
-                              if (shouldLogin) {
-                                // User chose to login
-                                return;
-                              }
-                              return;
-                            }
-
-                            if (!cartController.isLoading.value) {
-                              await cartController.addToCart(product);
-                              Get.to(() => const CartScreen());
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: CustomTheme.loginGradientStart,
-                            backgroundColor: Colors.white,
-                            side: BorderSide(
-                                color: CustomTheme.loginGradientStart),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                          child: Text(
-                            'Add',
-                            style: TextStyle(
-                              fontSize: 14 / textScaleFactor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildPersonalSection() {
     final theme = Theme.of(context);
